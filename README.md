@@ -20,3 +20,30 @@ E-Commerce platform
 3. [Orders](/microservice-orders/README.md) - Orders life cycle and shopping cart.
 4. [Payment](/microservice-payment/README.md) - Payment management. 
 5. [Notification](/microservice-notification/README.md) - User notifications management.
+
+---
+
+## General Stack
+
+- Caddy Server
+- Java 21
+- Spring Framework
+- PostgreSQL
+- Redis (Cache)
+- RabbitMQ
+
+---
+
+## How to execute
+
+> 🚧 In progress...
+
+--- 
+
+## License
+
+[» MIT License](LICENSE.md)
+
+---
+
+_Made with ❤️ and ☕ by Filipe Martins._

@@ -4,15 +4,13 @@
 
 <img src="images/jcommerce-logo.png" height="120pt">
 
-# J-Commerce
+<h3> J-Commerce </h3>
 
-<p> E-Commerce platform microservices-based.
+<p> Microservices-based E-Commerce platform.
 
 </div>
 
----
-
-## Services
+## Microservices
 
 1. [Identity](/microservice-identity/README.md) - Authentication and user profile management.
 2. [Products](/microservice-products/README.md) - Product catalogue, stock level and wishlist.

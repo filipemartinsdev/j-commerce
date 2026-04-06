@@ -31,6 +31,8 @@ E-Commerce platform
 - PostgreSQL
 - Redis (Cache)
 - RabbitMQ
+- Prometheus
+- Grafana
 
 ---
 

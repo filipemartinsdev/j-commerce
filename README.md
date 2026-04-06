@@ -28,6 +28,7 @@ E-Commerce platform
 - Caddy Server
 - Java 21
 - Spring Framework
+- Docker
 - PostgreSQL
 - Redis (Cache)
 - RabbitMQ

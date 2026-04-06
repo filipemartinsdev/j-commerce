@@ -6,7 +6,7 @@
 
 <h3> J-Commerce </h3>
 
-<p>  Microservices-based <br>
+<p>  Microservice-based <br>
 E-Commerce platform
 
 </div>

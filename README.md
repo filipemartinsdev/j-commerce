@@ -47,7 +47,7 @@ E-Commerce platform
 
 ## Architecture
 
-<img src="images/architecture.jpeg" width="1000pt">
+<img src="images/architecture.png" width="1000pt">
 
 ### Distributed Authentication
 

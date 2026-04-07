@@ -1,6 +1,18 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <project version="4">
-  <component name="ProjectRootManager" version="2">
+  <component name="ExternalStorageConfigurationManager" enabled="true" />
+  <component name="MavenProjectsManager">
+    <option name="originalFiles">
+      <list>
+        <option value="$PROJECT_DIR$/microservice-identity/pom.xml" />
+        <option value="$PROJECT_DIR$/microservice-products/pom.xml" />
+        <option value="$PROJECT_DIR$/microservice-orders/pom.xml" />
+        <option value="$PROJECT_DIR$/microservice-notification/pom.xml" />
+        <option value="$PROJECT_DIR$/microservice-payment/pom.xml" />
+      </list>
+    </option>
+  </component>
+  <component name="ProjectRootManager" version="2" languageLevel="JDK_26">
     <output url="file://$PROJECT_DIR$/out" />
   </component>
 </project>

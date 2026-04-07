@@ -61,9 +61,13 @@ E-Commerce platform
 
 <img src="images/key-pair.png" width="500pt">
 
-<img src="images/asymmetric-criptography-1.png" width="500pt">
-<img src="images/asymmetric-criptography-2.png" width="500pt">
-<img src="images/asymmetric-criptography-3.png" width="500pt">
+#### Validation
+This approach invalidates JSON Web Tokens with false signature or modified Payload.
+
+
+<img src="images/asymmetric-criptography-1.png" width="600pt">
+<img src="images/asymmetric-criptography-2.png" width="600pt">
+<img src="images/asymmetric-criptography-3.png" width="600pt">
 
 
 ---

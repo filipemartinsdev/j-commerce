@@ -47,7 +47,7 @@ E-Commerce platform
 
 ## Achitecture
 
-<img src="images/architecture.jpeg" height="400pt">
+<img src="images/architecture.jpeg" width="1000pt">
 
 ---
 

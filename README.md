@@ -49,6 +49,24 @@ E-Commerce platform
 
 <img src="images/architecture.jpeg" width="1000pt">
 
+### Distributed Authentication
+
+**Segregate authentication**
+- Authentication Server: generate and sign JWT. 
+- Resource server: only validate the JWT.
+
+**Asymmetric Cryptograph with ECC Algorithm**
+- Generate ECC Key pair to Authentication Server
+- Resource server have only the Public Key.
+
+
+<img src="images/key-pair.png" width="500pt">
+
+<img src="images/asymmetric-criptography-1.png" width="500pt">
+<img src="images/asymmetric-criptography-2.png" width="500pt">
+<img src="images/asymmetric-criptography-3.png" width="500pt">
+
+
 ---
 
 ## How to execute

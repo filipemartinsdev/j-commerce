@@ -84,4 +84,4 @@ This approach invalidates JSON Web Tokens with false signature or modified Paylo
 
 ---
 
-_Made with ❤️ and ☕ by Filipe Martins._
+_Made with ❤️ and ☕ by **Filipe Martins**._

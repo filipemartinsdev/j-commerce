@@ -23,6 +23,14 @@ E-Commerce platform
 
 ---
 
+## Index
+1. [Stack](#general-stack)
+2. [Architecture](#achitecture)
+3. [How to execute](#how-to-execute)
+4. [License](#License)
+
+---
+
 ## General Stack
 
 - Caddy Server
@@ -30,10 +38,16 @@ E-Commerce platform
 - Spring Framework
 - Docker
 - PostgreSQL
-- Redis (Cache)
+- Redis
 - RabbitMQ
 - Prometheus
 - Grafana
+
+---
+
+## Achitecture
+
+<img src="images/architecture.jpeg" height="400pt">
 
 ---
 

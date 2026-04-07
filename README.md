@@ -45,7 +45,7 @@ E-Commerce platform
 
 ---
 
-## Achitecture
+## Architecture
 
 <img src="images/architecture.jpeg" width="1000pt">
 

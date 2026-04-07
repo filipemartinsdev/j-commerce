@@ -1,0 +1,7 @@
+spring:
+  application:
+    name: microservice-identity
+
+  jpa:
+    hibernate:
+      ddl-auto: none

@@ -1,0 +1,194 @@
+services:
+  caddy:
+    container_name: caddy
+    image: caddy:2.11-alpine
+    ports:
+      - "80:80"
+      - "443:443"
+    volumes:
+      - ./Caddyfile:/etc/caddy/Caddyfile:Z
+      - caddy_data:/data
+      - caddy_config:/config
+    restart: unless-stopped
+
+# ----- DATA ------
+
+  identity_db:
+    image: postgres:17-alpine
+    container_name: identity_db
+    ports:
+      - "5432:5432"
+    environment:
+      POSTGRES_DB: ${PG_IDENTITY_DATABASE}
+      POSTGRES_USER: ${PG_IDENTITY_USER}
+      POSTGRES_PASSWORD: ${PG_IDENTITY_PASSWORD}
+    volumes:
+      - identity_data:/var/lib/postgresql/data
+
+  products_db:
+    image: postgres:17-alpine
+    container_name: products_db
+    ports:
+      - "5433:5432"
+    environment:
+      POSTGRES_DB: ${PG_PRODUCTS_DATABASE}
+      POSTGRES_USER: ${PG_PRODUCTS_USER}
+      POSTGRES_PASSWORD: ${PG_PRODUCTS_PASSWORD}
+    volumes:
+      - products_data:/var/lib/postgresql/data
+
+  cache:
+    container_name: cache
+    image: redis:7.4-alpine
+    restart: unless-stopped
+    ports:
+      - "6379"
+    volumes:
+      - cache_data:/data
+
+# ----- COMMUNICATION ------
+
+  rabbitmq:
+    container_name: rabbitmq
+    image: rabbitmq:4-management-alpine
+    hostname: rabbitmq-local
+    ports:
+      - "5672:5672"
+      - "15672:15672"
+    volumes:
+      - rabbitmq_data:/var/lib/rabbitmq
+    environment:
+      - RABBITMQ_DEFAULT_USER=admin
+      - RABBITMQ_DEFAULT_PASS=admin
+
+# ----- OBSERVABILITY ------
+
+  prometheus:
+    image: prom/prometheus:v3.1.0
+    container_name: "prometheus"
+    ports:
+      - "9090:9090"
+    restart: unless-stopped
+    volumes:
+      - ./prometheus.yml:/etc/prometheus/prometheus.yml:Z
+      - prometheus_data:/var/prometheus:Z
+
+  grafana:
+    image: grafana/grafana-oss:11.5.0
+    container_name: "grafana"
+    ports:
+      - "3000:3000"
+    restart: unless-stopped
+    environment:
+      GF_SECURITY_ADMIN_USER: admin
+      GF_SECURITY_ADMIN_PASSWORD: admin
+    volumes:
+      - ./grafana.yml:/etc/grafana/provisioning/datasources/grafana.yml:Z
+      - grafana_data:/var/lib/grafana:Z
+
+
+# ----- MICROSERVICES ------
+
+  identity:
+    container_name: identity_service
+    build:
+      context: microservice-identity/
+      dockerfile: Dockerfile
+    depends_on:
+      - identity_db
+    restart: unless-stopped
+    ports:
+      - "8080"
+    environment:
+      PG_IDENTITY_DATABASE:
+      PG_IDENTITY_USER:
+      PG_IDENTITY_PASSWORD:
+      SPRING_RABBITMQ_ADDRESSES: amqp://admin:admin@rabbitmq:5672/
+      SPRING_DATASOURCE_URL: jdbc:postgresql://identity_db:5432/${PG_IDENTITY_DATABASE}
+      SPRING_DATASOURCE_USERNAME: ${PG_IDENTITY_USER}
+      SPRING_DATASOURCE_PASSWORD: ${PG_IDENTITY_PASSWORD}
+      ACTIVE_PROFILE: dev
+
+  products:
+    container_name: products_service
+    build:
+      context: microservice-products/
+      dockerfile: Dockerfile
+    depends_on:
+      - products_db
+    restart: unless-stopped
+    ports:
+      - "8080"
+    environment:
+      PG_PRODUCTS_DATABASE:
+      PG_PRODUCTS_USER:
+      PG_PRODUCTS_PASSWORD:
+      SPRING_RABBITMQ_ADDRESSES: amqp://admin:admin@rabbitmq:5672/
+      SPRING_DATASOURCE_URL: jdbc:postgresql://products_db:5432/${PG_PRODUCTS_DATABASE}
+      SPRING_DATASOURCE_USERNAME: ${PG_PRODUCTS_USER}
+      SPRING_DATASOURCE_PASSWORD: ${PG_PRODUCTS_PASSWORD}
+      ACTIVE_PROFILE: dev
+
+  orders:
+    container_name: orders_service
+    build:
+      context: microservice-orders/
+      dockerfile: Dockerfile
+    depends_on:
+      - products_db
+    restart: unless-stopped
+    ports:
+      - "8080"
+    environment:
+      PG_PRODUCTS_DATABASE:
+      PG_PRODUCTS_USER:
+      PG_PRODUCTS_PASSWORD:
+      SPRING_RABBITMQ_ADDRESSES: amqp://admin:admin@rabbitmq:5672/
+      SPRING_DATASOURCE_URL: jdbc:postgresql://products_db:5432/${PG_PRODUCTS_DATABASE}
+      SPRING_DATASOURCE_USERNAME: ${PG_PRODUCTS_USER}
+      SPRING_DATASOURCE_PASSWORD: ${PG_PRODUCTS_PASSWORD}
+      ACTIVE_PROFILE: dev
+
+  notification:
+    container_name: notification_service
+    build:
+      context: microservice-notification/
+      dockerfile: Dockerfile
+    depends_on:
+      - products_db
+    restart: unless-stopped
+    ports:
+      - "8080"
+    environment:
+      PG_PRODUCTS_DATABASE:
+      PG_PRODUCTS_USER:
+      PG_PRODUCTS_PASSWORD:
+      ACTIVE_PROFILE: dev
+      SPRING_RABBITMQ_ADDRESSES: amqp://admin:admin@rabbitmq:5672/
+
+  payment:
+    container_name: payment_service
+    build:
+      context: microservice-payment/
+      dockerfile: Dockerfile
+    depends_on:
+      - products_db
+    restart: unless-stopped
+    ports:
+      - "8080"
+    environment:
+      PG_PRODUCTS_DATABASE:
+      PG_PRODUCTS_USER:
+      PG_PRODUCTS_PASSWORD:
+      ACTIVE_PROFILE: dev
+      SPRING_RABBITMQ_ADDRESSES: amqp://admin:admin@rabbitmq:5672/
+
+volumes:
+  caddy_data:
+  caddy_config:
+  identity_data:
+  products_data:
+  cache_data:
+  prometheus_data:
+  grafana_data:
+  rabbitmq_data:

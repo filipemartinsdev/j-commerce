@@ -1,0 +1,32 @@
+localhost {
+    tls internal
+
+    handle_path /identity/* {
+        reverse_proxy identity:8080
+    }
+
+    handle_path /products/* {
+        reverse_proxy products:8080
+    }
+
+    handle_path /orders/* {
+        reverse_proxy orders:8080
+    }
+
+    handle_path /notification/* {
+        reverse_proxy notification:8080
+    }
+
+    handle_path /payment/* {
+        reverse_proxy payment:8080
+    }
+
+    handle {
+        abort
+    }
+
+    log {
+        output stdout
+        format json
+    }
+}

@@ -51,13 +51,12 @@ E-Commerce platform
 
 ### Distributed Authentication
 
-**Segregate authentication**
-- Authentication Server: generate and sign JWT. 
-- Resource server: only validate the JWT.
+- **Authentication Server**: generate and sign JWT. 
+- **Resource server**: Just validate the JWT.
 
-**Asymmetric Cryptograph with ECC Algorithm**
-- Generate ECC Key pair to Authentication Server
-- Resource server have only the Public Key.
+- **Asymmetric Cryptograph with ECC Algorithm**
+    - Generate ECC Key pair to Authentication Server
+    - Resource server have only the Public Key.
 
 
 <img src="images/key-pair.png" width="500pt">

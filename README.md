@@ -16,8 +16,8 @@ E-Commerce platform
 ## Microservices
 
 1. [Identity](/microservice-identity/README.md) - Authentication and user profile management.
-2. [Products](/microservice-products/README.md) - Product catalogue, stock level and wishlist.
-3. [Orders](/microservice-orders/README.md) - Orders life cycle and shopping cart.
+2. [Product](/microservice-products/README.md) - Product catalogue, stock level and wishlist.
+3. [Order](/microservice-orders/README.md) - Orders life cycle and shopping cart.
 4. [Payment](/microservice-payment/README.md) - Payment management. 
 5. [Notification](/microservice-notification/README.md) - User notifications management.
 

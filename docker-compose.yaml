@@ -25,17 +25,17 @@ services:
     volumes:
       - identity_data:/var/lib/postgresql/data
 
-  products_db:
+  product_db:
     image: postgres:17-alpine
-    container_name: products_db
+    container_name: product_db
     ports:
       - "5433:5432"
     environment:
-      POSTGRES_DB: ${PG_PRODUCTS_DATABASE}
-      POSTGRES_USER: ${PG_PRODUCTS_USER}
-      POSTGRES_PASSWORD: ${PG_PRODUCTS_PASSWORD}
+      POSTGRES_DB: ${PG_PRODUCT_DATABASE}
+      POSTGRES_USER: ${PG_PRODUCT_USER}
+      POSTGRES_PASSWORD: ${PG_PRODUCT_PASSWORD}
     volumes:
-      - products_data:/var/lib/postgresql/data
+      - product_data:/var/lib/postgresql/data
 
   cache:
     container_name: cache
@@ -109,44 +109,44 @@ services:
       SPRING_DATASOURCE_PASSWORD: ${PG_IDENTITY_PASSWORD}
       ACTIVE_PROFILE: dev
 
-  products:
-    container_name: products_service
+  product:
+    container_name: product_service
     build:
-      context: microservice-products/
+      context: microservice-product/
       dockerfile: Dockerfile
     depends_on:
-      - products_db
+      - product_db
     restart: unless-stopped
     ports:
       - "8080"
     environment:
-      PG_PRODUCTS_DATABASE:
-      PG_PRODUCTS_USER:
-      PG_PRODUCTS_PASSWORD:
+      PG_PRODUCT_DATABASE:
+      PG_PRODUCT_USER:
+      PG_PRODUCT_PASSWORD:
       SPRING_RABBITMQ_ADDRESSES: amqp://admin:admin@rabbitmq:5672/
-      SPRING_DATASOURCE_URL: jdbc:postgresql://products_db:5432/${PG_PRODUCTS_DATABASE}
-      SPRING_DATASOURCE_USERNAME: ${PG_PRODUCTS_USER}
-      SPRING_DATASOURCE_PASSWORD: ${PG_PRODUCTS_PASSWORD}
+      SPRING_DATASOURCE_URL: jdbc:postgresql://product_db:5432/${PG_PRODUCT_DATABASE}
+      SPRING_DATASOURCE_USERNAME: ${PG_PRODUCT_USER}
+      SPRING_DATASOURCE_PASSWORD: ${PG_PRODUCT_PASSWORD}
       ACTIVE_PROFILE: dev
 
-  orders:
-    container_name: orders_service
+  order:
+    container_name: order_service
     build:
-      context: microservice-orders/
+      context: microservice-order/
       dockerfile: Dockerfile
     depends_on:
-      - products_db
+      - product_db
     restart: unless-stopped
     ports:
       - "8080"
     environment:
-      PG_PRODUCTS_DATABASE:
-      PG_PRODUCTS_USER:
-      PG_PRODUCTS_PASSWORD:
+      PG_PRODUCT_DATABASE:
+      PG_PRODUCT_USER:
+      PG_PRODUCT_PASSWORD:
       SPRING_RABBITMQ_ADDRESSES: amqp://admin:admin@rabbitmq:5672/
-      SPRING_DATASOURCE_URL: jdbc:postgresql://products_db:5432/${PG_PRODUCTS_DATABASE}
-      SPRING_DATASOURCE_USERNAME: ${PG_PRODUCTS_USER}
-      SPRING_DATASOURCE_PASSWORD: ${PG_PRODUCTS_PASSWORD}
+      SPRING_DATASOURCE_URL: jdbc:postgresql://product_db:5432/${PG_PRODUCT_DATABASE}
+      SPRING_DATASOURCE_USERNAME: ${PG_PRODUCT_USER}
+      SPRING_DATASOURCE_PASSWORD: ${PG_PRODUCT_PASSWORD}
       ACTIVE_PROFILE: dev
 
   notification:
@@ -155,14 +155,14 @@ services:
       context: microservice-notification/
       dockerfile: Dockerfile
     depends_on:
-      - products_db
+      - product_db
     restart: unless-stopped
     ports:
       - "8080"
     environment:
-      PG_PRODUCTS_DATABASE:
-      PG_PRODUCTS_USER:
-      PG_PRODUCTS_PASSWORD:
+      PG_PRODUCT_DATABASE:
+      PG_PRODUCT_USER:
+      PG_PRODUCT_PASSWORD:
       ACTIVE_PROFILE: dev
       SPRING_RABBITMQ_ADDRESSES: amqp://admin:admin@rabbitmq:5672/
 
@@ -172,14 +172,14 @@ services:
       context: microservice-payment/
       dockerfile: Dockerfile
     depends_on:
-      - products_db
+      - product_db
     restart: unless-stopped
     ports:
       - "8080"
     environment:
-      PG_PRODUCTS_DATABASE:
-      PG_PRODUCTS_USER:
-      PG_PRODUCTS_PASSWORD:
+      PG_PRODUCT_DATABASE:
+      PG_PRODUCT_USER:
+      PG_PRODUCT_PASSWORD:
       ACTIVE_PROFILE: dev
       SPRING_RABBITMQ_ADDRESSES: amqp://admin:admin@rabbitmq:5672/
 
@@ -187,7 +187,7 @@ volumes:
   caddy_data:
   caddy_config:
   identity_data:
-  products_data:
+  product_data:
   cache_data:
   prometheus_data:
   grafana_data:

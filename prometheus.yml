@@ -8,14 +8,14 @@ scrape_configs:
       - targets: [ 'identity:8080' ]
     metrics_path: '/actuator/prometheus'
 
-  - job_name: 'products-service'
+  - job_name: 'product-service'
     static_configs:
-      - targets: [ 'products:8080' ]
+      - targets: [ 'product:8080' ]
     metrics_path: '/actuator/prometheus'
 
-  - job_name: 'orders-service'
+  - job_name: 'order-service'
     static_configs:
-      - targets: [ 'orders:8080' ]
+      - targets: [ 'order:8080' ]
     metrics_path: '/actuator/prometheus'
 
   - job_name: 'notification-service'

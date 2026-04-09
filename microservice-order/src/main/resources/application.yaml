@@ -8,6 +8,12 @@ spring:
   profiles:
     active: ${ACTIVE_PROFILE:test}
 
+  security:
+    oauth2:
+      resourceserver:
+        jwt:
+          jwk-set-uri: http://identity:8080/.well-known/jwks.json
+
 management:
   endpoints:
     web:

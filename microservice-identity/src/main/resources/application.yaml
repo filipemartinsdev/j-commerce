@@ -8,8 +8,18 @@ spring:
   profiles:
     active: ${ACTIVE_PROFILE:test}
 
+  security:
+    oauth2:
+      resourceserver:
+        jwt:
+          jwk-set-uri: http://localhost:8080/.well-known/jwks.json
+
 management:
   endpoints:
     web:
       exposure:
         include: prometheus,health,info
+
+jwt:
+  public-key: ${classpath:app.pub}
+  private-key: ${classpath:app.key}

@@ -154,8 +154,6 @@ services:
     build:
       context: microservice-notification/
       dockerfile: Dockerfile
-    depends_on:
-      - product_db
     restart: unless-stopped
     ports:
       - "8080"
@@ -171,8 +169,6 @@ services:
     build:
       context: microservice-payment/
       dockerfile: Dockerfile
-    depends_on:
-      - product_db
     restart: unless-stopped
     ports:
       - "8080"

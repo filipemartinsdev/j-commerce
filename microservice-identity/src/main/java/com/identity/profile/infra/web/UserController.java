@@ -1,9 +1,8 @@
 package com.identity.profile.infra.web;
 
 import com.identity.common.dto.StandardResponse;
-import com.identity.profile.application.service.JwtService;
-import com.identity.profile.application.service.UserProfileService;
 import com.identity.profile.application.dto.UserProfileResponse;
+import com.identity.profile.application.service.UserProfileService;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
@@ -18,16 +17,14 @@ import java.util.UUID;
 @RequestMapping("/api/v1/users")
 public class UserController {
     private final UserProfileService userProfileService;
-    private final JwtService jwtService;
 
-    public UserController(UserProfileService userProfileService, JwtService jwtService) {
+    public UserController(UserProfileService userProfileService) {
         this.userProfileService = userProfileService;
-        this.jwtService = jwtService;
     }
 
     @GetMapping("/me")
     public ResponseEntity<StandardResponse<UserProfileResponse>> getAuthenticatedUser(@AuthenticationPrincipal Jwt authenticatedJWT) {
-        UUID authenticatedUserId = jwtService.getUserId(authenticatedJWT);
+        UUID authenticatedUserId = UUID.fromString(authenticatedJWT.getSubject());
 
         return ResponseEntity
             .status(HttpStatus.OK)

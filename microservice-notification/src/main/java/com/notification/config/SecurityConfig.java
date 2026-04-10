@@ -1,4 +1,4 @@
-package com.notification.security.config;
+package com.notification.config;
 
 import jakarta.servlet.DispatcherType;
 import org.springframework.context.annotation.Bean;

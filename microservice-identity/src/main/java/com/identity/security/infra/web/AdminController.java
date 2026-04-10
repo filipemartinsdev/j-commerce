@@ -1,0 +1,53 @@
+package com.identity.security.infra.web;
+
+import com.identity.common.dto.PagedResponse;
+import com.identity.common.dto.StandardResponse;
+import com.identity.security.application.dto.UpdateUserRole;
+import com.identity.security.application.service.AuthService;
+import com.identity.security.application.service.UserCredentialsMapper;
+import jakarta.validation.Valid;
+import org.springframework.data.domain.Pageable;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.*;
+
+import java.util.UUID;
+
+@RestController
+@RequestMapping("/admin/api/v1")
+public class AdminController {
+    private final AuthService authService;
+    private final UserCredentialsMapper userCredentialsMapper;
+
+    public AdminController(AuthService authService, UserCredentialsMapper userCredentialsMapper) {
+        this.authService = authService;
+        this.userCredentialsMapper = userCredentialsMapper;
+    }
+
+    @PatchMapping("/users/{userId}")
+    public ResponseEntity<Void> updateUserRole(@PathVariable UUID userId, @Valid @RequestBody UpdateUserRole request) {
+        authService.updateUserRole(userId, request.role());
+
+        return ResponseEntity
+                .status(HttpStatus.CREATED)
+                .build();
+    }
+
+    @GetMapping("/users")
+    public ResponseEntity<StandardResponse<PagedResponse<UserCredentialsResponse>>> getAllUsers(Pageable pageable) {
+        return ResponseEntity
+                .status(HttpStatus.OK)
+                .body(StandardResponse.success(
+                        authService.getAllUsers(pageable)
+                ));
+    }
+
+    @GetMapping("/users/{userId}")
+    public ResponseEntity<StandardResponse<UserCredentialsResponse>> getUserById(@PathVariable UUID userId) {
+        return ResponseEntity
+                .status(HttpStatus.OK)
+                .body(StandardResponse.success(
+                        authService.getUserById(userId)
+                ));
+    }
+}

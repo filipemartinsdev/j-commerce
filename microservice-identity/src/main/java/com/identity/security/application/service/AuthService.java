@@ -1,5 +1,6 @@
 package com.identity.security.application.service;
 
+import com.identity.common.dto.PagedResponse;
 import com.identity.common.dto.UserCredentialsCreated;
 import com.identity.common.event.UserCredentialsCreatedEvent;
 import com.identity.security.application.dto.*;
@@ -11,12 +12,16 @@ import com.identity.security.domain.entity.UserCredentials;
 import com.identity.security.domain.entity.UserRole;
 import com.identity.security.infra.persistence.RefreshTokenRepository;
 import com.identity.security.infra.persistence.UserCredentialsRepository;
+import com.identity.security.infra.web.UserCredentialsResponse;
 import com.nimbusds.jose.jwk.JWKSet;
 import com.nimbusds.jose.jwk.RSAKey;
 import jakarta.transaction.Transactional;
 import jakarta.validation.Valid;
+import jakarta.validation.constraints.NotNull;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.ApplicationEventPublisher;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.oauth2.jwt.*;
 import org.springframework.stereotype.Service;
@@ -38,17 +43,19 @@ public class AuthService {
     private final JwtDecoder jwtDecoder;
     private final RefreshTokenRepository refreshTokenRepository;
     private final ApplicationEventPublisher applicationEventPublisher;
+    private final UserCredentialsMapper userCredentialsMapper;
 
     @Value("${jwt.public-key}")
     private RSAPublicKey publicKey;
 
-    public AuthService(UserCredentialsRepository userCredentialsRepository, PasswordEncoder passwordEncoder, JwtEncoder jwtEncoder, JwtDecoder jwtDecoder, RefreshTokenRepository refreshTokenRepository, ApplicationEventPublisher applicationEventPublisher) {
+    public AuthService(UserCredentialsRepository userCredentialsRepository, PasswordEncoder passwordEncoder, JwtEncoder jwtEncoder, JwtDecoder jwtDecoder, RefreshTokenRepository refreshTokenRepository, ApplicationEventPublisher applicationEventPublisher, UserCredentialsMapper userCredentialsMapper) {
         this.userCredentialsRepository = userCredentialsRepository;
         this.passwordEncoder = passwordEncoder;
         this.jwtEncoder = jwtEncoder;
         this.jwtDecoder = jwtDecoder;
         this.refreshTokenRepository = refreshTokenRepository;
         this.applicationEventPublisher = applicationEventPublisher;
+        this.userCredentialsMapper = userCredentialsMapper;
     }
 
     @Transactional
@@ -90,17 +97,17 @@ public class AuthService {
         if (!passwordEncoder.matches(request.password(), userCredentials.getEncryptedPassword()))
             throw new ForbiddenOperationException("Wrong password");
 
-        return generateTokens(userCredentials.getUserId());
+        return generateTokens(userCredentials.getUserId(), userCredentials.getRole().toString());
     }
 
-    private LoginResponse generateTokens(UUID userId){
-        TokenResponse accessToken = generateAccessToken(userId);
-        TokenResponse refreshToken = generateRefreshToken(userId);
+    private LoginResponse generateTokens(UUID userId, String role){
+        TokenResponse accessToken = generateAccessToken(userId, role);
+        TokenResponse refreshToken = generateRefreshToken(userId, role);
 
         return new LoginResponse(accessToken, refreshToken);
     }
 
-    private TokenResponse generateAccessToken(UUID userId){
+    private TokenResponse generateAccessToken(UUID userId, String role){
         Instant now = Instant.now();
         Instant expiration = now.plusSeconds(ACCESS_TOKEN_EXPIRATION_SECONDS);
 
@@ -110,6 +117,7 @@ public class AuthService {
                 .expiresAt(expiration)
                 .subject(userId.toString())
                 .claim("token_type", "access")
+                .claim("scope", role)
                 .build();
 
         String jwtValue = jwtEncoder.encode(
@@ -119,7 +127,7 @@ public class AuthService {
         return new TokenResponse(jwtValue, expiration);
     }
 
-    private TokenResponse generateRefreshToken(UUID userId){
+    private TokenResponse generateRefreshToken(UUID userId, String role){
         Instant now = Instant.now();
         Instant expiration = now.plusSeconds(REFRESH_TOKEN_EXPIRATION_SECONDS);
 
@@ -137,6 +145,7 @@ public class AuthService {
                 .expiresAt(expiration)
                 .subject(userId.toString())
                 .claim("token_type", "refresh")
+                .claim("scope", role)
                 .build();
 
         String jwtValue = jwtEncoder.encode(
@@ -155,12 +164,15 @@ public class AuthService {
         UUID userId = getUserId(jwt);
         String type = getClaimType(jwt);
 
-        if (!"refresh".equals(type) || !userCredentialsRepository.existsById(userId))
+        if (!"refresh".equals(type))
             throw new BadJwtException("Invalid refresh token");
+
+        UserCredentials user = userCredentialsRepository.findById(userId)
+                .orElseThrow(() -> new UserNotFoundException("user not found with id: "+userId));
 
         revokeRefreshToken(tokenId);
 
-        return generateTokens(userId);
+        return generateTokens(userId, user.getRole().toString());
     }
 
     private Jwt decodeToken(String token) {
@@ -208,10 +220,42 @@ public class AuthService {
         refreshTokenRepository.save(refreshToken);
     }
 
+
     public Map<String, Object> getPublicJWKS(){
         RSAKey jwk = new RSAKey.Builder(publicKey)
 //                .keyID()
                 .build();
         return new JWKSet(jwk).toJSONObject();
+    }
+
+
+    public void updateUserRole(UUID userId, UserRole role) {
+        UserCredentials userCredentials = userCredentialsRepository.findById(userId)
+                .orElseThrow(() -> new UserNotFoundException("user not found with id: "+userId));
+        userCredentials.setRole(role);
+        userCredentialsRepository.save(userCredentials);
+    }
+
+    public PagedResponse<UserCredentialsResponse> getAllUsers(Pageable pageable) {
+        Page<UserCredentials> page = userCredentialsRepository.findAll(pageable);
+
+        return PagedResponse.<UserCredentialsResponse>builder()
+                .page(page.getNumber())
+                .size(page.getSize())
+                .isLast(page.isLast())
+                .totalPages(page.getTotalPages())
+                .totalElements(page.getTotalElements())
+                .content(page.getContent().stream()
+                        .map(userCredentialsMapper::toResponse)
+                        .toList()
+                )
+                .build();
+    }
+
+    public UserCredentialsResponse getUserById(UUID id) {
+        return userCredentialsMapper.toResponse(
+                userCredentialsRepository.findById(id)
+                    .orElseThrow(() -> new UserNotFoundException("user not found with id: "+id))
+        );
     }
 }

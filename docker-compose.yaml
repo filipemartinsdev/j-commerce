@@ -163,6 +163,9 @@ services:
       PG_PRODUCT_PASSWORD:
       ACTIVE_PROFILE: dev
       SPRING_RABBITMQ_ADDRESSES: amqp://admin:admin@rabbitmq:5672/
+      SPRING_DATASOURCE_URL: jdbc:postgresql://product_db:5432/${PG_PRODUCT_DATABASE}
+      SPRING_DATASOURCE_USERNAME: ${PG_PRODUCT_USER}
+      SPRING_DATASOURCE_PASSWORD: ${PG_PRODUCT_PASSWORD}
 
   payment:
     container_name: payment_service
@@ -178,6 +181,9 @@ services:
       PG_PRODUCT_PASSWORD:
       ACTIVE_PROFILE: dev
       SPRING_RABBITMQ_ADDRESSES: amqp://admin:admin@rabbitmq:5672/
+      SPRING_DATASOURCE_URL: jdbc:postgresql://identity_db:5432/${PG_IDENTITY_DATABASE}
+      SPRING_DATASOURCE_USERNAME: ${PG_IDENTITY_USER}
+      SPRING_DATASOURCE_PASSWORD: ${PG_IDENTITY_PASSWORD}
 
 volumes:
   caddy_data:

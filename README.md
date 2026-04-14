@@ -49,13 +49,13 @@ E-Commerce platform
 
 <img src="images/architecture.png" width="1000pt">
 
-### Distributed Authentication
+### Authentication
 
 - **Authentication Server**: generate and sign JWT. 
 - **Resource server**: Just validate the JWT.
 
-- **Asymmetric Cryptograph with ECC Algorithm**
-    - Generate ECC Key pair to Authentication Server
+- **Asymmetric Cryptograph with RSA or ECC Algorithm**
+    - Generate RSA or ECC Key pair to Authentication Server
     - Resource server have only the Public Key.
 
 

@@ -6,5 +6,10 @@ spring:
     hibernate:
       ddl-auto: none
 
+  datasource:
+    url: jdbc:h2:mem:dev
+    username: dev
+    password: dev
+
   flyway:
     enabled: true

@@ -37,6 +37,18 @@ services:
     volumes:
       - product_data:/var/lib/postgresql/data
 
+  order_db:
+    image: postgres:17-alpine
+    container_name: order_db
+    ports:
+      - "5434:5432"
+    environment:
+      POSTGRES_DB: ${PG_ORDER_DATABASE}
+      POSTGRES_USER: ${PG_ORDER_USER}
+      POSTGRES_PASSWORD: ${PG_ORDER_PASSWORD}
+    volumes:
+      - order_data:/var/lib/postgresql/data
+
   cache:
     container_name: cache
     image: redis:7.4-alpine
@@ -144,9 +156,9 @@ services:
       PG_PRODUCT_USER:
       PG_PRODUCT_PASSWORD:
       SPRING_RABBITMQ_ADDRESSES: amqp://admin:admin@rabbitmq:5672/
-      SPRING_DATASOURCE_URL: jdbc:postgresql://product_db:5432/${PG_PRODUCT_DATABASE}
-      SPRING_DATASOURCE_USERNAME: ${PG_PRODUCT_USER}
-      SPRING_DATASOURCE_PASSWORD: ${PG_PRODUCT_PASSWORD}
+      SPRING_DATASOURCE_URL: jdbc:postgresql://order_db:5432/${PG_ORDER_DATABASE}
+      SPRING_DATASOURCE_USERNAME: ${PG_ORDER_USER}
+      SPRING_DATASOURCE_PASSWORD: ${PG_ORDER_PASSWORD}
       ACTIVE_PROFILE: dev
 
   notification:
@@ -163,9 +175,9 @@ services:
       PG_PRODUCT_PASSWORD:
       ACTIVE_PROFILE: dev
       SPRING_RABBITMQ_ADDRESSES: amqp://admin:admin@rabbitmq:5672/
-      SPRING_DATASOURCE_URL: jdbc:postgresql://product_db:5432/${PG_PRODUCT_DATABASE}
-      SPRING_DATASOURCE_USERNAME: ${PG_PRODUCT_USER}
-      SPRING_DATASOURCE_PASSWORD: ${PG_PRODUCT_PASSWORD}
+#      SPRING_DATASOURCE_URL: jdbc:postgresql://product_db:5432/${PG_PRODUCT_DATABASE}
+#      SPRING_DATASOURCE_USERNAME: ${PG_IDENTITY_USER}
+#      SPRING_DATASOURCE_PASSWORD: ${PG_IDENTITY_PASSWORD}
 
   payment:
     container_name: payment_service
@@ -190,6 +202,7 @@ volumes:
   caddy_config:
   identity_data:
   product_data:
+  order_data:
   cache_data:
   prometheus_data:
   grafana_data:

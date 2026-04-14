@@ -1,3 +1,5 @@
+.agent
+
 **/.env
 **/agent/
 .env

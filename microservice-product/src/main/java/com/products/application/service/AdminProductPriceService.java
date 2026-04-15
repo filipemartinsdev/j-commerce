@@ -3,9 +3,11 @@ package com.products.application.service;
 import com.products.application.dto.PagedResponse;
 import com.products.application.dto.admin.ProductSKUPriceResponse;
 import com.products.application.dto.admin.UpdateProductSKUPriceRequest;
+import com.products.application.exception.InvalidProductPriceTypeException;
 import com.products.application.exception.ProductSKUNotFoundException;
 import com.products.application.exception.ProductSKUPriceNotFoundException;
 import com.products.application.service.mapper.ProductSKUPriceMapper;
+import com.products.domain.entity.PriceType;
 import com.products.domain.entity.ProductSKU;
 import com.products.domain.entity.ProductSKUPrice;
 import com.products.infra.persistence.PriceTypeRepository;
@@ -73,9 +75,11 @@ public class AdminProductPriceService {
         ProductSKUPrice price = new  ProductSKUPrice();
         price.setProductSKU(sku);
         price.setPrice(request.price());
-        price.setPriceType(priceTypeRepository.getReferenceById(
-            request.priceTypeId()
-        ));
+
+        PriceType priceType = priceTypeRepository.findById(request.priceTypeId())
+                .orElseThrow(() -> new InvalidProductPriceTypeException("Invalid PriceType with ID: "+request.priceTypeId()));
+
+        price.setPriceType(priceType);
 
         if (request.startAt().isPresent())
             price.setStartAt(request.startAt().get());

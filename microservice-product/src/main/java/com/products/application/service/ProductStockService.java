@@ -4,6 +4,7 @@ import com.products.application.dto.PagedResponse;
 import com.products.application.dto.admin.CreateStockEntryRequest;
 import com.products.application.dto.admin.ProductStockResponse;
 import com.products.application.dto.admin.StockMovementResponse;
+import com.products.application.exception.ProductNotFoundException;
 import com.products.application.exception.ProductSKUNotFoundException;
 import com.products.application.exception.ProductStockNotFoundException;
 import com.products.application.service.mapper.ProductStockMapper;
@@ -12,10 +13,7 @@ import com.products.domain.entity.ProductSKU;
 import com.products.domain.entity.ProductStock;
 import com.products.domain.entity.StockMovement;
 import com.products.domain.entity.StockMovementType;
-import com.products.infra.persistence.ProductSKURepository;
-import com.products.infra.persistence.ProductStockRepository;
-import com.products.infra.persistence.StockMovementRepository;
-import com.products.infra.persistence.StockMovementTypeRepository;
+import com.products.infra.persistence.*;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
@@ -31,14 +29,16 @@ public class ProductStockService {
     private final StockMovementRepository stockMovementRepository;
     private final StockMovementMapper stockMovementMapper;
     private final ProductSKURepository productSKURepository;
+    private final ProductRepository productRepository;
 
-    public ProductStockService(ProductStockRepository productStockRepository, ProductStockMapper productStockMapper, StockMovementTypeRepository stockMovementTypeRepository, StockMovementRepository stockMovementRepository, StockMovementMapper stockMovementMapper, ProductSKURepository productSKURepository) {
+    public ProductStockService(ProductStockRepository productStockRepository, ProductStockMapper productStockMapper, StockMovementTypeRepository stockMovementTypeRepository, StockMovementRepository stockMovementRepository, StockMovementMapper stockMovementMapper, ProductSKURepository productSKURepository, ProductRepository productRepository) {
         this.productStockRepository = productStockRepository;
         this.productStockMapper = productStockMapper;
         this.stockMovementTypeRepository = stockMovementTypeRepository;
         this.stockMovementRepository = stockMovementRepository;
         this.stockMovementMapper = stockMovementMapper;
         this.productSKURepository = productSKURepository;
+        this.productRepository = productRepository;
     }
 
     public PagedResponse<ProductStockResponse> getAll(Pageable pageable){
@@ -58,6 +58,9 @@ public class ProductStockService {
     }
 
     public PagedResponse<ProductStockResponse> getAllByProductId(UUID productId, Pageable pageable){
+        if (!productRepository.existsById(productId))
+            throw new ProductNotFoundException("Product not found with ID: "+productId);
+
         Page<ProductStock> page = productStockRepository.findAllActiveByProductId(productId, pageable);
 
         return PagedResponse.<ProductStockResponse>builder()

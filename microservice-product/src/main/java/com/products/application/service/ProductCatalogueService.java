@@ -4,6 +4,7 @@ import com.products.application.dto.*;
 import com.products.application.dto.catalogue.ProductPriceCatalogueResponse;
 import com.products.application.dto.catalogue.ProductResumeCatalogueResponse;
 import com.products.application.dto.catalogue.ProductSummaryCatalogueResponse;
+import com.products.application.exception.InvalidProductCategoryException;
 import com.products.application.exception.ProductNotFoundException;
 import com.products.application.service.mapper.ProductCategoryMapper;
 import com.products.application.service.mapper.ProductSKUSummaryCatalogueMapper;
@@ -92,6 +93,9 @@ public class ProductCatalogueService {
     }
 
     public PagedResponse<ProductResumeCatalogueResponse> getAllByCategoryId(Integer categoryId, Pageable pageable) {
+        if(!productCategoryRepository.existsById(categoryId))
+            throw new InvalidProductCategoryException("Invalid product category with ID: "+categoryId);
+
         Page<ProductResumeCatalogue> page = productCatalogueResumeRepository.findAllByCategoryId(categoryId, pageable);
 
         return PagedResponse.<ProductResumeCatalogueResponse>builder()

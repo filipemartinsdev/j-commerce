@@ -14,7 +14,7 @@ public class ProductSKUCreatedEventListener implements ApplicationListener<Produ
         this.productStockService = productStockService;
     }
 
-    @Override @Async
+    @Override
     public void onApplicationEvent(ProductSKUCreatedEvent event) {
         productStockService.createStockToSKU(event.getSku(), event.getUserId());
     }

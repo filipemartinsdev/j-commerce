@@ -40,4 +40,6 @@ public interface ProductSKURepository extends JpaRepository<ProductSKU, UUID> {
             """
     )
     Page<ProductSKU> findAllActive(Pageable pageable);
+
+    boolean existsBySKU(String SKU);
 }

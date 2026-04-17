@@ -14,6 +14,7 @@ import com.products.infra.persistence.ProductCategoryRepository;
 import com.products.infra.persistence.ProductRepository;
 import com.products.infra.persistence.ProductSKURepository;
 import jakarta.transaction.Transactional;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -21,6 +22,7 @@ import org.springframework.stereotype.Service;
 
 import java.util.UUID;
 
+@Slf4j
 @Service
 public class AdminProductService {
     private final ProductRepository productRepository;
@@ -122,6 +124,9 @@ public class AdminProductService {
         Product product = productRepository.findById(request.productId())
             .orElseThrow(() -> new ProductNotFoundException("Product not found with ID: "+request.productId()));
 
+        if (productSKURepository.existsBySKU(request.SKU()))
+            throw new SKUAlreadyInUseException("This SKU is already in use");
+
         if (!product.isActive())
             throw new ProductNotActiveException("This product is not active");
 
@@ -132,11 +137,15 @@ public class AdminProductService {
 
         ProductSKU newSKU = productSKURepository.save(sku);
 
-        applicationEventPublisher.publishEvent(new ProductSKUCreatedEvent(
+        var event = new ProductSKUCreatedEvent(
                 newSKU,
                 authenticatedUserId,
                 this
-        ));
+        );
+
+        applicationEventPublisher.publishEvent(event);
+
+        log.info("Event published: {}", event);
 
         return productSKUAdminMapper.toResponse(newSKU);
     }

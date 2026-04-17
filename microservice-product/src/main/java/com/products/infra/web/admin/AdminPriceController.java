@@ -41,7 +41,7 @@ public class AdminPriceController {
     }
 
     @PostMapping
-    public ResponseEntity<StandardResponse<ProductSKUPriceResponse>> createProductSKU(
+    public ResponseEntity<StandardResponse<ProductSKUPriceResponse>> createProductSKUPrice(
             @Valid @RequestBody CreateProductSKUPrice request
     ){
         return ResponseEntity

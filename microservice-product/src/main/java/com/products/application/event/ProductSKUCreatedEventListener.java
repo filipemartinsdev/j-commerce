@@ -1,22 +1,20 @@
 package com.products.application.event;
 
-import com.products.application.service.ProductStockService;
-import com.products.domain.entity.ProductStock;
+import com.products.application.service.AdminProductStockService;
 import org.springframework.context.ApplicationListener;
-import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Component;
 
 @Component
 public class ProductSKUCreatedEventListener implements ApplicationListener<ProductSKUCreatedEvent> {
-    private final ProductStockService productStockService;
+    private final AdminProductStockService adminProductStockService;
 
-    public ProductSKUCreatedEventListener(ProductStockService productStockService) {
-        this.productStockService = productStockService;
+    public ProductSKUCreatedEventListener(AdminProductStockService adminProductStockService) {
+        this.adminProductStockService = adminProductStockService;
     }
 
     @Override
     public void onApplicationEvent(ProductSKUCreatedEvent event) {
-        productStockService.createStockToSKU(event.getSku(), event.getUserId());
+        adminProductStockService.createStockToSKU(event.getSku(), event.getUserId());
     }
 
     @Override

@@ -6,7 +6,7 @@ import com.products.application.dto.admin.CreateStockEntryRequest;
 import com.products.application.dto.admin.ProductStockResponse;
 import com.products.application.dto.admin.StockMovementResponse;
 import com.products.application.dto.admin.StockMovementTypeResponse;
-import com.products.application.service.ProductStockService;
+import com.products.application.service.AdminProductStockService;
 import com.products.application.service.mapper.StockMovementTypeMapper;
 import com.products.infra.persistence.StockMovementTypeRepository;
 import jakarta.validation.Valid;
@@ -23,12 +23,12 @@ import java.util.UUID;
 @RestController
 @RequestMapping("/admin/api/v1/stock")
 public class AdminStockController {
-    private final ProductStockService productStockService;
+    private final AdminProductStockService adminProductStockService;
     private final StockMovementTypeRepository stockMovementTypeRepository;
     private final StockMovementTypeMapper stockMovementTypeMapper;
 
-    public AdminStockController(ProductStockService productStockService, StockMovementTypeRepository stockMovementTypeRepository, StockMovementTypeMapper stockMovementTypeMapper) {
-        this.productStockService = productStockService;
+    public AdminStockController(AdminProductStockService adminProductStockService, StockMovementTypeRepository stockMovementTypeRepository, StockMovementTypeMapper stockMovementTypeMapper) {
+        this.adminProductStockService = adminProductStockService;
         this.stockMovementTypeRepository = stockMovementTypeRepository;
         this.stockMovementTypeMapper = stockMovementTypeMapper;
     }
@@ -41,9 +41,9 @@ public class AdminStockController {
         PagedResponse<ProductStockResponse> response;
 
         if (productId == null)
-            response = productStockService.getAll(pageable);
+            response = adminProductStockService.getAll(pageable);
         else
-            response = productStockService.getAllByProductId(productId, pageable);
+            response = adminProductStockService.getAllByProductId(productId, pageable);
 
         return ResponseEntity
                 .status(HttpStatus.OK)
@@ -56,7 +56,7 @@ public class AdminStockController {
             @AuthenticationPrincipal Jwt jwt
     ){
         UUID authenticatedUserId = UUID.fromString(jwt.getSubject());
-        productStockService.createStockEntry(request, authenticatedUserId);
+        adminProductStockService.createStockEntry(request, authenticatedUserId);
 
         return ResponseEntity
                 .status(HttpStatus.CREATED)
@@ -71,9 +71,9 @@ public class AdminStockController {
         PagedResponse<StockMovementResponse> response;
 
         if (productSKUId == null)
-            response = productStockService.getAllMovements(pageable);
+            response = adminProductStockService.getAllMovements(pageable);
         else
-            response = productStockService.getAllMovementsByProductSKUId(productSKUId, pageable);
+            response = adminProductStockService.getAllMovementsByProductSKUId(productSKUId, pageable);
 
         return ResponseEntity
                 .status(HttpStatus.OK)

@@ -34,7 +34,7 @@ import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.*;
 
 @ExtendWith(MockitoExtension.class)
-public class ProductStockServiceTests {
+public class AdminProductStockServiceTests {
     @Mock private ProductStockRepository productStockRepository;
     @Mock private ProductStockMapper productStockMapper;
     @Mock private StockMovementTypeRepository stockMovementTypeRepository;
@@ -44,7 +44,7 @@ public class ProductStockServiceTests {
     @Mock private ProductRepository productRepository;
 
     @InjectMocks
-    private ProductStockService productStockService;
+    private AdminProductStockService adminProductStockService;
 
     @Test @DisplayName("Should retrieve all active ProductStock successfully")
     void getAllTestCase1() {
@@ -75,7 +75,7 @@ public class ProductStockServiceTests {
         when(productStockMapper.toResponse(stock2)).thenReturn(response2);
 
         // When
-        PagedResponse<ProductStockResponse> result = productStockService.getAll(pageable);
+        PagedResponse<ProductStockResponse> result = adminProductStockService.getAll(pageable);
 
         // Then
         assertNotNull(result);
@@ -97,7 +97,7 @@ public class ProductStockServiceTests {
         when(productStockRepository.findAllActive(pageable)).thenReturn(emptyPage);
 
         // When
-        PagedResponse<ProductStockResponse> result = productStockService.getAll(pageable);
+        PagedResponse<ProductStockResponse> result = adminProductStockService.getAll(pageable);
 
         // Then
         assertNotNull(result);
@@ -128,7 +128,7 @@ public class ProductStockServiceTests {
         when(productStockMapper.toResponse(stock1)).thenReturn(response1);
 
         // When
-        PagedResponse<ProductStockResponse> result = productStockService.getAllByProductId(productId, pageable);
+        PagedResponse<ProductStockResponse> result = adminProductStockService.getAllByProductId(productId, pageable);
 
         // Then
         assertNotNull(result);
@@ -149,7 +149,7 @@ public class ProductStockServiceTests {
         when(productStockRepository.findAllActiveByProductId(productId, pageable)).thenReturn(emptyPage);
 
         // When
-        PagedResponse<ProductStockResponse> result = productStockService.getAllByProductId(productId, pageable);
+        PagedResponse<ProductStockResponse> result = adminProductStockService.getAllByProductId(productId, pageable);
 
         // Then
         assertNotNull(result);
@@ -169,7 +169,7 @@ public class ProductStockServiceTests {
 
         // When & Then
         assertThrows(ProductNotFoundException.class, () -> {
-            productStockService.getAllByProductId(productId, pageable);
+            adminProductStockService.getAllByProductId(productId, pageable);
         });
 
         verify(productRepository).existsById(productId);
@@ -195,7 +195,7 @@ public class ProductStockServiceTests {
         when(productStockMapper.toResponse(stock)).thenReturn(response);
 
         // When
-        ProductStockResponse result = productStockService.getById(stockId);
+        ProductStockResponse result = adminProductStockService.getById(stockId);
 
         // Then
         assertNotNull(result);
@@ -213,7 +213,7 @@ public class ProductStockServiceTests {
 
         // When & Then
         assertThrows(ProductStockNotFoundException.class, () -> {
-            productStockService.getById(stockId);
+            adminProductStockService.getById(stockId);
         });
 
         verify(productStockRepository).findActiveById(stockId);
@@ -245,7 +245,7 @@ public class ProductStockServiceTests {
                 .thenReturn(entryType);
 
         // When
-        productStockService.createStockEntry(request, userId);
+        adminProductStockService.createStockEntry(request, userId);
 
         // Then
         ArgumentCaptor<ProductStock> stockCaptor = ArgumentCaptor.forClass(ProductStock.class);
@@ -275,7 +275,7 @@ public class ProductStockServiceTests {
 
         // When & Then
         assertThrows(ProductSKUNotFoundException.class, () -> {
-            productStockService.createStockEntry(request, userId);
+            adminProductStockService.createStockEntry(request, userId);
         });
 
         verify(productSKURepository).findById(productSKUId);
@@ -295,7 +295,7 @@ public class ProductStockServiceTests {
 
         // When & Then
         assertThrows(ProductStockNotFoundException.class, () -> {
-            productStockService.createStockEntry(request, userId);
+            adminProductStockService.createStockEntry(request, userId);
         });
 
         verify(productStockRepository).findByProductSKU_id(productSKUId);
@@ -313,7 +313,7 @@ public class ProductStockServiceTests {
         productSKU.setId(productSKUId);
 
         // When
-        productStockService.createStockToSKU(productSKU, userId);
+        adminProductStockService.createStockToSKU(productSKU, userId);
 
         // Then
         ArgumentCaptor<ProductStock> captor = ArgumentCaptor.forClass(ProductStock.class);
@@ -354,7 +354,7 @@ public class ProductStockServiceTests {
         when(stockMovementMapper.toResponse(movement2)).thenReturn(response2);
 
         // When
-        PagedResponse<StockMovementResponse> result = productStockService.getAllMovements(pageable);
+        PagedResponse<StockMovementResponse> result = adminProductStockService.getAllMovements(pageable);
 
         // Then
         assertNotNull(result);
@@ -372,7 +372,7 @@ public class ProductStockServiceTests {
         when(stockMovementRepository.findAll(pageable)).thenReturn(emptyPage);
 
         // When
-        PagedResponse<StockMovementResponse> result = productStockService.getAllMovements(pageable);
+        PagedResponse<StockMovementResponse> result = adminProductStockService.getAllMovements(pageable);
 
         // Then
         assertNotNull(result);
@@ -402,7 +402,7 @@ public class ProductStockServiceTests {
         when(stockMovementMapper.toResponse(movement1)).thenReturn(response1);
 
         // When
-        PagedResponse<StockMovementResponse> result = productStockService.getAllMovementsByProductSKUId(productSKUId, pageable);
+        PagedResponse<StockMovementResponse> result = adminProductStockService.getAllMovementsByProductSKUId(productSKUId, pageable);
 
         // Then
         assertNotNull(result);
@@ -421,7 +421,7 @@ public class ProductStockServiceTests {
         when(stockMovementRepository.findAllByProductSKU_id(productSKUId, pageable)).thenReturn(emptyPage);
 
         // When
-        PagedResponse<StockMovementResponse> result = productStockService.getAllMovementsByProductSKUId(productSKUId, pageable);
+        PagedResponse<StockMovementResponse> result = adminProductStockService.getAllMovementsByProductSKUId(productSKUId, pageable);
 
         // Then
         assertNotNull(result);
@@ -443,7 +443,7 @@ public class ProductStockServiceTests {
         when(productStockRepository.findByProductSKU_id(productSKUId)).thenReturn(Optional.of(stock));
 
         // When
-        productStockService.deleteByProductSKUId(productSKUId);
+        adminProductStockService.deleteByProductSKUId(productSKUId);
 
         // Then
         ArgumentCaptor<ProductStock> captor = ArgumentCaptor.forClass(ProductStock.class);
@@ -460,7 +460,7 @@ public class ProductStockServiceTests {
 
         // When & Then
         assertThrows(ProductStockNotFoundException.class, () -> {
-            productStockService.deleteByProductSKUId(productSKUId);
+            adminProductStockService.deleteByProductSKUId(productSKUId);
         });
 
         verify(productStockRepository).findByProductSKU_id(productSKUId);

@@ -22,7 +22,7 @@ import org.springframework.transaction.annotation.Transactional;
 import java.util.UUID;
 
 @Service
-public class ProductStockService {
+public class AdminProductStockService {
     private final ProductStockRepository productStockRepository;
     private final ProductStockMapper productStockMapper;
     private final StockMovementTypeRepository stockMovementTypeRepository;
@@ -31,7 +31,7 @@ public class ProductStockService {
     private final ProductSKURepository productSKURepository;
     private final ProductRepository productRepository;
 
-    public ProductStockService(ProductStockRepository productStockRepository, ProductStockMapper productStockMapper, StockMovementTypeRepository stockMovementTypeRepository, StockMovementRepository stockMovementRepository, StockMovementMapper stockMovementMapper, ProductSKURepository productSKURepository, ProductRepository productRepository) {
+    public AdminProductStockService(ProductStockRepository productStockRepository, ProductStockMapper productStockMapper, StockMovementTypeRepository stockMovementTypeRepository, StockMovementRepository stockMovementRepository, StockMovementMapper stockMovementMapper, ProductSKURepository productSKURepository, ProductRepository productRepository) {
         this.productStockRepository = productStockRepository;
         this.productStockMapper = productStockMapper;
         this.stockMovementTypeRepository = stockMovementTypeRepository;

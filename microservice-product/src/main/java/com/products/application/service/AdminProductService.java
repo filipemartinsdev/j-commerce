@@ -28,17 +28,11 @@ public class AdminProductService {
     private final ProductRepository productRepository;
     private final ProductCategoryRepository productCategoryRepository;
     private final ProductAdminMapper productAdminMapper;
-    private final ProductSKURepository productSKURepository;
-    private final ProductSKUAdminMapper productSKUAdminMapper;
-    private final ApplicationEventPublisher applicationEventPublisher;
 
-    public AdminProductService(ProductRepository productRepository, ProductCategoryRepository productCategoryRepository, ProductAdminMapper productAdminMapper, ProductSKURepository productSKURepository, ProductSKUAdminMapper productSKUAdminMapper, ApplicationEventPublisher applicationEventPublisher) {
+    public AdminProductService(ProductRepository productRepository, ProductCategoryRepository productCategoryRepository, ProductAdminMapper productAdminMapper) {
         this.productRepository = productRepository;
         this.productCategoryRepository = productCategoryRepository;
         this.productAdminMapper = productAdminMapper;
-        this.productSKURepository = productSKURepository;
-        this.productSKUAdminMapper = productSKUAdminMapper;
-        this.applicationEventPublisher = applicationEventPublisher;
     }
 
     public ProductAdminResponse createProduct(CreateProductRequest request){
@@ -119,99 +113,6 @@ public class AdminProductService {
         productRepository.save(product);
     }
 
-    @Transactional
-    public ProductSKUAdminResponse createProductSKU(CreateProductSKURequest request, UUID authenticatedUserId){
-        Product product = productRepository.findById(request.productId())
-            .orElseThrow(() -> new ProductNotFoundException("Product not found with ID: "+request.productId()));
 
-        if (productSKURepository.existsBySKU(request.SKU()))
-            throw new SKUAlreadyInUseException("This SKU is already in use");
 
-        if (!product.isActive())
-            throw new ProductNotActiveException("This product is not active");
-
-        ProductSKU sku = new ProductSKU();
-        sku.setProduct(product);
-        sku.setName(request.name());
-        sku.setSKU(request.SKU());
-
-        ProductSKU newSKU = productSKURepository.save(sku);
-
-        var event = new ProductSKUCreatedEvent(
-                newSKU,
-                authenticatedUserId,
-                this
-        );
-
-        applicationEventPublisher.publishEvent(event);
-
-        log.info("Event published: {}", event);
-
-        return productSKUAdminMapper.toResponse(newSKU);
-    }
-
-    public ProductSKUAdminResponse updateProductSKU(UUID productSKUId, UpdateProductSKURequest request){
-        ProductSKU sku = productSKURepository.findActiveById(productSKUId)
-                .orElseThrow(() -> new ProductSKUNotFoundException("Product SKU not found with ID: "+productSKUId));
-
-        if(request.name().isPresent())
-            sku.setName(request.name().get());
-
-        if (request.SKU().isPresent())
-            sku.setSKU(request.SKU().get());
-
-        return productSKUAdminMapper.toResponse(
-                productSKURepository.save(sku)
-        );
-    }
-
-    public PagedResponse<ProductSKUAdminResponse> getAllProductSKUs(Pageable pageable) {
-        Page<ProductSKU> page = productSKURepository.findAllActive(pageable);
-
-        return PagedResponse.<ProductSKUAdminResponse>builder()
-                .page(page.getNumber())
-                .size(page.getSize())
-                .isLast(page.isLast())
-                .totalPages(page.getTotalPages())
-                .totalElements(page.getTotalElements())
-                .content(page.getContent().stream()
-                        .map(entity -> productSKUAdminMapper.toResponse(entity))
-                        .toList()
-                )
-                .build();
-    }
-
-    public PagedResponse<ProductSKUAdminResponse> getAllProductSKUsByProductId(UUID productId, Pageable pageable){
-        Page<ProductSKU> page = productSKURepository.findAllActiveByProductId(productId, pageable);
-
-        return PagedResponse.<ProductSKUAdminResponse>builder()
-                .page(page.getNumber())
-                .size(page.getSize())
-                .isLast(page.isLast())
-                .totalPages(page.getTotalPages())
-                .totalElements(page.getTotalElements())
-                .content(page.getContent().stream()
-                        .map(entity -> productSKUAdminMapper.toResponse(entity))
-                        .toList()
-                )
-                .build();
-    }
-    public ProductSKUAdminResponse getProductSKUById(UUID productSKUId){
-        ProductSKU sku = productSKURepository.findActiveById(productSKUId)
-                .orElseThrow(() -> new ProductSKUNotFoundException("Product SKU not found with ID: "+productSKUId));
-
-        return productSKUAdminMapper.toResponse(sku);
-    }
-
-    public void deleteProductSKUById(UUID productSKUId){
-        ProductSKU sku = productSKURepository.findActiveById(productSKUId)
-                .orElseThrow(() -> new ProductSKUNotFoundException("Product SKU not found with ID: "+productSKUId));
-
-        sku.setIsActive(false);
-        productSKURepository.save(sku);
-
-        applicationEventPublisher.publishEvent(
-                new ProductSKUDeletedEvent(sku.getId(), this)
-        );
-    }
 }

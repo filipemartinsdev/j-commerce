@@ -18,6 +18,7 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
 import java.math.BigDecimal;
+import java.math.RoundingMode;
 import java.util.List;
 import java.util.UUID;
 
@@ -80,16 +81,18 @@ public class ProductCatalogueService {
     }
 
     private int getDiscountPercent(BigDecimal originalValue, BigDecimal offerValue){
-        if (originalValue == null | offerValue == null)
+        if (originalValue == null || offerValue == null || originalValue.compareTo(BigDecimal.ZERO) == 0) {
             return 0;
+        }
 
-        if (originalValue.intValue() == 0)
+        if (originalValue.compareTo(offerValue) == 0) {
             return 0;
+        }
 
-        if (originalValue.equals(offerValue))
-            return 0;
+        BigDecimal ratio = offerValue.divide(originalValue, 4, RoundingMode.HALF_UP);
+        BigDecimal percentage = ratio.multiply(BigDecimal.valueOf(100));
 
-        return 100 - (offerValue.divide(originalValue).multiply(BigDecimal.valueOf(100)).intValue());
+        return 100 - percentage.intValue();
     }
 
     public PagedResponse<ProductResumeCatalogueResponse> getAllByCategoryId(Integer categoryId, Pageable pageable) {

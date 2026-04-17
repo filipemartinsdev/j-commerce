@@ -454,7 +454,7 @@ public class AdminProductPriceServiceTests {
         verify(productSKUPriceRepository, never()).save(any());
     }
 
-    @Test @DisplayName("Should marks all ProductSKUPrice as inactive by productId successfully")
+    @Test @DisplayName("Should marks all ProductSKUPrice as inactive by productSKUId successfully")
     void deleteAllByProductIdTestCase1() {
         // Given
         UUID productSKUId = UUID.randomUUID();

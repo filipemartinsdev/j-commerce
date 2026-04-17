@@ -394,7 +394,7 @@ public class AdminProductSKUServiceTests {
         verify(productSKURepository).findAllActiveByProductId(productId, pageable);
     }
 
-    @Test @DisplayName("Should retrieve empty PagedResponse if not exists any active ProductSKU by productId")
+    @Test @DisplayName("Should retrieve empty PagedResponse if not exists any active ProductSKU by productSKUId")
     void getAllProductSKUsByProductIdTestCase3() {
         // Given
         UUID productId = UUID.randomUUID();

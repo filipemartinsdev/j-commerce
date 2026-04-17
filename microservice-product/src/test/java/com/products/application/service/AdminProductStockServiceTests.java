@@ -106,7 +106,7 @@ public class AdminProductStockServiceTests {
         verify(productStockRepository).findAllActive(pageable);
     }
 
-    @Test @DisplayName("Should retrieve all ProductStock by productId successfully")
+    @Test @DisplayName("Should retrieve all ProductStock by productSKUId successfully")
     void getAllByProductIdTestCase1() {
         // Given
         UUID productId = UUID.randomUUID();
@@ -138,7 +138,7 @@ public class AdminProductStockServiceTests {
         verify(productStockRepository).findAllActiveByProductId(productId, pageable);
     }
 
-    @Test @DisplayName("Should retrieve empty PagedResponse if not exists any active ProductStock by productId")
+    @Test @DisplayName("Should retrieve empty PagedResponse if not exists any active ProductStock by productSKUId")
     void getAllByProductIdTestCase2() {
         // Given
         UUID productId = UUID.randomUUID();

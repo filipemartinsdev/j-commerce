@@ -41,6 +41,7 @@ public class ProductCatalogueServiceTests {
     @Mock private ProductRepository productRepository;
     @Mock private ProductSKUSummaryCatalogueRepository productSKUSummaryCatalogueRepository;
     @Mock private ProductSKUSummaryCatalogueMapper productSKUSummaryCatalogueMapper;
+    @Mock private ProductDiscountCalculator productDiscountCalculator;
 
     @InjectMocks
     private ProductCatalogueService productCatalogueService;
@@ -56,7 +57,7 @@ public class ProductCatalogueServiceTests {
         product1.setCategoryId(1);
         product1.setCategoryName("Electronics");
         product1.setOriginalPriceValue(new BigDecimal("100.00"));
-        product1.setCurrentPriceValue(new BigDecimal("80.00"));
+        product1.setCurrentPriceValue(new BigDecimal("50.00"));
         product1.setCurrentPriceTypeName("Sale");
         product1.setStockCount(50);
 
@@ -66,13 +67,14 @@ public class ProductCatalogueServiceTests {
         product2.setCategoryId(2);
         product2.setCategoryName("Clothing");
         product2.setOriginalPriceValue(new BigDecimal("50.00"));
-        product2.setCurrentPriceValue(new BigDecimal("40.00"));
+        product2.setCurrentPriceValue(new BigDecimal("25.00"));
         product2.setCurrentPriceTypeName("Discount");
         product2.setStockCount(30);
 
         Page<ProductResumeCatalogue> page = new PageImpl<>(List.of(product1, product2), pageable, 2);
 
         when(productCatalogueResumeRepository.findAll(pageable)).thenReturn(page);
+        when(productDiscountCalculator.getDiscountPercent(any(), any())).thenReturn(50);
 
         // When
         PagedResponse<ProductResumeCatalogueResponse> result = productCatalogueService.getAll(pageable);
@@ -118,13 +120,14 @@ public class ProductCatalogueServiceTests {
         product1.setCategoryId(categoryId);
         product1.setCategoryName("Electronics");
         product1.setOriginalPriceValue(new BigDecimal("100.00"));
-        product1.setCurrentPriceValue(new BigDecimal("80.00"));
-        product1.setCurrentPriceTypeName("Sale");
+        product1.setCurrentPriceValue(new BigDecimal("100.00"));
+        product1.setCurrentPriceTypeName("Offer");
 
         Page<ProductResumeCatalogue> page = new PageImpl<>(List.of(product1), pageable, 1);
 
         when(productCategoryRepository.existsById(categoryId)).thenReturn(true);
         when(productCatalogueResumeRepository.findAllByCategoryId(categoryId, pageable)).thenReturn(page);
+        when(productDiscountCalculator.getDiscountPercent(any(), any())).thenReturn(0);
 
         // When
         PagedResponse<ProductResumeCatalogueResponse> result = productCatalogueService.getAllByCategoryId(categoryId, pageable);
@@ -225,7 +228,7 @@ public class ProductCatalogueServiceTests {
         verify(productCategoryRepository).findAll(pageable);
     }
 
-    @Test @DisplayName("Should retrieve ProductSummary by productId successfully")
+    @Test @DisplayName("Should retrieve ProductSummary by productSKUId successfully")
     void getProductSummaryByProductIdTestCase1() {
         // Given
         UUID productId = UUID.randomUUID();
@@ -246,10 +249,10 @@ public class ProductCatalogueServiceTests {
         sku1.setSKU("SKU1");
         sku1.setName("Product SKU 1");
         sku1.setOriginalPrice(new BigDecimal("100.00"));
-        sku1.setCurrentPrice(new BigDecimal("80.00"));
+        sku1.setCurrentPrice(new BigDecimal("50.00"));
 
         ProductPriceCatalogueResponse priceResponse = new ProductPriceCatalogueResponse(
-                new BigDecimal("100.00"), new BigDecimal("80.00"), 20, "Sale"
+                new BigDecimal("100.00"), new BigDecimal("50.00"), 20, "Sale"
         );
 
         ProductSKUSummaryCatalogueResponse skuResponse = new ProductSKUSummaryCatalogueResponse(
@@ -261,7 +264,8 @@ public class ProductCatalogueServiceTests {
         when(productRepository.findById(productId)).thenReturn(Optional.of(product));
         when(productSKUSummaryCatalogueRepository.findAllByProductId(productId)).thenReturn(List.of(sku1));
         when(productCategoryMapper.toResponse(category)).thenReturn(categoryResponse);
-        when(productSKUSummaryCatalogueMapper.toResponse(sku1, 20)).thenReturn(skuResponse);
+        when(productDiscountCalculator.getDiscountPercent(any(), any())).thenReturn(50);
+        when(productSKUSummaryCatalogueMapper.toResponse(sku1, 50)).thenReturn(skuResponse);
 
         // When
         ProductSummaryCatalogueResponse result = productCatalogueService.getProductSummaryByProductId(productId);

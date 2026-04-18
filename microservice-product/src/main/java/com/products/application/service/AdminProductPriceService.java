@@ -6,6 +6,7 @@ import com.products.application.dto.admin.UpdateProductSKUPriceRequest;
 import com.products.application.exception.InvalidProductPriceTypeException;
 import com.products.application.exception.ProductSKUNotFoundException;
 import com.products.application.exception.ProductSKUPriceNotFoundException;
+import com.products.application.exception.ProductSKUWithoutBasePriceException;
 import com.products.application.service.mapper.ProductSKUPriceMapper;
 import com.products.domain.entity.PriceType;
 import com.products.domain.entity.ProductSKU;
@@ -20,6 +21,7 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
 import java.time.Instant;
+import java.util.List;
 import java.util.UUID;
 
 @Service
@@ -69,27 +71,39 @@ public class AdminProductPriceService {
     }
 
     public ProductSKUPriceResponse create(CreateProductSKUPrice request) {
-        ProductSKU sku = productSKURepository.findById(request.productSKUId())
-                .orElseThrow(() -> new ProductSKUNotFoundException("ProductSKU not found with ID: "+request.productSKUId()));
+        ProductSKU sku = retrieveProductSKUById(request.productSKUId());
 
-        ProductSKUPrice price = new  ProductSKUPrice();
-        price.setProductSKU(sku);
-        price.setPrice(request.price());
+        if(request.priceTypeId() > 1 && !haveBasePrice(request.productSKUId()))
+            throw new ProductSKUWithoutBasePriceException("This product haven't a base price yet. Before set a special price, set a base price without expiration time.");
 
-        PriceType priceType = priceTypeRepository.findById(request.priceTypeId())
-                .orElseThrow(() -> new InvalidProductPriceTypeException("Invalid PriceType with ID: "+request.priceTypeId()));
-
-        price.setPriceType(priceType);
+        ProductSKUPrice newPrice = new ProductSKUPrice();
+        newPrice.setProductSKU(sku);
+        newPrice.setPrice(request.price());
+        newPrice.setPriceType(retrievePriceTypeById(request.priceTypeId()));
 
         if (request.startAt().isPresent())
-            price.setStartAt(request.startAt().get());
+            newPrice.setStartAt(request.startAt().get());
         else
-            price.setStartAt(Instant.now());
-
+            newPrice.setStartAt(Instant.now());
         if (request.endAt().isPresent())
-            price.setEndAt(request.endAt().get());
+            newPrice.setEndAt(request.endAt().get());
 
-        return productSKUPriceMapper.toResponse(productSKUPriceRepository.save(price));
+        return productSKUPriceMapper.toResponse(productSKUPriceRepository.save(newPrice));
+    }
+
+    private boolean haveBasePrice(UUID productSKUId) {
+        List<ProductSKUPrice> basePrices = productSKUPriceRepository.findAllActiveBasePriceByProductSKUId(productSKUId);
+        return !basePrices.isEmpty();
+    }
+
+    private ProductSKU retrieveProductSKUById(UUID id){
+        return productSKURepository.findById(id)
+                .orElseThrow(() -> new ProductSKUNotFoundException("ProductSKU not found with ID: "+id));
+    }
+
+    private PriceType retrievePriceTypeById(Integer id){
+        return priceTypeRepository.findById(id)
+                .orElseThrow(() -> new InvalidProductPriceTypeException("Invalid PriceType with ID: "+id));
     }
 
     public void deleteById(UUID id) {

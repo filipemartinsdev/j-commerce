@@ -6,6 +6,8 @@ import com.products.application.dto.StockStatus;
 import com.products.domain.entity.ProductSKUSummaryCatalogue;
 import org.springframework.stereotype.Component;
 
+import java.math.BigDecimal;
+
 @Component
 public class ProductSKUSummaryCatalogueMapper {
     public ProductSKUSummaryCatalogueResponse toResponse(ProductSKUSummaryCatalogue entity, Integer discountPercent) {
@@ -16,7 +18,7 @@ public class ProductSKUSummaryCatalogueMapper {
                 StockStatus.fromStockCount(entity.getStockCount()),
                 new ProductPriceCatalogueResponse(
                         entity.getOriginalPrice(),
-                        entity.getCurrentPrice(),
+                        entity.getCurrentPrice() == null ? BigDecimal.ZERO : entity.getCurrentPrice(),
                         discountPercent,
                         entity.getCurrentPriceTypeName()
                 )

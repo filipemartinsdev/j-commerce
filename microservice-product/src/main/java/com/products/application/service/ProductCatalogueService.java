@@ -30,14 +30,16 @@ public class ProductCatalogueService {
     private final ProductRepository productRepository;
     private final ProductSKUSummaryCatalogueRepository productSKUSummaryCatalogueRepository;
     private final ProductSKUSummaryCatalogueMapper productSKUSummaryCatalogueMapper;
+    private final ProductDiscountCalculator productDiscountCalculator;
 
-    public ProductCatalogueService(ProductResumeCatalogueRepository productCatalogueResumeRepository, ProductCategoryRepository productCategoryRepository, ProductCategoryMapper productCategoryMapper, ProductRepository productRepository, ProductSKUSummaryCatalogueRepository productSKUSummaryCatalogueRepository, ProductSKUSummaryCatalogueMapper productSKUSummaryCatalogueMapper) {
+    public ProductCatalogueService(ProductResumeCatalogueRepository productCatalogueResumeRepository, ProductCategoryRepository productCategoryRepository, ProductCategoryMapper productCategoryMapper, ProductRepository productRepository, ProductSKUSummaryCatalogueRepository productSKUSummaryCatalogueRepository, ProductSKUSummaryCatalogueMapper productSKUSummaryCatalogueMapper, ProductDiscountCalculator productDiscountCalculator) {
         this.productCatalogueResumeRepository = productCatalogueResumeRepository;
         this.productCategoryRepository = productCategoryRepository;
         this.productCategoryMapper = productCategoryMapper;
         this.productRepository = productRepository;
         this.productSKUSummaryCatalogueRepository = productSKUSummaryCatalogueRepository;
         this.productSKUSummaryCatalogueMapper = productSKUSummaryCatalogueMapper;
+        this.productDiscountCalculator = productDiscountCalculator;
     }
 
     public PagedResponse<ProductResumeCatalogueResponse> getAll(Pageable pageable) {
@@ -57,7 +59,7 @@ public class ProductCatalogueService {
     }
 
     private ProductResumeCatalogueResponse createResumeCatalogueResponse(ProductResumeCatalogue entity) {
-        int discountPercent = getDiscountPercent(
+        int discountPercent = productDiscountCalculator.getDiscountPercent(
                 entity.getOriginalPriceValue(),
                 entity.getCurrentPriceValue()
         );
@@ -78,21 +80,6 @@ public class ProductCatalogueService {
                         entity.getCurrentPriceTypeName()
                 )
         );
-    }
-
-    private int getDiscountPercent(BigDecimal originalValue, BigDecimal offerValue){
-        if (originalValue == null || offerValue == null || originalValue.compareTo(BigDecimal.ZERO) == 0) {
-            return 0;
-        }
-
-        if (originalValue.compareTo(offerValue) == 0) {
-            return 0;
-        }
-
-        BigDecimal ratio = offerValue.divide(originalValue, 4, RoundingMode.HALF_UP);
-        BigDecimal percentage = ratio.multiply(BigDecimal.valueOf(100));
-
-        return 100 - percentage.intValue();
     }
 
     public PagedResponse<ProductResumeCatalogueResponse> getAllByCategoryId(Integer categoryId, Pageable pageable) {
@@ -143,7 +130,7 @@ public class ProductCatalogueService {
                 productCategoryMapper.toResponse(product.getCategory()),
                 SKUs.stream()
                     .map(entity -> {
-                        Integer discountPercent = getDiscountPercent(entity.getOriginalPrice(), entity.getCurrentPrice());
+                        Integer discountPercent = productDiscountCalculator.getDiscountPercent(entity.getOriginalPrice(), entity.getCurrentPrice());
                         return productSKUSummaryCatalogueMapper.toResponse(entity, discountPercent);
                     })
                     .toList()

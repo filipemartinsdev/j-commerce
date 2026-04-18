@@ -87,12 +87,23 @@ CREATE INDEX stock_movement_type_idx
     ON stock_movement(type_id);
 
 CREATE TABLE shopping_cart_item (
-    user_id UUID NOT NULL,
-    product_sku_id UUID REFERENCES product_sku(id) NOT NULL,
-    units INT NOT NULL DEFAULT 1,
-    created_at TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT CURRENT_TIMESTAMP,
-    is_active BOOLEAN NOT NULL DEFAULT TRUE,
+    user_id         UUID NOT NULL,
+    product_sku_id  UUID REFERENCES product_sku(id) NOT NULL,
+    units           INT NOT NULL DEFAULT 1,
+    created_at      TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    is_active       BOOLEAN NOT NULL DEFAULT TRUE,
 
     PRIMARY KEY (user_id, product_sku_id)
 );
+
+CREATE TABLE wishlist_item (
+    user_id         UUID NOT NULL,
+    product_sku_id  UUID REFERENCES product_sku(id) NOT NULL,
+    units           INT NOT NULL DEFAULT 1,
+    created_at      TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    is_active       BOOLEAN NOT NULL DEFAULT TRUE,
+
+    PRIMARY KEY (user_id, product_sku_id)
+);
+
 

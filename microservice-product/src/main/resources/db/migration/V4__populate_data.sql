@@ -32,5 +32,3 @@ INSERT INTO stock_movement_type (id, name) VALUES
     (3, 'REFOUND'),
     (4, 'ADJUST'),
     (5, 'OTHER');
-
--- INSERT INTO user_credentials ()

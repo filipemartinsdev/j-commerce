@@ -8,6 +8,7 @@ import com.products.application.dto.admin.UpdateProductSKUPriceRequest;
 import com.products.application.exception.InvalidProductPriceTypeException;
 import com.products.application.exception.ProductSKUNotFoundException;
 import com.products.application.exception.ProductSKUPriceNotFoundException;
+import com.products.application.exception.ProductSKUWithoutBasePriceException;
 import com.products.application.service.mapper.ProductSKUPriceMapper;
 import com.products.domain.entity.PriceType;
 import com.products.domain.entity.ProductSKU;
@@ -258,6 +259,7 @@ public class AdminProductPriceServiceTests {
         // Given
         UUID productSKUId = UUID.randomUUID();
         Integer priceTypeId = 1;
+        PriceType priceType = new PriceType(1, "common");
 
         CreateProductSKUPrice request = new CreateProductSKUPrice(
                 productSKUId, new BigDecimal("100.00"), priceTypeId, Optional.empty(), Optional.empty()
@@ -289,10 +291,15 @@ public class AdminProductPriceServiceTests {
                 productSKUId, new BigDecimal("100.00"), priceTypeId, Optional.empty(), Optional.empty()
         );
 
+        ProductSKUPrice basePrice = new ProductSKUPrice();
+
+
         when(productSKURepository.findById(productSKUId))
                 .thenReturn(Optional.of(productSKU));
         when(priceTypeRepository.findById(priceTypeId))
                 .thenReturn(Optional.empty());
+        when(productSKUPriceRepository.findAllActiveBasePriceByProductSKUId(productSKUId))
+                .thenReturn(List.of(basePrice));
 
         // When & Then
         assertThrows(InvalidProductPriceTypeException.class, () -> {
@@ -301,6 +308,31 @@ public class AdminProductPriceServiceTests {
 
         verify(productSKURepository).findById(productSKUId);
         verify(priceTypeRepository).findById(priceTypeId);
+        verify(productSKUPriceRepository, never()).save(any());
+    }
+
+    @Test @DisplayName("Should throw ProductSKUWithoutBasePriceException if the product haven't a base price yet")
+    void createTestCase4(){
+        // Given
+        UUID productSKUId = UUID.randomUUID();
+        ProductSKU productSKU = new ProductSKU();
+        productSKU.setId(productSKUId);
+
+        CreateProductSKUPrice request = new CreateProductSKUPrice(
+                productSKUId, new BigDecimal("100.00"), 2, Optional.empty(), Optional.empty()
+        );
+
+        when(productSKURepository.findById(productSKUId))
+                .thenReturn(Optional.of(productSKU));
+        when(productSKUPriceRepository.findAllActiveBasePriceByProductSKUId(productSKUId))
+                .thenReturn(List.of());
+
+        // When & Then
+        assertThrows(ProductSKUWithoutBasePriceException.class, () -> {
+            adminProductPriceService.create(request);
+        });
+
+        verify(productSKURepository).findById(productSKUId);
         verify(productSKUPriceRepository, never()).save(any());
     }
 

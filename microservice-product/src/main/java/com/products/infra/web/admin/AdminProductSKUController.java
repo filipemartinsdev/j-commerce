@@ -27,7 +27,7 @@ public class AdminProductSKUController {
 
     @GetMapping("/skus")
     public ResponseEntity<StandardResponse<PagedResponse<ProductSKUAdminResponse>>> getAllProductSKUs (
-            @RequestParam(required = false) UUID productId,
+            @RequestParam(required = false, name = "productId") UUID productId,
             Pageable pageable
     ) {
         PagedResponse<ProductSKUAdminResponse> response;

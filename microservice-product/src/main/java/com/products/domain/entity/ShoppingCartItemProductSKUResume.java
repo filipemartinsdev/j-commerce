@@ -8,9 +8,9 @@ import lombok.NoArgsConstructor;
 import java.math.BigDecimal;
 import java.util.UUID;
 
-@Entity @Table(name = "wishlist_item_product_sku_resume")
+@Entity @Table(name = "shopping_cart_item_product_sku_resume")
 @Data @NoArgsConstructor @AllArgsConstructor
-public class WishlistItemProductSKUResume {
+public class ShoppingCartItemProductSKUResume {
     @Id private UUID id;
 
     @Column(name = "user_id")
@@ -21,6 +21,9 @@ public class WishlistItemProductSKUResume {
 
     @Column(name = "product_sku_name")
     private String productSKUName;
+
+    @Column(name = "units")
+    private Integer units;
 
     @Column(name = "current_price")
     private BigDecimal currentPrice;

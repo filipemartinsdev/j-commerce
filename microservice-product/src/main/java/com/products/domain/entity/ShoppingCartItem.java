@@ -11,20 +11,20 @@ import org.hibernate.annotations.CreationTimestamp;
 import java.time.Instant;
 import java.util.UUID;
 
-@Entity
+@Entity @Table(name = "shopping_cart_item")
 @Data @NoArgsConstructor @AllArgsConstructor
-@IdClass(ShoppingCartItemId.class)
 public class ShoppingCartItem {
-    @Id
+    @Id @GeneratedValue(strategy = GenerationType.UUID)
+    private UUID id;
+
     private UUID userId;
 
-    @Id
     @JoinColumn(name = "product_sku_id")
     @ManyToOne(fetch = FetchType.LAZY)
     private ProductSKU productSKU;
 
     @NotNull @Positive
-    private Integer units;
+    private Integer units = 1;
 
     @CreationTimestamp
     @Column(name = "created_at")

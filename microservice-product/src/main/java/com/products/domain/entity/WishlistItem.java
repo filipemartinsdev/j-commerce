@@ -11,12 +11,12 @@ import java.util.UUID;
 
 @Entity @Table(name = "wishlist_item")
 @Data @NoArgsConstructor @AllArgsConstructor
-@IdClass(WishlistItemId.class)
 public class WishlistItem {
-    @Id
+    @GeneratedValue(strategy = GenerationType.UUID)
+    @Id private UUID id;
+
     private UUID userId;
 
-    @Id
     @JoinColumn(name = "product_sku_id")
     @ManyToOne(fetch = FetchType.LAZY)
     private ProductSKU productSKU;

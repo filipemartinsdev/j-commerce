@@ -58,9 +58,6 @@ public class AdminProductStockService {
     }
 
     public PagedResponse<ProductStockResponse> getAllByProductId(UUID productId, Pageable pageable){
-        if (!productRepository.existsById(productId))
-            throw new ProductNotFoundException("Product not found with ID: "+productId);
-
         Page<ProductStock> page = productStockRepository.findAllActiveByProductId(productId, pageable);
 
         return PagedResponse.<ProductStockResponse>builder()

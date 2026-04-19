@@ -21,7 +21,7 @@ public interface ProductStockRepository extends JpaRepository<ProductStock, UUID
         AND ps.productSKU.product.id = :productId
         """
     )
-    Page<ProductStock> findAllActiveByProductId(@Param("productSKUId") UUID productId, Pageable pageable);
+    Page<ProductStock> findAllActiveByProductId(@Param("productId") UUID productId, Pageable pageable);
 
     @Query(
         """

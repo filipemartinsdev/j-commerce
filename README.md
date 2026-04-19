@@ -11,23 +11,23 @@ E-Commerce platform
 
 </div>
 
-> 🚧 Comming soon...
-
 ## Microservices
 
 1. [Identity](/microservice-identity/README.md) - Authentication and user profile management.
-2. [Product](/microservice-products/README.md) - Product catalogue, stock level and wishlist.
-3. [Order](/microservice-orders/README.md) - Orders life cycle and shopping cart.
-4. [Payment](/microservice-payment/README.md) - Payment management. 
+2. [Product](/microservice-product/README.md) - Product catalogue, stock level and wishlist.
+3. [Order](/microservice-order/README.md) - Orders life cycle and shopping cart.
+4. [Payment](/microservice-payment/README.md) - Payment management.
 5. [Notification](/microservice-notification/README.md) - User notifications management.
 
 ---
 
 ## Index
+
 1. [Stack](#general-stack)
 2. [Architecture](#achitecture)
 3. [How to execute](#how-to-execute)
-4. [License](#License)
+4. [Default Users](#default-users)
+5. [License](#License)
 
 ---
 
@@ -51,7 +51,7 @@ E-Commerce platform
 
 ### Authentication
 
-- **Authentication Server**: generate and sign JWT. 
+- **Authentication Server**: generate and sign JWT.
 - **Resource server**: Just validate the JWT.
 
 - **Asymmetric Cryptograph with RSA or ECC Algorithm**
@@ -74,9 +74,41 @@ This approach invalidates JSON Web Tokens with false signature or modified Paylo
 
 ## How to execute
 
-> 🚧 In progress...
+### Prerequisites
 
---- 
+- Docker
+
+### Running with Docker Compose
+
+Start all microservices and infrastructure:
+
+```bash
+docker compose up --build
+```
+
+Services will be available at:
+
+| Service       | URL                      |
+|---------------|--------------------------|
+| Identity      | https://localhosts/identity    |
+| Product       | https://localhost/product     |
+| Order         | https://localhost/order     |
+| Payment       | https://localhost/payment     |
+| Notification | https://localhost/notification     |
+| Grafana       | http://localhost:3000   |
+| Prometheus   | http://localhost:9090   |
+| RabbitMQ     | http://localhost:15672  |
+
+
+## Default Users
+
+The Identity microservice creates a default admin user via Flyway migration:
+
+| Email | Password | Role |
+|-------|----------|------|
+| admin@gmail.com | admin123 | ADMIN |
+
+---
 
 ## License
 

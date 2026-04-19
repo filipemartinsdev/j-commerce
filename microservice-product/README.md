@@ -39,26 +39,6 @@ Microservice for managing product catalogue, stock, pricing, shopping cart, wish
 
 - Product ratings and reviews
 
-## Running Locally
-
-### Prerequisites
-
-- Java 21
-- Docker
-- Docker Compose
-
-### Start Infrastructure
-
-```bash
-docker compose up -d product_db cache rabbitmq
-```
-
-### Run Application
-
-```bash
-./mvnw spring-boot:run
-```
-
 ## API Endpoints
 
 ### Application

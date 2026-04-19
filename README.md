@@ -45,33 +45,6 @@ E-Commerce platform
 
 ---
 
-## Architecture
-
-<img src="images/architecture.png" width="1000pt">
-
-### Authentication
-
-- **Authentication Server**: generate and sign JWT.
-- **Resource server**: Just validate the JWT.
-
-- **Asymmetric Cryptograph with RSA or ECC Algorithm**
-    - Generate RSA or ECC Key pair to Authentication Server
-    - Resource server have only the Public Key.
-
-
-<img src="images/key-pair.png" width="500pt">
-
-#### Validation
-This approach invalidates JSON Web Tokens with false signature or modified Payload.
-
-
-<img src="images/asymmetric-criptography-1.png" width="600pt">
-<img src="images/asymmetric-criptography-2.png" width="600pt">
-<img src="images/asymmetric-criptography-3.png" width="600pt">
-
-
----
-
 ## How to execute
 
 ### Prerequisites
@@ -107,6 +80,34 @@ The Identity microservice creates a default admin user via Flyway migration:
 | Email | Password | Role |
 |-------|----------|------|
 | admin@gmail.com | admin123 | ADMIN |
+
+---
+
+
+## Architecture
+
+<img src="images/architecture.png" width="1000pt">
+
+### Authentication
+
+- **Authentication Server**: generate and sign JWT.
+- **Resource server**: Just validate the JWT.
+
+- **Asymmetric Cryptograph with RSA or ECC Algorithm**
+    - Generate RSA or ECC Key pair to Authentication Server
+    - Resource server have only the Public Key.
+
+
+<img src="images/key-pair.png" width="500pt">
+
+#### Validation
+This approach invalidates JSON Web Tokens with false signature or modified Payload.
+
+
+<img src="images/asymmetric-criptography-1.png" width="600pt">
+<img src="images/asymmetric-criptography-2.png" width="600pt">
+<img src="images/asymmetric-criptography-3.png" width="600pt">
+
 
 ---
 

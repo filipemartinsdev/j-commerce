@@ -1,17 +1,18 @@
-CREATE VIEW wishlist_item_product_sku_resume AS
+CREATE VIEW shopping_cart_item_product_sku_resume AS
     SELECT
-        wi.id AS id,
-        wi.user_id AS user_id,
+        sci.id AS id,
+        sci.user_id AS user_id,
         sku.id AS product_sku_id,
         sku.name AS product_sku_name,
         curr.price AS current_price,
         orig_price.price AS original_price,
         pt.id AS price_type_id,
-        pt.name AS price_type_name
-    FROM wishlist_item wi
+        pt.name AS price_type_name,
+        sci.units AS units
+    FROM shopping_cart_item sci
 
     JOIN product_sku sku
-        ON sku.id = wi.product_sku_id
+        ON sku.id = sci.product_sku_id
         AND sku.is_active IS TRUE
 
     JOIN product_sku_price orig_price
@@ -42,4 +43,4 @@ CREATE VIEW wishlist_item_product_sku_resume AS
         ON p.id = sku.product_id
         AND p.is_active IS TRUE
 
-    WHERE wi.is_active IS TRUE;
+    WHERE sci.is_active IS TRUE;

@@ -9,7 +9,6 @@ import com.products.application.exception.WishlistItemNotFoundException;
 import com.products.application.service.mapper.WishlistItemMapper;
 import com.products.domain.entity.ProductSKU;
 import com.products.domain.entity.WishlistItem;
-import com.products.domain.entity.WishlistItemId;
 import com.products.domain.entity.WishlistItemProductSKUResume;
 import com.products.infra.persistence.ProductSKURepository;
 import com.products.infra.persistence.WishlistItemProductSKUResumeRepository;
@@ -72,6 +71,7 @@ public class WishlistServiceTests {
         Page<WishlistItemProductSKUResume> page = new PageImpl<>(List.of(entity), pageable, 1);
 
         WishlistItemResponse response = new WishlistItemResponse(
+                entity.getId(),
                 entity.getProductSKUId(),
                 entity.getProductSKUName(),
                 null
@@ -81,7 +81,7 @@ public class WishlistServiceTests {
                 .thenReturn(page);
         when(productDiscountCalculator.getDiscountPercent(entity.getOriginalPrice(), entity.getCurrentPrice()))
                 .thenReturn(20);
-        when(wishlistItemMapper.toResponse(entity, 20))
+        when(wishlistItemMapper.toResponse(entity))
                 .thenReturn(response);
 
         PagedResponse<WishlistItemResponse> result = wishlistService.getAllItems(userId, pageable);
@@ -96,7 +96,7 @@ public class WishlistServiceTests {
 
         verify(wishlistItemProductSKUResumeRepository).findAllByUserId(userId, pageable);
         verify(productDiscountCalculator).getDiscountPercent(entity.getOriginalPrice(), entity.getCurrentPrice());
-        verify(wishlistItemMapper).toResponse(entity, 20);
+        verify(wishlistItemMapper).toResponse(entity);
     }
 
     @Test
@@ -122,7 +122,7 @@ public class WishlistServiceTests {
 
         verify(wishlistItemProductSKUResumeRepository).findAllByUserId(userId, pageable);
         verify(productDiscountCalculator, never()).getDiscountPercent(any(), any());
-        verify(wishlistItemMapper, never()).toResponse(any(), any());
+        verify(wishlistItemMapper, never()).toResponse(any());
     }
 
     @Test
@@ -138,11 +138,9 @@ public class WishlistServiceTests {
         productSKU.setSKU("TEST-SKU");
         productSKU.setName("Test Product SKU");
 
-        WishlistItemId wishlistItemId = new WishlistItemId(userId, productSKU);
-
         when(productSKURepository.findById(productSKUId))
                 .thenReturn(Optional.of(productSKU));
-        when(wishlistItemRepository.existsById(wishlistItemId))
+        when(wishlistItemRepository.existsByProductSKUIdAndUserId(productSKUId, userId))
                 .thenReturn(false);
         when(wishlistItemRepository.save(any(WishlistItem.class)))
                 .thenReturn(new WishlistItem());
@@ -150,7 +148,7 @@ public class WishlistServiceTests {
         wishlistService.createItem(request, userId);
 
         verify(productSKURepository).findById(productSKUId);
-        verify(wishlistItemRepository).existsById(wishlistItemId);
+        verify(wishlistItemRepository).existsByProductSKUIdAndUserId(productSKUId, userId);
         verify(wishlistItemRepository).save(any(WishlistItem.class));
     }
 
@@ -186,18 +184,16 @@ public class WishlistServiceTests {
         productSKU.setSKU("TEST-SKU");
         productSKU.setName("Test Product SKU");
 
-        WishlistItemId wishlistItemId = new WishlistItemId(userId, productSKU);
-
         when(productSKURepository.findById(productSKUId))
                 .thenReturn(Optional.of(productSKU));
-        when(wishlistItemRepository.existsById(wishlistItemId))
+        when(wishlistItemRepository.existsByProductSKUIdAndUserId(productSKUId, userId))
                 .thenReturn(true);
 
         assertThrows(WishlistItemAlreadyExistsException.class, () ->
                 wishlistService.createItem(request, userId));
 
         verify(productSKURepository).findById(productSKUId);
-        verify(wishlistItemRepository).existsById(wishlistItemId);
+        verify(wishlistItemRepository).existsByProductSKUIdAndUserId(productSKUId, userId);
         verify(wishlistItemRepository, never()).save(any());
     }
 
@@ -205,101 +201,67 @@ public class WishlistServiceTests {
     @DisplayName("Should delete wishlist item successfully when item exists and is active")
     void deleteItemTestCase1() {
         UUID userId = UUID.randomUUID();
-        UUID productSKUId = UUID.randomUUID();
-
-        ProductSKU productSKU = new ProductSKU();
-        productSKU.setId(productSKUId);
+        UUID itemId = UUID.randomUUID();
 
         WishlistItem item = new WishlistItem();
+        item.setId(itemId);
         item.setUserId(userId);
-        item.setProductSKU(productSKU);
         item.setIsActive(true);
 
-        WishlistItemId wishlistItemId = new WishlistItemId(userId, productSKU);
-
-        when(productSKURepository.findById(productSKUId))
-                .thenReturn(Optional.of(productSKU));
-        when(wishlistItemRepository.findById(wishlistItemId))
+        when(wishlistItemRepository.findActiveByIdAndUserId(itemId, userId))
                 .thenReturn(Optional.of(item));
         when(wishlistItemRepository.save(any(WishlistItem.class)))
                 .thenReturn(item);
 
-        wishlistService.deleteItem(productSKUId, userId);
+        wishlistService.deleteItem(itemId, userId);
 
-        verify(productSKURepository).findById(productSKUId);
-        verify(wishlistItemRepository).findById(wishlistItemId);
+        verify(wishlistItemRepository).findActiveByIdAndUserId(itemId, userId);
         verify(wishlistItemRepository).save(item);
 
         assertFalse(item.getIsActive());
     }
 
     @Test
-    @DisplayName("Should throw ProductSKUNotFoundException when product SKU does not exist on delete")
+    @DisplayName("Should throw WishlistItemNotFoundException when wishlist item does not exist")
     void deleteItemTestCase2() {
         UUID userId = UUID.randomUUID();
-        UUID productSKUId = UUID.randomUUID();
+        UUID itemId = UUID.randomUUID();
 
-        when(productSKURepository.findById(productSKUId))
-                .thenReturn(Optional.empty());
-
-        assertThrows(ProductSKUNotFoundException.class, () ->
-                wishlistService.deleteItem(productSKUId, userId));
-
-        verify(productSKURepository).findById(productSKUId);
-        verify(wishlistItemRepository, never()).findById(any());
-        verify(wishlistItemRepository, never()).save(any());
-    }
-
-    @Test
-    @DisplayName("Should throw WishlistItemNotFoundException when wishlist item does not exist")
-    void deleteItemTestCase3() {
-        UUID userId = UUID.randomUUID();
-        UUID productSKUId = UUID.randomUUID();
-
-        ProductSKU productSKU = new ProductSKU();
-        productSKU.setId(productSKUId);
-
-        WishlistItemId wishlistItemId = new WishlistItemId(userId, productSKU);
-
-        when(productSKURepository.findById(productSKUId))
-                .thenReturn(Optional.of(productSKU));
-        when(wishlistItemRepository.findById(wishlistItemId))
+        when(wishlistItemRepository.findActiveByIdAndUserId(itemId, userId))
                 .thenReturn(Optional.empty());
 
         assertThrows(WishlistItemNotFoundException.class, () ->
-                wishlistService.deleteItem(productSKUId, userId));
+                wishlistService.deleteItem(itemId, userId));
 
-        verify(productSKURepository).findById(productSKUId);
-        verify(wishlistItemRepository).findById(wishlistItemId);
+        verify(wishlistItemRepository).findActiveByIdAndUserId(itemId, userId);
         verify(wishlistItemRepository, never()).save(any());
     }
 
     @Test
-    @DisplayName("Should throw ProductSKUNotFoundException when wishlist item is already inactive")
-    void deleteItemTestCase4() {
+    @DisplayName("Should throw WishlistItemNotFoundException when wishlist item is already inactive")
+    void deleteItemTestCase3() {
         UUID userId = UUID.randomUUID();
-        UUID productSKUId = UUID.randomUUID();
+        UUID itemId = UUID.randomUUID();
 
-        ProductSKU productSKU = new ProductSKU();
-        productSKU.setId(productSKUId);
+        when(wishlistItemRepository.findActiveByIdAndUserId(itemId, userId))
+                .thenReturn(Optional.empty());
 
-        WishlistItem item = new WishlistItem();
-        item.setUserId(userId);
-        item.setProductSKU(productSKU);
-        item.setIsActive(false);
+        assertThrows(WishlistItemNotFoundException.class, () ->
+                wishlistService.deleteItem(itemId, userId));
 
-        WishlistItemId wishlistItemId = new WishlistItemId(userId, productSKU);
-
-        when(productSKURepository.findById(productSKUId))
-                .thenReturn(Optional.of(productSKU));
-        when(wishlistItemRepository.findById(wishlistItemId))
-                .thenReturn(Optional.of(item));
-
-        assertThrows(ProductSKUNotFoundException.class, () ->
-                wishlistService.deleteItem(productSKUId, userId));
-
-        verify(productSKURepository).findById(productSKUId);
-        verify(wishlistItemRepository).findById(wishlistItemId);
+        verify(wishlistItemRepository).findActiveByIdAndUserId(itemId, userId);
         verify(wishlistItemRepository, never()).save(any());
+    }
+
+    @Test
+    @DisplayName("Should delete all wishlist items by user id")
+    void deleteAllItemsByUserIdTestCase1() {
+        UUID userId = UUID.randomUUID();
+
+        doNothing().when(wishlistItemRepository).markAllAsInactiveByUserId(userId);
+
+        wishlistService.deleteAllItemsByUserId(userId);
+
+        verify(wishlistItemRepository).markAllAsInactiveByUserId(userId);
     }
 }

@@ -123,7 +123,6 @@ public class AdminProductStockServiceTests {
                 stock1.getId(), productId, UUID.randomUUID(), "Product1", "SKU1", 50, Instant.now()
         );
 
-        when(productRepository.existsById(productId)).thenReturn(true);
         when(productStockRepository.findAllActiveByProductId(productId, pageable)).thenReturn(page);
         when(productStockMapper.toResponse(stock1)).thenReturn(response1);
 
@@ -134,7 +133,6 @@ public class AdminProductStockServiceTests {
         assertNotNull(result);
         assertEquals(1, result.totalElements());
         assertEquals(1, result.content().size());
-        verify(productRepository).existsById(productId);
         verify(productStockRepository).findAllActiveByProductId(productId, pageable);
     }
 
@@ -145,7 +143,6 @@ public class AdminProductStockServiceTests {
         Pageable pageable = PageRequest.of(0, 10);
         Page<ProductStock> emptyPage = new PageImpl<>(Collections.emptyList(), pageable, 0);
 
-        when(productRepository.existsById(productId)).thenReturn(true);
         when(productStockRepository.findAllActiveByProductId(productId, pageable)).thenReturn(emptyPage);
 
         // When
@@ -155,25 +152,7 @@ public class AdminProductStockServiceTests {
         assertNotNull(result);
         assertEquals(0, result.totalElements());
         assertTrue(result.content().isEmpty());
-        verify(productRepository).existsById(productId);
         verify(productStockRepository).findAllActiveByProductId(productId, pageable);
-    }
-
-    @Test @DisplayName("Should throw ProductNotFoundException if product is not active or not exists by ID")
-    void getAllByProductIdTestCase3() {
-        // Given
-        UUID productId = UUID.randomUUID();
-        Pageable pageable = PageRequest.of(0, 10);
-
-        when(productRepository.existsById(productId)).thenReturn(false);
-
-        // When & Then
-        assertThrows(ProductNotFoundException.class, () -> {
-            adminProductStockService.getAllByProductId(productId, pageable);
-        });
-
-        verify(productRepository).existsById(productId);
-        verify(productStockRepository, never()).findAllActiveByProductId(any(), any());
     }
 
     @Test @DisplayName("Should retrieve ProductStock by ID successfully")

@@ -74,4 +74,46 @@ public class GlobalExceptionHandler {
                 .status(HttpStatus.BAD_REQUEST)
                 .body(StandardResponse.fail(e.getMessage()));
     }
+
+    @ExceptionHandler(ProductSKUWithoutBasePriceException.class)
+    public ResponseEntity<StandardResponse<Void>> handleProductSKUWithoutBasePrice(ProductSKUWithoutBasePriceException e) {
+        return ResponseEntity
+                .status(HttpStatus.BAD_REQUEST)
+                .body(StandardResponse.fail(e.getMessage()));
+    }
+
+    @ExceptionHandler(WishlistItemAlreadyExistsException.class)
+    public ResponseEntity<StandardResponse<Void>> handleWishlistItemAlreadyExists(WishlistItemAlreadyExistsException e) {
+        return ResponseEntity
+                .status(HttpStatus.BAD_REQUEST)
+                .body(StandardResponse.fail(e.getMessage()));
+    }
+
+    @ExceptionHandler(ShoppingCartItemNotFoundException.class)
+    public ResponseEntity<StandardResponse<Void>> handleShoppingCartItemNotFound(ShoppingCartItemNotFoundException e) {
+        return ResponseEntity
+                .status(HttpStatus.NOT_FOUND)
+                .body(StandardResponse.fail(e.getMessage()));
+    }
+
+    @ExceptionHandler(WishlistItemNotFoundException.class)
+    public ResponseEntity<StandardResponse<Void>> handleWishlistItemNotFound(WishlistItemNotFoundException e) {
+        return ResponseEntity
+                .status(HttpStatus.NOT_FOUND)
+                .body(StandardResponse.fail(e.getMessage()));
+    }
+
+    @ExceptionHandler(ShoppingCartItemAlreadyExistsException.class)
+    public ResponseEntity<StandardResponse<Void>> handleShoppingCartItemAlreadyExists(ShoppingCartItemAlreadyExistsException e) {
+        return ResponseEntity
+                .status(HttpStatus.BAD_REQUEST)
+                .body(StandardResponse.fail(e.getMessage()));
+    }
+
+    @ExceptionHandler(ProductOutOfStockException.class)
+    public ResponseEntity<StandardResponse<Void>> handleProductOutOfStock(ProductOutOfStockException e) {
+        return ResponseEntity
+                .status(HttpStatus.UNPROCESSABLE_CONTENT)
+                .body(StandardResponse.fail(e.getMessage()));
+    }
 }

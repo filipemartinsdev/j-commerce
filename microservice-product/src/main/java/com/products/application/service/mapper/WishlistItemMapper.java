@@ -2,20 +2,28 @@ package com.products.application.service.mapper;
 
 import com.products.application.dto.catalogue.ProductPriceCatalogueResponse;
 import com.products.application.dto.catalogue.WishlistItemResponse;
+import com.products.application.service.ProductDiscountCalculator;
 import com.products.domain.entity.WishlistItem;
 import com.products.domain.entity.WishlistItemProductSKUResume;
 import org.springframework.stereotype.Component;
 
 @Component
 public class WishlistItemMapper {
-    public WishlistItemResponse toResponse(WishlistItemProductSKUResume entity, Integer priceDiscountPercent) {
+    private final ProductDiscountCalculator productDiscountCalculator;
+
+    public WishlistItemMapper(ProductDiscountCalculator productDiscountCalculator) {
+        this.productDiscountCalculator = productDiscountCalculator;
+    }
+
+    public WishlistItemResponse toResponse(WishlistItemProductSKUResume entity) {
         return new WishlistItemResponse(
+                entity.getId(),
                 entity.getProductSKUId(),
                 entity.getProductSKUName(),
                 new ProductPriceCatalogueResponse(
                         entity.getOriginalPrice(),
                         entity.getCurrentPrice(),
-                        priceDiscountPercent,
+                        productDiscountCalculator.getDiscountPercent(entity.getOriginalPrice(), entity.getCurrentPrice()),
                         entity.getPriceTypeName()
                 )
         );

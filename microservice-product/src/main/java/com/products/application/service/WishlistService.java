@@ -8,9 +8,7 @@ import com.products.application.exception.WishlistItemAlreadyExistsException;
 import com.products.application.exception.WishlistItemNotFoundException;
 import com.products.application.service.mapper.WishlistItemMapper;
 import com.products.domain.entity.*;
-import com.products.infra.persistence.ProductSKURepository;
-import com.products.infra.persistence.WishlistItemProductSKUResumeRepository;
-import com.products.infra.persistence.WishlistItemRepository;
+import com.products.infra.persistence.*;
 import jakarta.validation.Valid;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -46,13 +44,13 @@ public class WishlistService {
                 .content(page.getContent().stream()
                         .map(entity -> {
                             int discount = productDiscountCalculator.getDiscountPercent(entity.getOriginalPrice(), entity.getCurrentPrice());
-                            return wishlistItemMapper.toResponse(entity, discount);
+                            return wishlistItemMapper.toResponse(entity);
                         })
                         .toList()
                 )
                 .build();
     }
-    public void createItem(@Valid CreateWishlistItemRequest request, UUID authenticatedUserId) {
+    public void createItem(CreateWishlistItemRequest request, UUID authenticatedUserId) {
         ProductSKU productSKU = productSKURepository.findById(request.productSKUId())
                 .orElseThrow(() -> new ProductSKUNotFoundException("ProductSKU not found with ID: "+request.productSKUId()));
 
@@ -60,27 +58,21 @@ public class WishlistService {
         item.setUserId(authenticatedUserId);
         item.setProductSKU(productSKU);
 
-        var id = new WishlistItemId(authenticatedUserId, productSKU);
-
-        if (wishlistItemRepository.existsById(id))
+        if (wishlistItemRepository.existsByProductSKUIdAndUserId(productSKU.getId(), authenticatedUserId))
             throw new WishlistItemAlreadyExistsException("This product is already on wishlist");
 
         wishlistItemRepository.save(item);
     }
 
-    public void deleteItem(UUID productSKUId, UUID authenticatedUserId) {
-        ProductSKU productSKU = productSKURepository.findById(productSKUId)
-                .orElseThrow(() -> new  ProductSKUNotFoundException("ProductSKU not found with ID: "+productSKUId));
-
-        WishlistItem item = wishlistItemRepository.findById(
-                new WishlistItemId(authenticatedUserId, productSKU)
-        ).orElseThrow(() -> new WishlistItemNotFoundException("Wishlist item not found wish productSKUId: "+productSKUId));
-
-        if (!item.getIsActive())
-            throw new ProductSKUNotFoundException("ProductSKU not found with ID: "+productSKUId);
+    public void deleteItem(UUID id, UUID authenticatedUserId) {
+        WishlistItem item = wishlistItemRepository.findActiveByIdAndUserId(id, authenticatedUserId)
+                .orElseThrow(() -> new WishlistItemNotFoundException("WishlistItem not found with ID: "+id));
 
         item.setIsActive(false);
-
         wishlistItemRepository.save(item);
+    }
+
+    public void deleteAllItemsByUserId(UUID userId) {
+        wishlistItemRepository.markAllAsInactiveByUserId(userId);
     }
 }

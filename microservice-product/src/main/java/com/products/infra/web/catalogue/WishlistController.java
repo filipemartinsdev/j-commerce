@@ -43,7 +43,7 @@ public class WishlistController {
     public ResponseEntity<Void> addItemToWishlist(
             @Valid @RequestBody CreateWishlistItemRequest request,
             @AuthenticationPrincipal Jwt jwt
-            ) {
+    ) {
         UUID authenticatedUserId = UUID.fromString(jwt.getSubject());
 
         wishlistService.createItem(request, authenticatedUserId);
@@ -53,14 +53,25 @@ public class WishlistController {
                 .build();
     }
 
-    @DeleteMapping("/{productSKUId}")
+    @DeleteMapping("/{id}")
     public ResponseEntity<Void> deleteItemFromWishlist(
-            @PathVariable UUID productSKUId,
+            @PathVariable UUID id,
             @AuthenticationPrincipal Jwt jwt
     ) {
         UUID authenticatedUserId = UUID.fromString(jwt.getSubject());
+        wishlistService.deleteItem(id, authenticatedUserId);
 
-        wishlistService.deleteItem(productSKUId, authenticatedUserId);
+        return ResponseEntity
+                .status(HttpStatus.OK)
+                .build();
+    }
+
+    @DeleteMapping
+    public ResponseEntity<Void> deleteAllItems (
+            @AuthenticationPrincipal Jwt jwt
+    ) {
+        UUID authenticatedUserId = UUID.fromString(jwt.getSubject());
+        wishlistService.deleteAllItemsByUserId(authenticatedUserId);
 
         return ResponseEntity
                 .status(HttpStatus.OK)

@@ -35,10 +35,13 @@ Microservice for managing product catalogue, stock, pricing, shopping cart, wish
 - Per-user cart
 - Add/remove items
 
+<<<<<<< HEAD
 ### Feedback
 
 - Product ratings and reviews
 
+=======
+>>>>>>> e9797ce (docs: udpate READMEs)
 ## API Endpoints
 
 ### Application

@@ -76,3 +76,5 @@ On first run, a default admin user is created via Flyway migration:
 
 - PostgreSQL 17
 - Flyway for migrations
+- 
+![db_identity.png](../images/db_identity.png)

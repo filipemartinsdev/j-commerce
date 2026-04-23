@@ -7,6 +7,7 @@ import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 
+import java.util.List;
 import java.util.UUID;
 
 public interface ShoppingCartItemProductSKUResponseRepository extends JpaRepository<ShoppingCartItemProductSKUResume, UUID> {
@@ -18,4 +19,6 @@ public interface ShoppingCartItemProductSKUResponseRepository extends JpaReposit
             """
     )
     Page<ShoppingCartItemProductSKUResume> findAllByUserId(@Param("userId") UUID userId, Pageable pageable);
+
+    List<ShoppingCartItemProductSKUResume> findAllByUserId(@Param("userId") UUID userId);
 }

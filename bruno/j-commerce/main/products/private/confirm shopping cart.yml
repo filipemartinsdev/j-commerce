@@ -1,0 +1,21 @@
+info:
+  name: confirm shopping cart
+  type: http
+  seq: 12
+
+http:
+  method: POST
+  url: https://localhost/product/api/v1/shopping-cart/checkout
+  body:
+    type: json
+    data: |-
+      {
+        "deliveryAddressId": "7d7f7c92-4d6e-4531-986f-e462e422a85d"
+      }
+  auth: inherit
+
+settings:
+  encodeUrl: true
+  timeout: 0
+  followRedirects: true
+  maxRedirects: 5

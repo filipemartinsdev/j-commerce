@@ -1,0 +1,18 @@
+info:
+  name: clear shopping cart
+  type: http
+  seq: 11
+
+http:
+  method: DELETE
+  url: https://localhost/product/api/v1/shopping-cart
+  body:
+    type: json
+    data: ""
+  auth: inherit
+
+settings:
+  encodeUrl: true
+  timeout: 0
+  followRedirects: true
+  maxRedirects: 5

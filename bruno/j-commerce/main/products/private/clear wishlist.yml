@@ -1,0 +1,18 @@
+info:
+  name: clear wishlist
+  type: http
+  seq: 8
+
+http:
+  method: DELETE
+  url: https://localhost/product/api/v1/wishlist
+  body:
+    type: json
+    data: ""
+  auth: inherit
+
+settings:
+  encodeUrl: true
+  timeout: 0
+  followRedirects: true
+  maxRedirects: 5

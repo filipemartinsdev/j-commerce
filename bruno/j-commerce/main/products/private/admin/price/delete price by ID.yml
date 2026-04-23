@@ -1,0 +1,23 @@
+info:
+  name: delete price by ID
+  type: http
+  seq: 3
+
+http:
+  method: DELETE
+  url: https://localhost/product/admin/api/v1/prices/ff06ddb0-91f9-425e-9273-21c3a2ede56e
+  params:
+    - name: productSKUId
+      value: 997cc210-8dca-4975-b8e9-eb20144625a4
+      type: query
+      disabled: true
+  body:
+    type: json
+    data: ""
+  auth: inherit
+
+settings:
+  encodeUrl: true
+  timeout: 0
+  followRedirects: true
+  maxRedirects: 5

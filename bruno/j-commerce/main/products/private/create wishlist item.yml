@@ -1,0 +1,21 @@
+info:
+  name: create wishlist item
+  type: http
+  seq: 6
+
+http:
+  method: POST
+  url: https://localhost/product/api/v1/wishlist
+  body:
+    type: json
+    data: |
+      {
+        "productSKUId": "fd957b6e-b656-4b5a-9736-6dba2ad8d25e"
+      }
+  auth: inherit
+
+settings:
+  encodeUrl: true
+  timeout: 0
+  followRedirects: true
+  maxRedirects: 5

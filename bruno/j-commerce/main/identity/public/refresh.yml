@@ -1,0 +1,20 @@
+info:
+  name: refresh
+  type: http
+  seq: 1
+
+http:
+  method: POST
+  url: https://localhost/identity/api/v1/auth/refresh
+  body:
+    type: json
+    data: |-
+      {
+        "refreshToken": "eyJhbGciOiJSUzI1NiJ9.eyJpc3MiOiJBVVRIX01JQ1JPU0VSVklDRSIsInN1YiI6ImQ5NTRlYzY4LWRhYTAtNDk4MS1iMTQ2LTE5NTg5MDE2YTliMiIsImV4cCI6MTc3Njk2MDQzMSwidG9rZW5fdHlwZSI6InJlZnJlc2giLCJpYXQiOjE3NzU3NTA4MzEsImp0aSI6IjIyMmMyYmZhLWIzYWItNGE3My1iYzNiLTgwMzYzMmFlOWVkMSJ9.Y7Z4p1o63koAWrjOZLv46el9m9tCxm4PrjLW-jGYki7Py2tnhNw_7hVnnjFiXJT0QFKlFWI49tY_VdybFPxX9YUgEMxTSpKl-quAX5wOigWu8l8qvTWeYdiHofmlrolQ6w78k9P1TmckACDVhbYceLnMux76jvk1oG1SMyickUM1DD9arYsAk2c0rIx0JqB5aeOG4ylieqorc1VmO6w-ONc1C9FdqV3BbPOHxJqDBDPEKodyePc4fwDg1qo45gFRUR9_YpNzUrQgtuzTlcv5Kr3bbYRxzXzs4hn1a-uP18Tlv18eisAazeJL4PiStMxm2Op36Vchywm4W_fMdLdPIQ"
+      }
+
+settings:
+  encodeUrl: true
+  timeout: 0
+  followRedirects: true
+  maxRedirects: 5

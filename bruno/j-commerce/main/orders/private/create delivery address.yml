@@ -1,0 +1,27 @@
+info:
+  name: create delivery address
+  type: http
+  seq: 3
+
+http:
+  method: POST
+  url: https://localhost/order/api/v1/delivery-addresses
+  body:
+    type: json
+    data: |-
+      {
+        "zipCode": "74905640",
+        "street": "Rua 1",
+        "number": "1",
+        "neighborhood": "Neighborhood",
+        "complement": "AAA",
+        "city": "my city",
+        "state": "UF"  
+      }
+  auth: inherit
+
+settings:
+  encodeUrl: true
+  timeout: 0
+  followRedirects: true
+  maxRedirects: 5

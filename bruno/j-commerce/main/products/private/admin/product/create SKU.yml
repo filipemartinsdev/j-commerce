@@ -1,0 +1,23 @@
+info:
+  name: create SKU
+  type: http
+  seq: 8
+
+http:
+  method: POST
+  url: https://localhost/product/admin/api/v1/skus
+  body:
+    type: json
+    data: |-
+      {
+        "productId": "507a9ec6-a0ea-45d4-992d-2fc601b7e93f",
+        "name": "Mouse Atack Shark x11 Red",
+        "SKU": "MS-AS-X11-RD"
+      }
+  auth: inherit
+
+settings:
+  encodeUrl: true
+  timeout: 0
+  followRedirects: true
+  maxRedirects: 5

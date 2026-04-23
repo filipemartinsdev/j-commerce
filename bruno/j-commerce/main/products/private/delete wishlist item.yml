@@ -1,0 +1,18 @@
+info:
+  name: delete wishlist item
+  type: http
+  seq: 7
+
+http:
+  method: DELETE
+  url: https://localhost/product/api/v1/wishlist/98e5198a-edce-4536-bdee-f7815f2c8036
+  body:
+    type: json
+    data: ""
+  auth: inherit
+
+settings:
+  encodeUrl: true
+  timeout: 0
+  followRedirects: true
+  maxRedirects: 5

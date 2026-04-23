@@ -1,0 +1,27 @@
+info:
+  name: get prices
+  type: http
+  seq: 1
+
+http:
+  method: GET
+  url: https://localhost/product/admin/api/v1/prices
+  params:
+    - name: productSKUId
+      value: e6d472b2-86cb-4604-ad04-6207dfad5edf
+      type: query
+      disabled: true
+    - name: sort
+      value: endAt,DESC
+      type: query
+      disabled: true
+  body:
+    type: json
+    data: ""
+  auth: inherit
+
+settings:
+  encodeUrl: true
+  timeout: 0
+  followRedirects: true
+  maxRedirects: 5

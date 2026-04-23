@@ -1,0 +1,18 @@
+info:
+  name: delete shopping cart item
+  type: http
+  seq: 11
+
+http:
+  method: DELETE
+  url: https://localhost/product/api/v1/shopping-cart/81b69dd4-5e96-4ce2-aada-b0838599c8d2
+  body:
+    type: json
+    data: ""
+  auth: inherit
+
+settings:
+  encodeUrl: true
+  timeout: 0
+  followRedirects: true
+  maxRedirects: 5

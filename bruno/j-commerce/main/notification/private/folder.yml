@@ -1,0 +1,9 @@
+info:
+  name: private
+  type: folder
+  seq: 1
+
+request:
+  auth:
+    type: bearer
+    token: eyJhbGciOiJSUzI1NiJ9.eyJpc3MiOiJBVVRIX01JQ1JPU0VSVklDRSIsInN1YiI6IjAxOGZhMmE3LTY3OTMtNDczMC05YTk0LTFiMDQxMTkzMzc5ZSIsImV4cCI6MTc3NTg0NDEwMCwidG9rZW5fdHlwZSI6ImFjY2VzcyIsImlhdCI6MTc3NTg0MDUwMH0.osdqognqQ462sOefe4Rd4MZN2glmrzGrBZhhrM9NaNen91Hbe0WZMD9WxxcjFT_T0gE5KcnnpXqt2wQpddBpFXabGpE-gLtUR9Ual2Z-DDBAZ22HcGa-eMPLkqittcKUoSjAjBMdN0v-Y-eX91ZNyf5MGcY5JL4CuXh2HVJYBokSgXWbJ5ZiriyYSdZOPQ7Rjgca-_FoxhwGOBR1VDu7ek0483O1dGy_qKSfaNnTj32hKjaQiw2vBXbxYFJWT5k0DGvIg1Lxt4h8uNq5JClW6kVG_9nFF8Qie6ALvwWni6MPwAyqyU9G-3-XtERN28z-4u21nGYVlcRAkweSXc53cg

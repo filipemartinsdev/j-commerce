@@ -1,0 +1,15 @@
+info:
+  name: get delivery address by ID
+  type: http
+  seq: 1
+
+http:
+  method: GET
+  url: https://localhost/order/api/v1/delivery-address/3ea2a979-3a8f-4503-af23-9d09f7f45cab
+  auth: inherit
+
+settings:
+  encodeUrl: true
+  timeout: 0
+  followRedirects: true
+  maxRedirects: 5

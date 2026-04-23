@@ -1,0 +1,15 @@
+info:
+  name: get product by ID
+  type: http
+  seq: 3
+
+http:
+  method: GET
+  url: https://localhost/product/api/v1/products/507a9ec6-a0ea-45d4-992d-2fc601b7e93f
+  auth: inherit
+
+settings:
+  encodeUrl: true
+  timeout: 0
+  followRedirects: true
+  maxRedirects: 5

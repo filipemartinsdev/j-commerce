@@ -1,0 +1,22 @@
+info:
+  name: create stock entry
+  type: http
+  seq: 1
+
+http:
+  method: POST
+  url: https://localhost/product/admin/api/v1/stock/entries
+  body:
+    type: json
+    data: |-
+      {
+        "productSKUId": "c35fa22c-413e-4c81-ba82-d85b6e225da0",
+        "units": 50
+      }
+  auth: inherit
+
+settings:
+  encodeUrl: true
+  timeout: 0
+  followRedirects: true
+  maxRedirects: 5

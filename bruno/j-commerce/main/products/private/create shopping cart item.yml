@@ -1,0 +1,23 @@
+info:
+  name: create shopping cart item
+  type: http
+  seq: 9
+
+http:
+  method: POST
+  url: https://localhost/product/api/v1/shopping-cart
+  body:
+    type: json
+    data: |+
+      {
+        "productSKUId": "c35fa22c-413e-4c81-ba82-d85b6e225da0",
+        "units": 1
+      }
+
+  auth: inherit
+
+settings:
+  encodeUrl: true
+  timeout: 0
+  followRedirects: true
+  maxRedirects: 5

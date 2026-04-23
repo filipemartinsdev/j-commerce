@@ -1,0 +1,20 @@
+info:
+  name: get SKUs
+  type: http
+  seq: 6
+
+http:
+  method: GET
+  url: https://localhost/product/admin/api/v1/skus
+  params:
+    - name: productId
+      value: 08bc5b66-4b3e-4d20-9d0b-5cab4f655734
+      type: query
+      disabled: true
+  auth: inherit
+
+settings:
+  encodeUrl: true
+  timeout: 0
+  followRedirects: true
+  maxRedirects: 5

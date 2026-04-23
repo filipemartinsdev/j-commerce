@@ -2,6 +2,7 @@ package com.products.infra.web.catalogue;
 
 import com.products.application.dto.PagedResponse;
 import com.products.application.dto.StandardResponse;
+import com.products.application.dto.catalogue.ConfirmShoppingCartRequest;
 import com.products.application.dto.catalogue.CreateShoppingCartItemRequest;
 import com.products.application.dto.catalogue.ShoppingCartItemResponse;
 import com.products.application.service.ShoppingCartService;
@@ -72,6 +73,19 @@ public class ShoppingCartController {
 
         return ResponseEntity
                 .status(HttpStatus.OK)
+                .build();
+    }
+
+    @PostMapping("/checkout")
+    public ResponseEntity<Void> confirm(
+            @Valid @RequestBody ConfirmShoppingCartRequest request,
+            @AuthenticationPrincipal Jwt jwt
+    ) {
+        UUID authenticatedUserId = UUID.fromString(jwt.getSubject());
+        shoppingCartService.confirmShoppingCart(request, authenticatedUserId, "Bearer "+jwt.getTokenValue());
+
+        return ResponseEntity
+                .status(HttpStatus.CREATED)
                 .build();
     }
 }

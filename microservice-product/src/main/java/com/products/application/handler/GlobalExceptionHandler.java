@@ -116,4 +116,18 @@ public class GlobalExceptionHandler {
                 .status(HttpStatus.UNPROCESSABLE_CONTENT)
                 .body(StandardResponse.fail(e.getMessage()));
     }
+
+    @ExceptionHandler(EmptyShoppingCartException.class)
+    public ResponseEntity<StandardResponse<Void>> handleEmptyShoppingCartException(EmptyShoppingCartException e) {
+        return ResponseEntity
+                .status(HttpStatus.BAD_REQUEST)
+                .body(StandardResponse.fail(e.getMessage()));
+    }
+
+    @ExceptionHandler(DeliveryAddressNotFoundException.class)
+    public ResponseEntity<StandardResponse<Void>> handleDeliveryAddressNotFound(DeliveryAddressNotFoundException e) {
+        return ResponseEntity
+                .status(HttpStatus.NOT_FOUND)
+                .body(StandardResponse.fail(e.getMessage()));
+    }
 }

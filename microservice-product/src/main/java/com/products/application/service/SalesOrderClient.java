@@ -1,0 +1,18 @@
+package com.products.application.service;
+
+import org.springframework.cloud.openfeign.FeignClient;
+import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
+import org.springframework.security.oauth2.jwt.Jwt;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.RequestHeader;
+
+import java.util.Map;
+import java.util.UUID;
+
+@FeignClient(name = "order", url = "${feign.clients.sales_order.url}")
+public interface SalesOrderClient {
+    @GetMapping("/api/v1/delivery-addresses/{id}")
+    ResponseEntity<Map<String, Object>> getDeliveryAddress(@PathVariable UUID id, @RequestHeader("Authorization") String JWT);
+}

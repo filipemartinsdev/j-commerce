@@ -171,11 +171,19 @@ In practice, the flow is:
 4. Each microservice fetches the public key from the JWKS endpoint and validates the token locally.
 5. The service authorizes the request based on `sub` and `scope`, without calling the auth service for every request.
 
+## Database
+
+The entire project is following the principle of **Soft Delete**. No data is deleted, only marked as _inactive_. This approach exists to: 
+
+- Create an **auditable** application.
+- Reduce the processing of **batch and cascading deletes** in the database.
+
 ## Purchase confirmation
 
-The payment (mock invoice) is generated and sent by email.
+The payment (mock invoice) is generated and sent by email, through a robust asynchronous messaging flow.
 
-![shopping-cart-messaging.png](images/shopping-cart-messaging.png)
+
+![purchase-flow.png](images/purchase-flow.png)
 
 ## License
 

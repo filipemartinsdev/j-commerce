@@ -116,7 +116,7 @@ public class ShoppingCartService {
         ResponseEntity<?> deliveryAddressResponse = salesOrderClient.getDeliveryAddress(deliveryAddressId, JWTBearer);
 
         if (!deliveryAddressResponse.getStatusCode().is2xxSuccessful())
-            throw new InvalidDeliveryAddressException("Delivery address not found with ID: "+deliveryAddressId);
+            throw new DeliveryAddressNotFoundException("Delivery address not found with ID: "+deliveryAddressId);
     }
 
     private void updateStock(List<ShoppingCartConfirmationItem> items, UUID userId) {

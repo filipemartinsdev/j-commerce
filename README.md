@@ -11,6 +11,8 @@ E-Commerce platform
 
 </div>
 
+>  In construction
+
 ## Microservices
 
 1. [Identity](/microservice-identity/README.md) - Authentication and user profile management.
@@ -169,7 +171,11 @@ In practice, the flow is:
 4. Each microservice fetches the public key from the JWKS endpoint and validates the token locally.
 5. The service authorizes the request based on `sub` and `scope`, without calling the auth service for every request.
 
+## Purchase confirmation
 
+The payment (mock invoice) is generated and sent by email.
+
+![shopping-cart-messaging.png](images/shopping-cart-messaging.png)
 
 ## License
 

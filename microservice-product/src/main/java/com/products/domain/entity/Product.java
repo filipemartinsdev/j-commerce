@@ -32,7 +32,7 @@ public class Product {
 
     @NotNull
     @OneToMany(fetch = FetchType.LAZY, mappedBy = "product")
-    @SQLRestriction("is_active = true")
+    @SQLRestriction("is_active IS true")
     private List<ProductSKU> SKUs = new ArrayList<>();
 
     @CreationTimestamp

@@ -2,7 +2,7 @@
 
 # Order Microservice
 
-> 🚧 Comming soon...
+> 🚧 In progress...
 
 
 ## Database

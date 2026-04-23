@@ -11,7 +11,7 @@ E-Commerce platform
 
 </div>
 
->  In construction
+>  🚧 In progress...
 
 ## Microservices
 

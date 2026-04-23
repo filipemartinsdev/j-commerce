@@ -3,10 +3,8 @@ package com.products.application.service.mapper;
 import com.products.application.dto.ShoppingCartConfirmationItem;
 import com.products.application.dto.catalogue.ShoppingCartItemResponse;
 import com.products.application.service.ProductDiscountCalculator;
-import com.products.domain.entity.ShoppingCartItemProductSKUResume;
+import com.products.domain.entity.ShoppingCartItemProductSKUSummary;
 import org.springframework.stereotype.Component;
-
-import java.math.BigDecimal;
 
 @Component
 public class ShoppingCartItemMapper {
@@ -16,7 +14,7 @@ public class ShoppingCartItemMapper {
         this.productDiscountCalculator = productDiscountCalculator;
     }
 
-    public ShoppingCartItemResponse toResponse(ShoppingCartItemProductSKUResume entity){
+    public ShoppingCartItemResponse toResponse(ShoppingCartItemProductSKUSummary entity){
         return new ShoppingCartItemResponse(
                 entity.getId(),
                 entity.getProductSKUId(),
@@ -31,7 +29,7 @@ public class ShoppingCartItemMapper {
         );
     }
 
-    public ShoppingCartConfirmationItem toShoppingCartConfirmation(ShoppingCartItemProductSKUResume entity) {
+    public ShoppingCartConfirmationItem toShoppingCartConfirmation(ShoppingCartItemProductSKUSummary entity) {
         return new ShoppingCartConfirmationItem(
                 entity.getProductSKUId(),
                 entity.getProductSKUName(),

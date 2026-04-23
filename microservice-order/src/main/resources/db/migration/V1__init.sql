@@ -11,30 +11,42 @@ CREATE TABLE delivery_address (
     latitude        DOUBLE PRECISION,
     longitude       DOUBLE PRECISION,
     created_at      TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT CURRENT_TIMESTAMP,
-    is_active       BOOLEAN NOT NULL
+    is_active       BOOLEAN NOT NULL DEFAULT TRUE
 );
 
-CREATE TABLE order_status (
+CREATE TABLE sales_order_status (
     id      INT PRIMARY KEY,
     name    VARCHAR(255) NOT NULL
 );
 
-CREATE TABLE sale_order (
+CREATE TABLE sales_order (
     id                  UUID PRIMARY KEY,
-    status_id           INT REFERENCES order_status(id),
-    delivery_address_id UUID REFERENCES delivery_address(id),
     user_id             UUID NOT NULL,
-    created_at          TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT CURRENT_TIMESTAMP,
-    is_active           BOOLEAN NOT NULL
+    status_id           INT REFERENCES sales_order_status(id),
+    created_at          TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT CURRENT_TIMESTAMP
 );
 
-CREATE TABLE order_item (
-    order_id        UUID REFERENCES sale_order(id) NOT NULL,
-    product_sku_id  UUID NOT NULL,
-    price           DECIMAL(19, 2) NOT NULL,
-    units           INT NOT NULL,
-    created_at      TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT CURRENT_TIMESTAMP,
-    is_active       BOOLEAN NOT NULL,
+CREATE TABLE sales_order_item (
+    sales_order_id      UUID REFERENCES sales_order(id) NOT NULL,
+    product_sku_id      UUID NOT NULL,
+    product_sku_name    VARCHAR(50) NOT NULL,
+    unit_price          DECIMAL(19, 2) NOT NULL,
+    units               INT NOT NULL,
+    created_at          TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    is_active           BOOLEAN NOT NULL DEFAULT TRUE,
 
-    PRIMARY KEY (order_id, product_sku_id)
+    PRIMARY KEY (sales_order_id, product_sku_id)
+);
+
+CREATE TABLE shipping_status (
+    id      INT PRIMARY KEY,
+    name    VARCHAR(50) NOT NULL
+);
+
+CREATE TABLE shipping (
+    id                      UUID PRIMARY KEY,
+    status_id               INT REFERENCES shipping_status(id) NOT NULL,
+    sales_order_id          UUID UNIQUE REFERENCES sales_order(id) NOT NULL,
+    delivery_address_id     UUID REFERENCES delivery_address(id) NOT NULL,
+    created_at              TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT CURRENT_TIMESTAMP
 );

@@ -1,4 +1,4 @@
-package com.orders.security.config;
+package com.orders.config;
 
 import jakarta.servlet.DispatcherType;
 import org.springframework.context.annotation.Bean;

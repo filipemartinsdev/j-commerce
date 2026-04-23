@@ -19,3 +19,8 @@ management:
     web:
       exposure:
         include: prometheus,health,info
+
+broker:
+  queues:
+    shoppingCartConfirmation:
+      name: shopping_cart_confirmation

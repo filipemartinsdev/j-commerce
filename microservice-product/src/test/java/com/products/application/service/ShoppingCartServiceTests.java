@@ -9,9 +9,9 @@ import com.products.application.exception.ShoppingCartItemNotFoundException;
 import com.products.application.service.mapper.ShoppingCartItemMapper;
 import com.products.domain.entity.ProductSKU;
 import com.products.domain.entity.ShoppingCartItem;
-import com.products.domain.entity.ShoppingCartItemProductSKUResume;
+import com.products.domain.entity.ShoppingCartItemProductSKUSummary;
 import com.products.infra.persistence.ProductSKURepository;
-import com.products.infra.persistence.ShoppingCartItemProductSKUResponseRepository;
+import com.products.infra.persistence.ShoppingCartItemProductSKUSummaryRepository;
 import com.products.infra.persistence.ShoppingCartItemRepository;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -43,7 +43,7 @@ public class ShoppingCartServiceTests {
     private ShoppingCartItemMapper shoppingCartItemProductSKUMapper;
 
     @Mock
-    private ShoppingCartItemProductSKUResponseRepository shoppingCartItemProductSKUResponseRepository;
+    private ShoppingCartItemProductSKUSummaryRepository shoppingCartItemProductSKUSummaryRepository;
 
     @Mock
     private ProductSKURepository productSKURepository;
@@ -60,7 +60,7 @@ public class ShoppingCartServiceTests {
         UUID userId = UUID.randomUUID();
         Pageable pageable = PageRequest.of(0, 10);
 
-        ShoppingCartItemProductSKUResume entity = new ShoppingCartItemProductSKUResume();
+        ShoppingCartItemProductSKUSummary entity = new ShoppingCartItemProductSKUSummary();
         entity.setId(UUID.randomUUID());
         entity.setUserId(userId);
         entity.setProductSKUId(UUID.randomUUID());
@@ -70,7 +70,7 @@ public class ShoppingCartServiceTests {
         entity.setPriceTypeName("PROMOTIONAL");
         entity.setUnits(2);
 
-        Page<ShoppingCartItemProductSKUResume> page = new PageImpl<>(List.of(entity), pageable, 1);
+        Page<ShoppingCartItemProductSKUSummary> page = new PageImpl<>(List.of(entity), pageable, 1);
 
         ShoppingCartItemResponse response = new ShoppingCartItemResponse(
                 entity.getId(),
@@ -82,7 +82,7 @@ public class ShoppingCartServiceTests {
                 20
         );
 
-        when(shoppingCartItemProductSKUResponseRepository.findAllByUserId(userId, pageable))
+        when(shoppingCartItemProductSKUSummaryRepository.findAllByUserId(userId, pageable))
                 .thenReturn(page);
         when(shoppingCartItemProductSKUMapper.toResponse(entity))
                 .thenReturn(response);
@@ -97,7 +97,7 @@ public class ShoppingCartServiceTests {
         assertTrue(result.isLast());
         assertEquals(1, result.content().size());
 
-        verify(shoppingCartItemProductSKUResponseRepository).findAllByUserId(userId, pageable);
+        verify(shoppingCartItemProductSKUSummaryRepository).findAllByUserId(userId, pageable);
         verify(shoppingCartItemProductSKUMapper).toResponse(entity);
     }
 
@@ -107,9 +107,9 @@ public class ShoppingCartServiceTests {
         UUID userId = UUID.randomUUID();
         Pageable pageable = PageRequest.of(0, 10);
 
-        Page<ShoppingCartItemProductSKUResume> emptyPage = new PageImpl<>(List.of(), pageable, 0);
+        Page<ShoppingCartItemProductSKUSummary> emptyPage = new PageImpl<>(List.of(), pageable, 0);
 
-        when(shoppingCartItemProductSKUResponseRepository.findAllByUserId(userId, pageable))
+        when(shoppingCartItemProductSKUSummaryRepository.findAllByUserId(userId, pageable))
                 .thenReturn(emptyPage);
 
         PagedResponse<ShoppingCartItemResponse> result = shoppingCartService.getAllItems(userId, pageable);
@@ -122,7 +122,7 @@ public class ShoppingCartServiceTests {
         assertTrue(result.isLast());
         assertTrue(result.content().isEmpty());
 
-        verify(shoppingCartItemProductSKUResponseRepository).findAllByUserId(userId, pageable);
+        verify(shoppingCartItemProductSKUSummaryRepository).findAllByUserId(userId, pageable);
         verify(shoppingCartItemProductSKUMapper, never()).toResponse(any());
     }
 

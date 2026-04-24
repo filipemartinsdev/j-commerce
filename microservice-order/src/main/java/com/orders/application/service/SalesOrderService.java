@@ -1,8 +1,12 @@
 package com.orders.application.service;
 
-import com.orders.application.dto.*;
+import com.orders.application.dto.PagedResponse;
+import com.orders.application.dto.SalesOrderResponse;
+import com.orders.application.dto.SalesOrderSummaryResponse;
 import com.orders.application.exception.DeliveryAddressNotFoundException;
 import com.orders.application.exception.SalesOrderNotFoundException;
+import com.orders.application.message.ShoppingCartConfirmationMessage;
+import static com.orders.application.message.ShoppingCartConfirmationMessage.ShoppingCartConfirmationItem;
 import com.orders.application.service.mapper.SalesOrderMapper;
 import com.orders.domain.entity.*;
 import com.orders.infra.persistence.*;
@@ -35,10 +39,10 @@ public class SalesOrderService {
     }
 
     @Transactional
-    public void confirmShoppingCart(ShoppingCartConfirmation dto) {
-        SalesOrder order = registerNewOrder(dto.getUserId());
-        registerSalesOrderItems(order, dto.getItems());
-        registerShipping(dto.getDeliveryAddressId(), order);
+    public void confirmShoppingCart(ShoppingCartConfirmationMessage message) {
+        SalesOrder order = registerNewOrder(message.getUserId());
+        registerSalesOrderItems(order, message.getItems());
+        registerShipping(message.getDeliveryAddressId(), order);
     }
 
     private SalesOrder registerNewOrder(UUID userId) {

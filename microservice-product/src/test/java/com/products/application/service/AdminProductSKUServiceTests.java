@@ -7,6 +7,7 @@ import com.products.application.dto.admin.UpdateProductSKURequest;
 import com.products.application.event.ProductSKUCreatedEvent;
 import com.products.application.event.ProductSKUDeletedEvent;
 import com.products.application.exception.ProductNotFoundException;
+import com.products.application.exception.ProductNotActiveException;
 import com.products.application.exception.ProductSKUNotFoundException;
 import com.products.application.exception.SKUAlreadyInUseException;
 import com.products.application.service.mapper.ProductSKUAdminMapper;
@@ -160,6 +161,32 @@ public class AdminProductSKUServiceTests {
         });
 
         verify(productRepository).findById(productId);
+    }
+
+    @Test @DisplayName("Should throw ProductNotActiveException when product is not active")
+    void createProductSKUTestCase4() {
+        // Given
+        UUID productId = UUID.randomUUID();
+        UUID userId = UUID.randomUUID();
+        CreateProductSKURequest request = new CreateProductSKURequest(productId, "SKU-001", "Laptop SKU");
+
+        Product product = new Product();
+        product.setId(productId);
+        product.setName("Laptop");
+        product.setActive(false);
+
+        when(productRepository.findById(productId))
+                .thenReturn(Optional.of(product));
+        when(productSKURepository.existsBySKU(request.SKU()))
+                .thenReturn(false);
+
+        // When & Then
+        assertThrows(ProductNotActiveException.class, () -> {
+            adminProductSKUService.createProductSKU(request, userId);
+        });
+
+        verify(productRepository).findById(productId);
+        verify(productSKURepository, never()).save(any());
     }
 
     @Test @DisplayName("Should update ProductSKU successfully if everything is OK")

@@ -14,6 +14,7 @@ import com.identity.security.infra.persistence.RefreshTokenRepository;
 import com.identity.security.infra.persistence.RoleRepository;
 import com.identity.security.infra.persistence.UserCredentialsRepository;
 import com.identity.security.application.dto.UserCredentialsResponse;
+import com.identity.security.application.service.mapper.UserCredentialsMapper;
 import com.nimbusds.jose.jwk.JWKSet;
 import com.nimbusds.jose.jwk.RSAKey;
 import jakarta.transaction.Transactional;

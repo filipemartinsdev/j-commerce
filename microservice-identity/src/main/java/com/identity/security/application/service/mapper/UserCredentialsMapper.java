@@ -1,4 +1,4 @@
-package com.identity.security.application.service;
+package com.identity.security.application.service.mapper;
 
 import com.identity.security.domain.entity.Role;
 import com.identity.security.domain.entity.UserCredentials;

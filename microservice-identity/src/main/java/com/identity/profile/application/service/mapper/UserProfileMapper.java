@@ -1,4 +1,4 @@
-package com.identity.profile.application.service;
+package com.identity.profile.application.service.mapper;
 
 import com.identity.profile.application.dto.UserProfileResponse;
 import com.identity.profile.domain.entity.UserProfile;

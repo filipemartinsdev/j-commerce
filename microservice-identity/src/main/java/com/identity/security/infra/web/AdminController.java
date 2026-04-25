@@ -5,7 +5,7 @@ import com.identity.common.dto.StandardResponse;
 import com.identity.security.application.dto.UpdateUserRole;
 import com.identity.security.application.dto.UserCredentialsResponse;
 import com.identity.security.application.service.AuthService;
-import com.identity.security.application.service.UserCredentialsMapper;
+import com.identity.security.application.service.mapper.UserCredentialsMapper;
 import jakarta.validation.Valid;
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;

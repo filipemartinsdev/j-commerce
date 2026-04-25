@@ -95,11 +95,14 @@ Services will be available at:
 
 ## Default Users
 
-The Identity microservice creates a default admin user via Flyway migration:
+The Identity microservice creates default users via Flyway migration:
 
-| Email | Password | Role |
+| Email | Password | Roles |
 |-------|----------|------|
-| admin@gmail.com | admin123 | ADMIN |
+| admin@gmail.com | admin123 | `USER`, `ADMIN` |
+| common@gmail.com | common123 | `USER` |
+| stockman@gmail.com | stockman123 | `USER`, `STOCK_MANAGER` |
+| driver@gmail.com | driver123 | `USER`, `DRIVER` |
 
 ---
 

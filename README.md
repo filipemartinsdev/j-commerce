@@ -178,12 +178,44 @@ The entire project is following the principle of **Soft Delete**. No data is del
 - Create an **auditable** application.
 - Reduce the processing of **batch and cascading deletes** in the database.
 
+## Messaging
+
+### Exchanges
+
+The entire order flow is based on asynchronous communication, using **Spring AMQP** to integrate the **RabbitMQ** Message Broker.
+
+|Name   | Description | Destin Queues |
+|---|--|--|
+| `payment.generated.fanout` | Fanout exchange to notify that a payment has been generated | `payment.wait_pending_payment`, `notification_notify_payment_generated` | 
+| `payment.confirmed.fanout` | Fanout exchange to notify that a payment has been confirmed | `order.confirm_order_payment`, `notification.notify_payment_confirmed` |
+
+
+### Queues
+
+|Name  | Description                                       |
+|--|---------------------------------------------------|
+| `order.create_order` | Create an order from shopping cart                |
+| `order.handle_payment_timeout` | Cancel order when payment expires                 |
+| `order.confirm_order_payment` | Confirm payment of order                          |
+| `payment.generate_payment` | Generate payment for order                        |
+| `payment.wait_pending_payment` | Set TTL of 1 day for payment                      |
+| `notification.notify_payment_generated` | Notify the user that a payment has been generated |
+| `notification.notify_payment_confirmed` | Notify the user that payment has been made        |
+
+
+
+<img src="images/messaging_exchange_default.png" width="620pt">
+
+<img src="images/messaging_exchange_payment_generated.png" width="620pt">
+
+<img src="images/messaging_exchange_payment_confirmed.png" width="620pt">
+
+
 ## Purchase confirmation
 
 The payment (mock invoice) is generated and sent by email, through a robust asynchronous messaging flow.
 
-
-![purchase-flow.png](images/purchase-flow.png)
+![client_purchase_successful.png](images/client_purchase_successful.png)
 
 ## License
 

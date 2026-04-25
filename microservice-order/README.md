@@ -4,6 +4,10 @@
 
 > 🚧 In progress...
 
+## Order Status
+
+![sales_order_status.png](../images/sales_order_status.png)
+
 
 ## Database
 

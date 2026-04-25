@@ -1,12 +1,11 @@
 package com.products.application.service;
 
 import com.products.application.dto.PagedResponse;
-import com.products.application.dto.ShoppingCartConfirmation;
-import com.products.application.dto.ShoppingCartConfirmationItem;
 import com.products.application.dto.catalogue.ConfirmShoppingCartRequest;
 import com.products.application.dto.catalogue.CreateShoppingCartItemRequest;
 import com.products.application.dto.catalogue.ShoppingCartItemResponse;
 import com.products.application.exception.*;
+import com.products.application.message.CreateOrderMessage;
 import com.products.application.service.mapper.ShoppingCartItemMapper;
 import com.products.domain.entity.ProductSKU;
 import com.products.domain.entity.ShoppingCartItem;
@@ -30,12 +29,12 @@ public class ShoppingCartService {
     private final ShoppingCartItemProductSKUSummaryRepository shoppingCartItemProductSKUSummaryRepository;
     private final ProductSKURepository productSKURepository;
     private final ProductStockChecker productStockChecker;
-    private final ShoppingCartConfirmationProducer shoppingCartConfirmationProducer;
+    private final MessageBrokerProducer shoppingCartConfirmationProducer;
     private final ProductStockManager productStockManager;
     private final StockMovementManager stockMovementManager;
     private final SalesOrderClient salesOrderClient;
 
-    public ShoppingCartService(ShoppingCartItemRepository shoppingCartItemRepository, ShoppingCartItemMapper shoppingCartItemProductSKUMapper, ShoppingCartItemProductSKUSummaryRepository shoppingCartItemProductSKUSummaryRepository, ProductSKURepository productSKURepository, ProductStockChecker productStockChecker, ShoppingCartConfirmationProducer shoppingCartConfirmationProducer, ProductStockManager productStockManager, StockMovementManager stockMovementManager, SalesOrderClient salesOrderClient) {
+    public ShoppingCartService(ShoppingCartItemRepository shoppingCartItemRepository, ShoppingCartItemMapper shoppingCartItemProductSKUMapper, ShoppingCartItemProductSKUSummaryRepository shoppingCartItemProductSKUSummaryRepository, ProductSKURepository productSKURepository, ProductStockChecker productStockChecker, MessageBrokerProducer shoppingCartConfirmationProducer, ProductStockManager productStockManager, StockMovementManager stockMovementManager, SalesOrderClient salesOrderClient) {
         this.shoppingCartItemRepository = shoppingCartItemRepository;
         this.shoppingCartItemProductSKUMapper = shoppingCartItemProductSKUMapper;
         this.shoppingCartItemProductSKUSummaryRepository = shoppingCartItemProductSKUSummaryRepository;
@@ -97,14 +96,14 @@ public class ShoppingCartService {
     public void confirmShoppingCart(ConfirmShoppingCartRequest request, UUID userId, String JWTBearer) {
         verifyDeliveryAddress(request.deliveryAddressId(), JWTBearer);
 
-        List<ShoppingCartConfirmationItem> items = shoppingCartItemProductSKUSummaryRepository.findAllByUserId(userId).stream()
-                .map(shoppingCartItemProductSKUMapper::toShoppingCartConfirmation)
+        List<CreateOrderMessage.OrderItem> items = shoppingCartItemProductSKUSummaryRepository.findAllByUserId(userId).stream()
+                .map(shoppingCartItemProductSKUMapper::toCreateOrderMessageItem)
                 .toList();
 
         if (items.isEmpty())
          throw new EmptyShoppingCartException("The shopping cart is empty");
 
-        var shoppingCartConfirmation = new ShoppingCartConfirmation(userId, items, request.deliveryAddressId());
+        var shoppingCartConfirmation = new CreateOrderMessage(userId, items, request.deliveryAddressId());
 
         updateStock(items, userId);
 
@@ -119,10 +118,10 @@ public class ShoppingCartService {
             throw new DeliveryAddressNotFoundException("Delivery address not found with ID: "+deliveryAddressId);
     }
 
-    private void updateStock(List<ShoppingCartConfirmationItem> items, UUID userId) {
-        for (ShoppingCartConfirmationItem item : items) {
-            productStockManager.reduceProductStock(item.getProductSKUId(), item.getUnits());
-            stockMovementManager.registerSale(item.getProductSKUId(), item.getUnits(), userId);
+    private void updateStock(List<CreateOrderMessage.OrderItem> items, UUID userId) {
+        for (var item : items) {
+            productStockManager.reduceProductStock(item.productSKUId(), item.units());
+            stockMovementManager.registerSale(item.productSKUId(), item.units(), userId);
         }
     }
 

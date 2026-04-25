@@ -1,7 +1,7 @@
 package com.products.application.service.mapper;
 
-import com.products.application.dto.ShoppingCartConfirmationItem;
 import com.products.application.dto.catalogue.ShoppingCartItemResponse;
+import com.products.application.message.CreateOrderMessage;
 import com.products.application.service.ProductDiscountCalculator;
 import com.products.domain.entity.ShoppingCartItemProductSKUSummary;
 import org.springframework.stereotype.Component;
@@ -29,8 +29,8 @@ public class ShoppingCartItemMapper {
         );
     }
 
-    public ShoppingCartConfirmationItem toShoppingCartConfirmation(ShoppingCartItemProductSKUSummary entity) {
-        return new ShoppingCartConfirmationItem(
+    public CreateOrderMessage.OrderItem toCreateOrderMessageItem(ShoppingCartItemProductSKUSummary entity) {
+        return new CreateOrderMessage.OrderItem(
                 entity.getProductSKUId(),
                 entity.getProductSKUName(),
                 entity.getUnits(),

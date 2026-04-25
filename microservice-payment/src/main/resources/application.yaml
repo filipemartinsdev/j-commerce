@@ -19,3 +19,30 @@ management:
     web:
       exposure:
         include: prometheus,health,info
+
+broker:
+  exchanges:
+    paymentGeneratedFanout:
+      name: payment.generated.fanout
+
+    paymentConfirmedFanout:
+      name: payment.confirmed.fanout
+
+  queues:
+    generatePayment:
+      name: payment.generate_payment
+
+    waitPendingPayment:
+      name: payment.wait_pending_payment
+
+    notifyPaymentGenerated:
+      name: notification.notify_payment_generated
+
+    notifyPaymentConfirmed:
+      name: notification.notify_payment_confirmed
+
+    confirmOrderPayment:
+      name: order.confirm_order_payment
+
+    handlePaymentTimeout:
+      name: order.handle_payment_timeout

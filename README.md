@@ -28,8 +28,10 @@ E-Commerce platform
 1. [Stack](#general-stack)
 2. [Architecture](#achitecture)
 3. [How to execute](#how-to-execute)
-4. [Default Users](#default-users)
-5. [License](#License)
+4. [Architecture](#architecture)
+5. [Database](#database)
+6. [Messaging](#messaging)
+7. [License](#License)
 
 ---
 

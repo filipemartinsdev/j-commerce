@@ -156,6 +156,8 @@ spring:
           jwk-set-uri: http://identity:8080/.well-known/jwks.json
 ```
 
+<img src="images/auth_servers.png" width="620">
+
 With this setup, every resource server validates JWT signatures locally using the public RSA key obtained from the auth service. No shared symmetric secret is required between services.
 
 Authorization is then enforced from the JWT claims:

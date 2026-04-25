@@ -344,4 +344,57 @@ public class AdminProductServiceTests {
         verify(productRepository, never()).save(any());
     }
 
+    @Test @DisplayName("Should throw CantDeleteProductException when product has active SKU")
+    void deleteProductByIdTestCase3() {
+        // Given
+        UUID productId = UUID.randomUUID();
+
+        Product product = new Product();
+        product.setId(productId);
+        product.setName("Laptop");
+        product.setActive(true);
+
+        ProductSKU activeSKU = new ProductSKU();
+        activeSKU.setIsActive(true);
+        activeSKU.setName("SKU-001");
+        product.setSKUs(new ArrayList<>(List.of(activeSKU)));
+
+        when(productRepository.findById(productId))
+                .thenReturn(Optional.of(product));
+
+        // When & Then
+        assertThrows(CantDeleteProductException.class, () -> {
+            adminProductService.deleteProductById(productId);
+        });
+
+        verify(productRepository).findById(productId);
+        verify(productRepository, never()).save(any());
+    }
+
+    @Test @DisplayName("Should delete product when all SKUs are inactive")
+    void deleteProductByIdTestCase4() {
+        // Given
+        UUID productId = UUID.randomUUID();
+
+        Product product = new Product();
+        product.setId(productId);
+        product.setName("Laptop");
+        product.setActive(true);
+
+        ProductSKU inactiveSKU = new ProductSKU();
+        inactiveSKU.setIsActive(false);
+        inactiveSKU.setName("SKU-001");
+        product.setSKUs(new ArrayList<>(List.of(inactiveSKU)));
+
+        when(productRepository.findById(productId))
+                .thenReturn(Optional.of(product));
+
+        // When
+        adminProductService.deleteProductById(productId);
+
+        // Then
+        assertFalse(product.isActive());
+        verify(productRepository).save(product);
+    }
+
 }

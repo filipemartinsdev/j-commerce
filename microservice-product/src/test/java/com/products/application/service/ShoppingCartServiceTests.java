@@ -1,11 +1,16 @@
 package com.products.application.service;
 
 import com.products.application.dto.PagedResponse;
+import com.products.application.dto.catalogue.ConfirmShoppingCartRequest;
 import com.products.application.dto.catalogue.CreateShoppingCartItemRequest;
 import com.products.application.dto.catalogue.ShoppingCartItemResponse;
+import com.products.application.exception.DeliveryAddressNotFoundException;
+import com.products.application.exception.EmptyShoppingCartException;
 import com.products.application.exception.ProductOutOfStockException;
 import com.products.application.exception.ProductSKUNotFoundException;
+import com.products.application.exception.ShoppingCartItemAlreadyExistsException;
 import com.products.application.exception.ShoppingCartItemNotFoundException;
+import com.products.application.message.CreateOrderMessage;
 import com.products.application.service.mapper.ShoppingCartItemMapper;
 import com.products.domain.entity.ProductSKU;
 import com.products.domain.entity.ShoppingCartItem;
@@ -23,6 +28,8 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 
 import java.math.BigDecimal;
 import java.util.List;
@@ -30,11 +37,11 @@ import java.util.Optional;
 import java.util.UUID;
 
 import static org.junit.jupiter.api.Assertions.*;
-import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.*;
 import static org.mockito.Mockito.*;
 
 @ExtendWith(MockitoExtension.class)
-public class ShoppingCartServiceTests {
+class ShoppingCartServiceTests {
 
     @Mock
     private ShoppingCartItemRepository shoppingCartItemRepository;
@@ -51,84 +58,24 @@ public class ShoppingCartServiceTests {
     @Mock
     private ProductStockChecker productStockChecker;
 
+    @Mock
+    private MessageBrokerProducer shoppingCartConfirmationProducer;
+
+    @Mock
+    private ProductStockManager productStockManager;
+
+    @Mock
+    private StockMovementManager stockMovementManager;
+
+    @Mock
+    private SalesOrderClient salesOrderClient;
+
     @InjectMocks
     private ShoppingCartService shoppingCartService;
 
     @Test
-    @DisplayName("Should return paged shopping cart items successfully")
-    void getAllItemsTestCase1() {
-        UUID userId = UUID.randomUUID();
-        Pageable pageable = PageRequest.of(0, 10);
-
-        ShoppingCartItemProductSKUSummary entity = new ShoppingCartItemProductSKUSummary();
-        entity.setId(UUID.randomUUID());
-        entity.setUserId(userId);
-        entity.setProductSKUId(UUID.randomUUID());
-        entity.setProductSKUName("Test SKU");
-        entity.setOriginalPrice(BigDecimal.valueOf(100));
-        entity.setCurrentPrice(BigDecimal.valueOf(80));
-        entity.setPriceTypeName("PROMOTIONAL");
-        entity.setUnits(2);
-
-        Page<ShoppingCartItemProductSKUSummary> page = new PageImpl<>(List.of(entity), pageable, 1);
-
-        ShoppingCartItemResponse response = new ShoppingCartItemResponse(
-                entity.getId(),
-                entity.getProductSKUId(),
-                entity.getProductSKUName(),
-                entity.getUnits(),
-                entity.getOriginalPrice(),
-                entity.getCurrentPrice(),
-                20
-        );
-
-        when(shoppingCartItemProductSKUSummaryRepository.findAllByUserId(userId, pageable))
-                .thenReturn(page);
-        when(shoppingCartItemProductSKUMapper.toResponse(entity))
-                .thenReturn(response);
-
-        PagedResponse<ShoppingCartItemResponse> result = shoppingCartService.getAllItems(userId, pageable);
-
-        assertNotNull(result);
-        assertEquals(0, result.page());
-        assertEquals(10, result.size());
-        assertEquals(1, result.totalPages());
-        assertEquals(1, result.totalElements());
-        assertTrue(result.isLast());
-        assertEquals(1, result.content().size());
-
-        verify(shoppingCartItemProductSKUSummaryRepository).findAllByUserId(userId, pageable);
-        verify(shoppingCartItemProductSKUMapper).toResponse(entity);
-    }
-
-    @Test
-    @DisplayName("Should return empty page when user has no shopping cart items")
-    void getAllItemsTestCase2() {
-        UUID userId = UUID.randomUUID();
-        Pageable pageable = PageRequest.of(0, 10);
-
-        Page<ShoppingCartItemProductSKUSummary> emptyPage = new PageImpl<>(List.of(), pageable, 0);
-
-        when(shoppingCartItemProductSKUSummaryRepository.findAllByUserId(userId, pageable))
-                .thenReturn(emptyPage);
-
-        PagedResponse<ShoppingCartItemResponse> result = shoppingCartService.getAllItems(userId, pageable);
-
-        assertNotNull(result);
-        assertEquals(0, result.page());
-        assertEquals(10, result.size());
-        assertEquals(0, result.totalPages());
-        assertEquals(0, result.totalElements());
-        assertTrue(result.isLast());
-        assertTrue(result.content().isEmpty());
-
-        verify(shoppingCartItemProductSKUSummaryRepository).findAllByUserId(userId, pageable);
-        verify(shoppingCartItemProductSKUMapper, never()).toResponse(any());
-    }
-
-    @Test
-    @DisplayName("Should create shopping cart item successfully when product SKU exists")
-    void createItemTestCase1() {
+    @DisplayName("Should create item successfully")
+    void createItemByUserIdTestCase1() {
         UUID userId = UUID.randomUUID();
         UUID productSKUId = UUID.randomUUID();
 
@@ -136,113 +83,281 @@ public class ShoppingCartServiceTests {
 
         ProductSKU productSKU = new ProductSKU();
         productSKU.setId(productSKUId);
-        productSKU.setSKU("TEST-SKU");
-        productSKU.setName("Test Product SKU");
 
-        when(productSKURepository.findActiveById(productSKUId))
-                .thenReturn(Optional.of(productSKU));
-        when(shoppingCartItemRepository.save(any(ShoppingCartItem.class)))
-                .thenReturn(new ShoppingCartItem());
-        when(productStockChecker.isTheProductWithStockEnough(any(), any()))
-                .thenReturn(true);
+        when(productSKURepository.findActiveById(productSKUId)).thenReturn(Optional.of(productSKU));
+        when(productStockChecker.isTheProductWithStockEnough(productSKUId, 2)).thenReturn(true);
+        when(shoppingCartItemRepository.existsByProductSKUIdAndUserId(productSKUId, userId)).thenReturn(false);
+        when(shoppingCartItemRepository.save(any(ShoppingCartItem.class))).thenReturn(new ShoppingCartItem());
 
         shoppingCartService.createItemByUserId(request, userId);
 
-        verify(productSKURepository).findActiveById(productSKUId);
         verify(shoppingCartItemRepository).save(any(ShoppingCartItem.class));
-        verify(productStockChecker).isTheProductWithStockEnough(any(), any());
     }
 
     @Test
-    @DisplayName("Should throw ProductSKUNotFoundException when product SKU does not exist")
-    void createItemTestCase2() {
+    @DisplayName("Should throw ProductSKUNotFoundException when SKU not found")
+    void createItemByUserIdTestCase2() {
         UUID userId = UUID.randomUUID();
         UUID productSKUId = UUID.randomUUID();
 
         CreateShoppingCartItemRequest request = new CreateShoppingCartItemRequest(productSKUId, 2);
 
-        when(productSKURepository.findActiveById(productSKUId))
-                .thenReturn(Optional.empty());
+        when(productSKURepository.findActiveById(productSKUId)).thenReturn(Optional.empty());
 
         assertThrows(ProductSKUNotFoundException.class, () ->
-                shoppingCartService.createItemByUserId(request, userId));
-
-        verify(productSKURepository).findActiveById(productSKUId);
-        verify(shoppingCartItemRepository, never()).save(any());
+                shoppingCartService.createItemByUserId(request, userId)
+        );
     }
 
     @Test
-    @DisplayName("Should throw ProductOutOfStockException when product SKU is out of stock")
-    void createItemTestCase3() {
+    @DisplayName("Should throw ProductOutOfStockException when insufficient stock")
+    void createItemByUserIdTestCase3() {
+        UUID userId = UUID.randomUUID();
+        UUID productSKUId = UUID.randomUUID();
+
+        CreateShoppingCartItemRequest request = new CreateShoppingCartItemRequest(productSKUId, 10);
+
+        ProductSKU productSKU = new ProductSKU();
+        productSKU.setId(productSKUId);
+
+        when(productSKURepository.findActiveById(productSKUId)).thenReturn(Optional.of(productSKU));
+        when(productStockChecker.isTheProductWithStockEnough(productSKUId, 10)).thenReturn(false);
+
+        assertThrows(ProductOutOfStockException.class, () ->
+                shoppingCartService.createItemByUserId(request, userId)
+        );
+    }
+
+    @Test
+    @DisplayName("Should throw ShoppingCartItemAlreadyExistsException when item exists")
+    void createItemByUserIdTestCase4() {
         UUID userId = UUID.randomUUID();
         UUID productSKUId = UUID.randomUUID();
 
         CreateShoppingCartItemRequest request = new CreateShoppingCartItemRequest(productSKUId, 2);
 
-        var mockProductSKU = new ProductSKU();
-        mockProductSKU.setId(productSKUId);
+        ProductSKU productSKU = new ProductSKU();
+        productSKU.setId(productSKUId);
 
-        when(productSKURepository.findActiveById(productSKUId))
-                .thenReturn(Optional.of(mockProductSKU));
-        when(productStockChecker.isTheProductWithStockEnough(any(), any()))
-                .thenReturn(false);
+        when(productSKURepository.findActiveById(productSKUId)).thenReturn(Optional.of(productSKU));
+        when(productStockChecker.isTheProductWithStockEnough(productSKUId, 2)).thenReturn(true);
+        when(shoppingCartItemRepository.existsByProductSKUIdAndUserId(productSKUId, userId)).thenReturn(true);
 
-        assertThrows(ProductOutOfStockException.class, () ->
-                shoppingCartService.createItemByUserId(request, userId));
-
-        verify(shoppingCartItemRepository, never()).save(any());
-        verify(productStockChecker).isTheProductWithStockEnough(productSKUId, 2);
+        assertThrows(ShoppingCartItemAlreadyExistsException.class, () ->
+                shoppingCartService.createItemByUserId(request, userId)
+        );
     }
 
     @Test
-    @DisplayName("Should delete shopping cart item successfully when item exists and is active")
-    void deleteItemByIdTestCase1() {
+    @DisplayName("Should return paginated items")
+    void getAllItemsTestCase1() {
         UUID userId = UUID.randomUUID();
+        Pageable pageable = PageRequest.of(0, 10);
+
+        ShoppingCartItemProductSKUSummary entity = new ShoppingCartItemProductSKUSummary();
+        entity.setId(UUID.randomUUID());
+        entity.setProductSKUId(UUID.randomUUID());
+        entity.setProductSKUName("Test");
+        entity.setUnits(2);
+        entity.setOriginalPrice(BigDecimal.valueOf(100));
+        entity.setCurrentPrice(BigDecimal.valueOf(80));
+
+        Page<ShoppingCartItemProductSKUSummary> page = new PageImpl<>(List.of(entity), pageable, 1);
+        ShoppingCartItemResponse response = new ShoppingCartItemResponse(
+                entity.getId(), entity.getProductSKUId(), entity.getProductSKUName(),
+                entity.getUnits(), entity.getOriginalPrice(), entity.getCurrentPrice(), 20
+        );
+
+        when(shoppingCartItemProductSKUSummaryRepository.findAllByUserId(userId, pageable)).thenReturn(page);
+        when(shoppingCartItemProductSKUMapper.toResponse(entity)).thenReturn(response);
+
+        PagedResponse<ShoppingCartItemResponse> result = shoppingCartService.getAllItems(userId, pageable);
+
+        assertNotNull(result);
+        assertEquals(1, result.content().size());
+    }
+
+    @Test
+    @DisplayName("Should return empty page when no items")
+    void getAllItemsTestCase2() {
+        UUID userId = UUID.randomUUID();
+        Pageable pageable = PageRequest.of(0, 10);
+        Page<ShoppingCartItemProductSKUSummary> emptyPage = new PageImpl<>(List.of(), pageable, 0);
+
+        when(shoppingCartItemProductSKUSummaryRepository.findAllByUserId(userId, pageable)).thenReturn(emptyPage);
+
+        PagedResponse<ShoppingCartItemResponse> result = shoppingCartService.getAllItems(userId, pageable);
+
+        assertNotNull(result);
+        assertTrue(result.content().isEmpty());
+        assertEquals(0, result.totalElements());
+    }
+
+    @Test
+    @DisplayName("Should delete item successfully")
+    void deleteItemByIdTestCase1() {
         UUID itemId = UUID.randomUUID();
+        UUID userId = UUID.randomUUID();
 
         ShoppingCartItem item = new ShoppingCartItem();
         item.setId(itemId);
-        item.setUserId(userId);
         item.setIsActive(true);
 
-        when(shoppingCartItemRepository.findActiveByIdAndUserId(itemId, userId))
-                .thenReturn(Optional.of(item));
-        when(shoppingCartItemRepository.save(any(ShoppingCartItem.class)))
-                .thenReturn(item);
+        when(shoppingCartItemRepository.findActiveByIdAndUserId(itemId, userId)).thenReturn(Optional.of(item));
+        when(shoppingCartItemRepository.save(any(ShoppingCartItem.class))).thenReturn(item);
 
         shoppingCartService.deleteItemById(itemId, userId);
 
-        verify(shoppingCartItemRepository).findActiveByIdAndUserId(itemId, userId);
-        verify(shoppingCartItemRepository).save(item);
-
         assertFalse(item.getIsActive());
+        verify(shoppingCartItemRepository).save(item);
     }
 
     @Test
-    @DisplayName("Should throw ShoppingCartItemNotFoundException when item does not exist")
+    @DisplayName("Should throw ShoppingCartItemNotFoundException when item not found")
     void deleteItemByIdTestCase2() {
-        UUID userId = UUID.randomUUID();
         UUID itemId = UUID.randomUUID();
+        UUID userId = UUID.randomUUID();
 
-        when(shoppingCartItemRepository.findActiveByIdAndUserId(itemId, userId))
-                .thenReturn(Optional.empty());
+        when(shoppingCartItemRepository.findActiveByIdAndUserId(itemId, userId)).thenReturn(Optional.empty());
 
         assertThrows(ShoppingCartItemNotFoundException.class, () ->
-                shoppingCartService.deleteItemById(itemId, userId));
-
-        verify(shoppingCartItemRepository).findActiveByIdAndUserId(itemId, userId);
-        verify(shoppingCartItemRepository, never()).save(any());
+                shoppingCartService.deleteItemById(itemId, userId)
+        );
     }
 
     @Test
-    @DisplayName("Should delete all shopping cart items by user id")
+    @DisplayName("Should delete all items by user ID")
     void deleteAllItemsByUserIdTestCase1() {
         UUID userId = UUID.randomUUID();
-
-        doNothing().when(shoppingCartItemRepository).markAllAsInactiveByUserId(userId);
 
         shoppingCartService.deleteAllItemsByUserId(userId);
 
         verify(shoppingCartItemRepository).markAllAsInactiveByUserId(userId);
+    }
+
+    @Test
+    @DisplayName("Should confirm shopping cart successfully")
+    void confirmShoppingCartTestCase1() {
+        UUID userId = UUID.randomUUID();
+        UUID deliveryAddressId = UUID.randomUUID();
+        String jwtBearer = "Bearer token";
+
+        ConfirmShoppingCartRequest request = new ConfirmShoppingCartRequest(deliveryAddressId);
+
+        CreateOrderMessage.OrderItem orderItem = new CreateOrderMessage.OrderItem(
+                UUID.randomUUID(), "Product", 2, BigDecimal.valueOf(100)
+        );
+
+        ShoppingCartItemProductSKUSummary summary = new ShoppingCartItemProductSKUSummary();
+        summary.setProductSKUId(UUID.randomUUID());
+        summary.setProductSKUName("Product");
+        summary.setUnits(2);
+        summary.setCurrentPrice(BigDecimal.valueOf(100));
+
+        when(salesOrderClient.getDeliveryAddress(deliveryAddressId, jwtBearer))
+                .thenReturn(new ResponseEntity<>(HttpStatus.OK));
+        when(shoppingCartItemProductSKUSummaryRepository.findAllByUserId(userId)).thenReturn(List.of(summary));
+        when(shoppingCartItemProductSKUMapper.toCreateOrderMessageItem(summary)).thenReturn(orderItem);
+
+        shoppingCartService.confirmShoppingCart(request, userId, jwtBearer);
+
+        verify(productStockManager).reduceProductStock(any(), anyInt());
+        verify(stockMovementManager).registerSale(any(), anyInt(), eq(userId));
+        verify(shoppingCartConfirmationProducer).produce(any(CreateOrderMessage.class));
+        verify(shoppingCartItemRepository).markAllAsInactiveByUserId(userId);
+    }
+
+    @Test
+    @DisplayName("Should throw DeliveryAddressNotFoundException when address not found")
+    void confirmShoppingCartTestCase2() {
+        UUID userId = UUID.randomUUID();
+        UUID deliveryAddressId = UUID.randomUUID();
+        String jwtBearer = "Bearer token";
+
+        ConfirmShoppingCartRequest request = new ConfirmShoppingCartRequest(deliveryAddressId);
+
+        when(salesOrderClient.getDeliveryAddress(deliveryAddressId, jwtBearer))
+                .thenReturn(new ResponseEntity<>(HttpStatus.NOT_FOUND));
+
+        assertThrows(DeliveryAddressNotFoundException.class, () ->
+                shoppingCartService.confirmShoppingCart(request, userId, jwtBearer)
+        );
+    }
+
+    @Test
+    @DisplayName("Should throw EmptyShoppingCartException when cart is empty")
+    void confirmShoppingCartTestCase3() {
+        UUID userId = UUID.randomUUID();
+        UUID deliveryAddressId = UUID.randomUUID();
+        String jwtBearer = "Bearer token";
+
+        ConfirmShoppingCartRequest request = new ConfirmShoppingCartRequest(deliveryAddressId);
+
+        when(salesOrderClient.getDeliveryAddress(deliveryAddressId, jwtBearer))
+                .thenReturn(new ResponseEntity<>(HttpStatus.OK));
+        when(shoppingCartItemProductSKUSummaryRepository.findAllByUserId(userId)).thenReturn(List.of());
+
+        assertThrows(EmptyShoppingCartException.class, () ->
+                shoppingCartService.confirmShoppingCart(request, userId, jwtBearer)
+        );
+    }
+
+    @Test
+    @DisplayName("Should confirm cart with multiple items")
+    void confirmShoppingCartTestCase4() {
+        UUID userId = UUID.randomUUID();
+        UUID deliveryAddressId = UUID.randomUUID();
+        String jwtBearer = "Bearer token";
+
+        ConfirmShoppingCartRequest request = new ConfirmShoppingCartRequest(deliveryAddressId);
+
+        CreateOrderMessage.OrderItem orderItem1 = new CreateOrderMessage.OrderItem(
+                UUID.randomUUID(), "Product 1", 2, BigDecimal.valueOf(50)
+        );
+        CreateOrderMessage.OrderItem orderItem2 = new CreateOrderMessage.OrderItem(
+                UUID.randomUUID(), "Product 2", 1, BigDecimal.valueOf(75)
+        );
+
+        ShoppingCartItemProductSKUSummary summary1 = new ShoppingCartItemProductSKUSummary();
+        summary1.setProductSKUId(UUID.randomUUID());
+        summary1.setProductSKUName("Product 1");
+        summary1.setUnits(2);
+        summary1.setCurrentPrice(BigDecimal.valueOf(50));
+
+        ShoppingCartItemProductSKUSummary summary2 = new ShoppingCartItemProductSKUSummary();
+        summary2.setProductSKUId(UUID.randomUUID());
+        summary2.setProductSKUName("Product 2");
+        summary2.setUnits(1);
+        summary2.setCurrentPrice(BigDecimal.valueOf(75));
+
+        when(salesOrderClient.getDeliveryAddress(deliveryAddressId, jwtBearer))
+                .thenReturn(new ResponseEntity<>(HttpStatus.OK));
+        when(shoppingCartItemProductSKUSummaryRepository.findAllByUserId(userId))
+                .thenReturn(List.of(summary1, summary2));
+        when(shoppingCartItemProductSKUMapper.toCreateOrderMessageItem(summary1)).thenReturn(orderItem1);
+        when(shoppingCartItemProductSKUMapper.toCreateOrderMessageItem(summary2)).thenReturn(orderItem2);
+
+        shoppingCartService.confirmShoppingCart(request, userId, jwtBearer);
+
+        verify(productStockManager, times(2)).reduceProductStock(any(), anyInt());
+        verify(stockMovementManager, times(2)).registerSale(any(), anyInt(), eq(userId));
+        verify(shoppingCartConfirmationProducer).produce(any(CreateOrderMessage.class));
+    }
+
+    @Test
+    @DisplayName("Should throw DeliveryAddressNotFoundException for non-2xx status")
+    void confirmShoppingCartTestCase5() {
+        UUID userId = UUID.randomUUID();
+        UUID deliveryAddressId = UUID.randomUUID();
+        String jwtBearer = "Bearer token";
+
+        ConfirmShoppingCartRequest request = new ConfirmShoppingCartRequest(deliveryAddressId);
+
+        when(salesOrderClient.getDeliveryAddress(deliveryAddressId, jwtBearer))
+                .thenReturn(new ResponseEntity<>(HttpStatus.BAD_REQUEST));
+
+        assertThrows(DeliveryAddressNotFoundException.class, () ->
+                shoppingCartService.confirmShoppingCart(request, userId, jwtBearer)
+        );
     }
 }

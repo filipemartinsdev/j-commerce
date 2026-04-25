@@ -21,6 +21,22 @@ management:
         include: prometheus,health,info
 
 broker:
+  exchanges:
+    paymentGeneratedFanout:
+      name: payment.generated.fanout
+
+    paymentConfirmedFanout:
+      name: payment.confirmed.fanout
+
   queues:
-    shoppingCartConfirmation:
-      name: shopping_cart_confirmation
+    createOrder:
+      name: order.create_order
+
+    generatePayment:
+      name: payment.generate_payment
+
+    handlePaymentTimeout:
+      name: order.handle_payment_timeout
+
+    confirmOrderPayment:
+      name: order.confirm_order_payment

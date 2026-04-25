@@ -1,181 +1,87 @@
-# J-Commerce: AI Agent Development Guide
+# Agent Guidelines
 
-Welcome! This guide provides everything you need to understand and develop within the J-Commerce microservices architecture.
+## Project Overview
 
----
+J-Commerce is a microservice-based e-commerce platform built with Java 21, Spring Boot, PostgreSQL, Redis, and RabbitMQ.
 
-## 📋 Quick Navigation
+## Service Architecture
 
-- **[Project Overview](./OVERVIEW.md)** - Architecture, tech stack, and core concepts
-- **[Development Standards](./DEVELOPMENT.md)** - Coding patterns, conventions, and best practices
-- **[Architecture Patterns](./ARCHITECTURE.md)** - Layered structure, DDD principles, communication patterns
-- **[Microservices Guide](./MICROSERVICES.md)** - Details on each service and their responsibilities
-- **[Testing Standards](./TESTING.md)** - Unit testing patterns, AAA pattern, Mockito usage
-- **[Integration Testing](./INTEGRATION_TESTING.md)** ⭐ NEW - Repository tests, Controller tests, @DataJpaTest patterns
+### Microservices
 
----
+1. **microservice-identity**: Authentication, JWT issuance, user management
+2. **microservice-product**: Product catalogue, stock, pricing, wishlist, shopping cart
+3. **microservice-order**: Order lifecycle, order processing
+4. **microservice-payment**: Payment processing
+5. **microservice-notification**: User notifications
 
-## 🎯 Core Principles
-
-1. **Clean Architecture**: Separation of concerns through domain → application → infra layers
-2. **Domain-Driven Design**: Domain logic is independent of frameworks
-3. **Microservices**: Each service has its own database and bounded contexts
-4. **Event-Driven**: Services communicate asynchronously via RabbitMQ
-5. **Security**: JWT-based auth with asymmetric cryptography (ECC)
-
----
-
-## 📁 Project Structure
+### Each Service Structure
 
 ```
-j-commerce/
-├── .agent/                          # AI Agent documentation
-├── docker-compose.yaml              # Full stack orchestration
-├── Caddyfile                        # Reverse proxy configuration
-├── prometheus.yml                   # Metrics configuration
-├── grafana.yml                      # Monitoring dashboards
-│
-├── microservice-identity/           # Authentication & user profiles
-├── microservice-product/            # Catalog & inventory
-├── microservice-order/              # Order management & shopping cart
-├── microservice-payment/            # Payment processing
-└── microservice-notification/       # User notifications
+src/main/java/com/{module}/
+├── application/
+│   ├── dto/           # Data Transfer Objects (records)
+│   ├── event/         # Domain events
+│   ├── exception/     # Custom exceptions
+│   └── service/       # Business logic services
+├── domain/
+│   └── entity/        # JPA entities
+├── infra/
+│   ├── persistence/   # JpaRepository interfaces
+│   └── web/           # REST controllers
+└── config/            # Configuration classes
 ```
 
----
+## Authentication Flow
 
-## 🚀 Getting Started
+1. Client calls `/api/v1/auth/login` with email/password
+2. Identity service validates credentials, issues JWT access + refresh tokens
+3. Access token: 1 hour expiry, Refresh token: 14 days expiry
+4. Other services validate JWT via JWKS endpoint at `/.well-known/jwks.json`
+5. Role scope in JWT determines authorization (SCOPE_ADMIN, SCOPE_USER, etc.)
 
-### Prerequisites
-- Java 21
-- Docker & Docker Compose
-- Maven 3.8+
+## Database Patterns
 
-### Running the Stack
+- **Soft Delete**: All entities use `is_active` flag, never hard delete
+- **Flyway**: Database migrations in `src/main/resources/db/migration/`
+- **UUID**: Primary keys for user-related tables
+- **IDENTITY**: Auto-increment for lookup tables (categories, roles)
 
-```bash
-# Copy environment file
-cp .example.env .env
+## API Patterns
 
-# Start all services
-docker-compose up -d
+### Public Endpoints
+- GET `/api/v1/...` - Read operations
+- POST `/api/v1/...` - Create operations
+- PATCH `/api/v1/...` - Update operations
+- DELETE `/api/v1/...` - Soft delete (set is_active=false)
 
-# Check status
-docker-compose ps
-```
+### Admin Endpoints
+- GET `/admin/api/v1/...`
+- POST `/admin/api/v1/...`
+- PATCH `/admin/api/v1/...`
+- DELETE `/admin/api/v1/...`
 
-Services will be available at:
-- Identity: `https://localhost/identity`
-- Product: `https://localhost/product`
-- Order: `https://localhost/order`
-- Payment: `https://localhost/payment`
-- Notification: `https://localhost/notification`
+## Common Dependencies
 
----
+- Spring Web
+- Spring Security (OAuth2 Resource Server)
+- Spring Data JPA
+- Spring Validation
+- Spring AMQP (RabbitMQ)
+- Flyway
+- PostgreSQL Driver
+- Lombok
 
-## 💡 When to Use These Guides
+## Error Handling
 
-| Task | Guide |
-|------|-------|
-| Understanding the overall system | OVERVIEW.md |
-| Writing new features/controllers/services | DEVELOPMENT.md + ARCHITECTURE.md |
-| Adding a new microservice | MICROSERVICES.md |
-| Modifying existing service | Service-specific README in MICROSERVICES.md |
-| Working with databases/entities | ARCHITECTURE.md (Domain layer) |
-| Setting up inter-service communication | ARCHITECTURE.md (Communication section) |
-| **Writing unit tests (Services)** | **TESTING.md** |
-| **Writing integration tests (Repository/Controller)** | **INTEGRATION_TESTING.md** ⭐ NEW |
-| **Understanding @DataJpaTest patterns** | **INTEGRATION_TESTING.md** ⭐ NEW |
-| **Understanding test patterns and AAA** | **TESTING.md** |
+- Custom exceptions extend RuntimeException
+- GlobalExceptionHandler maps exceptions to HTTP responses
+- StandardResponse<T> wrapper for all responses
 
----
+## Event Publishing
 
-## 🔧 Common Tasks
+- ApplicationEventPublisher for domain events
+- Async event handling via @Async or RabbitMQ
 
-### Adding a New Endpoint
+## Testing Requirements
 
-1. Create a DTO in `application/dto/`
-2. Create a Service method in `application/service/`
-3. Create a Controller in `infra/web/`
-4. **Write unit tests** (see TESTING.md)
-5. Document in API docs
-
-**Reference**: Check AuthController in microservice-identity
-
-### Adding a New Entity
-
-1. Create entity in `domain/entity/` with JPA annotations
-2. Create repository in `infra/persistence/` (extends JpaRepository)
-3. Inject in service if needed
-4. Add migrations if needed
-
-**Reference**: Check Product entity in microservice-product
-
-### Publishing an Event
-
-1. Create event class extending ApplicationEvent
-2. Publish via ApplicationEventPublisher in service
-3. Create event listener in consuming service
-4. Publish to RabbitMQ if cross-service
-
-**Reference**: Check ProfileCreatedEvent in microservice-identity
-
-### Writing Unit Tests
-
-1. Create test class in `src/test/` same package as service
-2. Mock all dependencies with `@Mock`
-3. Inject service with `@InjectMocks`
-4. Write tests following AAA pattern (Arrange → Act → Assert)
-5. Use Mockito for stubbing and verification
-
-**Reference**: Check AdminProductServiceTests (25 comprehensive tests)
-
----
-
-## 🎓 Learning Path
-
-**New to the codebase?** Follow this order:
-
-1. Read **OVERVIEW.md** - 15 min
-2. Skim **ARCHITECTURE.md** - 20 min
-3. Read **DEVELOPMENT.md** - 15 min
-4. **Read TESTING.md** - 20 min (Unit testing patterns, Mockito, AAA pattern)
-5. **Read INTEGRATION_TESTING.md** - 25 min ⭐ NEW (Repository tests, Controller tests, @DataJpaTest)
-6. Pick a microservice from **MICROSERVICES.md** and read its details - 10 min
-7. Find similar code in that service and study it
-8. Start making small changes and writing tests
-
-**Total Time**: ~115 minutes to understand the full stack and testing patterns
-
----
-
-## ❓ Help & Questions
-
-- **How do I authenticate in microservices?** → See ARCHITECTURE.md (Distributed Auth section)
-- **How do services communicate?** → See ARCHITECTURE.md (Communication Patterns)
-- **What's the coding style?** → See DEVELOPMENT.md (Code Style)
-- **Where do I add business logic?** → See ARCHITECTURE.md (Domain Layer)
-- **How do I write unit tests?** → See TESTING.md (AAA Pattern & Test Patterns)
-- **What's a good unit test structure?** → See TESTING.md (AdminProductServiceTests example)
-- **How do I test repositories with @DataJpaTest?** → See INTEGRATION_TESTING.md ⭐ NEW
-- **Do I need @ActiveProfiles("test")?** → See INTEGRATION_TESTING.md (@DataJpaTest section) ⭐ NEW
-- **How do I write controller tests?** → See INTEGRATION_TESTING.md (MockMvc section) ⭐ NEW
-
----
-
-## 📊 Tech Stack Summary
-
-| Layer | Technology |
-|-------|-----------|
-| **API Gateway** | Caddy (reverse proxy) |
-| **Framework** | Spring Boot 4.0.5 |
-| **Runtime** | Java 21 |
-| **Database** | PostgreSQL 17 |
-| **Cache** | Redis 7.4 |
-| **Message Broker** | RabbitMQ 4 |
-| **Monitoring** | Prometheus + Grafana |
-| **Security** | Spring Security + JWT (ECC) |
-
----
-
-**Last Updated**: April 2026 | **Project Status**: 🚧 In Development
+All service tests must follow the exact pattern defined in TESTING.md.

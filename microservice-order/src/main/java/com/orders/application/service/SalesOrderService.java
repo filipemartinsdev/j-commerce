@@ -5,8 +5,10 @@ import com.orders.application.dto.SalesOrderResponse;
 import com.orders.application.dto.SalesOrderSummaryResponse;
 import com.orders.application.exception.DeliveryAddressNotFoundException;
 import com.orders.application.exception.SalesOrderNotFoundException;
-import com.orders.application.message.ShoppingCartConfirmationMessage;
-import static com.orders.application.message.ShoppingCartConfirmationMessage.ShoppingCartConfirmationItem;
+import com.orders.application.message.CreateOrderMessage;
+import static com.orders.application.message.CreateOrderMessage.OrderItem;
+
+import com.orders.application.message.GeneratePaymentMessage;
 import com.orders.application.service.mapper.SalesOrderMapper;
 import com.orders.domain.entity.*;
 import com.orders.infra.persistence.*;
@@ -15,6 +17,7 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.math.BigDecimal;
 import java.util.List;
 import java.util.UUID;
 
@@ -27,8 +30,9 @@ public class SalesOrderService {
     private final DeliveryAddressRepository deliveryAddressRepository;
     private final ShippingStatusRepository shippingStatusRepository;
     private final ShippingRepository shippingRepository;
+    private final MessageBrokerProducer messageBrokerProducer;
 
-    public SalesOrderService(SalesOrderRepository salesOrderRepository, SalesOrderItemRepository salesOrderItemRepository, SalesOrderStatusRepository salesOrderStatusRepository, SalesOrderMapper salesOrderMapper, DeliveryAddressRepository deliveryAddressRepository, ShippingStatusRepository shippingStatusRepository, ShippingRepository shippingRepository) {
+    public SalesOrderService(SalesOrderRepository salesOrderRepository, SalesOrderItemRepository salesOrderItemRepository, SalesOrderStatusRepository salesOrderStatusRepository, SalesOrderMapper salesOrderMapper, DeliveryAddressRepository deliveryAddressRepository, ShippingStatusRepository shippingStatusRepository, ShippingRepository shippingRepository, MessageBrokerProducer messageBrokerProducer) {
         this.salesOrderRepository = salesOrderRepository;
         this.salesOrderItemRepository = salesOrderItemRepository;
         this.salesOrderStatusRepository = salesOrderStatusRepository;
@@ -36,13 +40,28 @@ public class SalesOrderService {
         this.deliveryAddressRepository = deliveryAddressRepository;
         this.shippingStatusRepository = shippingStatusRepository;
         this.shippingRepository = shippingRepository;
+        this.messageBrokerProducer = messageBrokerProducer;
     }
 
     @Transactional
-    public void confirmShoppingCart(ShoppingCartConfirmationMessage message) {
-        SalesOrder order = registerNewOrder(message.getUserId());
-        registerSalesOrderItems(order, message.getItems());
-        registerShipping(message.getDeliveryAddressId(), order);
+    public void createOrder(CreateOrderMessage message) {
+        SalesOrder order = registerNewOrder(message.userId());
+        registerSalesOrderItems(order, message.items());
+        registerShipping(message.deliveryAddressId(), order);
+
+        messageBrokerProducer.produceGeneratePayment(
+                new GeneratePaymentMessage(order.getId(), message.userId(), getTotalAmount(order))
+        );
+    }
+
+    private BigDecimal getTotalAmount(SalesOrder salesOrder){
+        BigDecimal value = new BigDecimal(0);
+
+        for (SalesOrderItem item : salesOrder.getItems()){
+            value = value.add(item.getUnitPrice().multiply(new BigDecimal(item.getUnits())));
+        }
+
+        return value;
     }
 
     private SalesOrder registerNewOrder(UUID userId) {
@@ -54,7 +73,7 @@ public class SalesOrderService {
         return salesOrderRepository.save(newSalesOrder);
     }
 
-    private void registerSalesOrderItems(SalesOrder salesOrder, List<ShoppingCartConfirmationItem> shoppingCartItems) {
+    private void registerSalesOrderItems(SalesOrder salesOrder, List<OrderItem> shoppingCartItems) {
         List<SalesOrderItem> salesOrderItems = shoppingCartItems.stream()
                 .map(shoppingCartItem -> {
                     var salesOrderItem = new SalesOrderItem();

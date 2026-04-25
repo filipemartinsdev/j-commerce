@@ -1,7 +1,7 @@
 info:
   name: create shopping cart item
   type: http
-  seq: 9
+  seq: 10
 
 http:
   method: POST
@@ -10,9 +10,13 @@ http:
     type: json
     data: |+
       {
-        "productSKUId": "c35fa22c-413e-4c81-ba82-d85b6e225da0",
-        "units": 1
+        "productSKUId": "749fc9de-ff4f-4fc4-b345-a983f79aab23",
+        "units": 3
       }
+
+
+
+
 
   auth: inherit
 

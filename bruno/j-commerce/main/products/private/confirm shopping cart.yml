@@ -8,9 +8,9 @@ http:
   url: https://localhost/product/api/v1/shopping-cart/checkout
   body:
     type: json
-    data: |-
+    data: |
       {
-        "deliveryAddressId": "7d7f7c92-4d6e-4531-986f-e462e422a85d"
+        "deliveryAddressId": "2f3e8b38-e05d-4fa2-8221-ea11f8c6a75c"
       }
   auth: inherit
 

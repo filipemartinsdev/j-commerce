@@ -19,3 +19,11 @@ management:
     web:
       exposure:
         include: prometheus,health,info
+
+broker:
+  queues:
+    notifyPaymentGenerated:
+      name: notification.notify_payment_generated
+
+    notifyPaymentConfirmed:
+      name: notification.notify_payment_confirmed

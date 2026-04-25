@@ -9,10 +9,10 @@ spring:
 
   jpa:
     hibernate:
-      ddl-auto: none
+      ddl-auto: create
 
   flyway:
-    enabled: true
+    enabled: false
 
 #    properties:
 #      hibernate:

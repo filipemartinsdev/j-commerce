@@ -22,8 +22,8 @@ management:
 
 broker:
   queues:
-    shoppingCartConfirmation:
-      name: shopping_cart_confirmation
+    createOrder:
+      name: order.create_order
 
 feign:
   clients:

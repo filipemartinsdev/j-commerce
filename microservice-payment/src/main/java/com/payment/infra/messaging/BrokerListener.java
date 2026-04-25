@@ -1,0 +1,35 @@
+package com.payment.infra.messaging;
+
+import com.payment.application.message.GeneratePaymentMessage;
+import com.payment.application.message.WaitPendingPaymentMessage;
+import com.payment.application.service.PaymentService;
+import lombok.extern.slf4j.Slf4j;
+import org.springframework.amqp.rabbit.annotation.RabbitListener;
+import org.springframework.messaging.handler.annotation.Payload;
+import org.springframework.stereotype.Component;
+
+@Component
+@Slf4j
+public class BrokerListener {
+    private final PaymentService paymentService;
+
+    public BrokerListener(PaymentService paymentService) {
+        this.paymentService = paymentService;
+    }
+
+    @RabbitListener(
+            queues = "${broker.queues.generatePayment.name}"
+    )
+    public void listenGeneratePayment(@Payload GeneratePaymentMessage message){
+        log.info("Received Generate Payment message");
+        paymentService.generatePayment(message);
+    }
+
+    @RabbitListener(
+            queues = "${broker.queues.waitPendingPayment.name}"
+    )
+    public void listenWaitPendingPayment(@Payload WaitPendingPaymentMessage message){
+        log.info("Received Wait Pending Payment message");
+        // FIXME: remove this consumer method
+    }
+}

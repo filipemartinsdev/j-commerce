@@ -3,6 +3,7 @@ package com.identity.security.infra.web;
 import com.identity.common.dto.PagedResponse;
 import com.identity.common.dto.StandardResponse;
 import com.identity.security.application.dto.UpdateUserRole;
+import com.identity.security.application.dto.UserCredentialsResponse;
 import com.identity.security.application.service.AuthService;
 import com.identity.security.application.service.UserCredentialsMapper;
 import jakarta.validation.Valid;
@@ -26,7 +27,7 @@ public class AdminController {
 
     @PatchMapping("/users/{userId}")
     public ResponseEntity<Void> updateUserRole(@PathVariable UUID userId, @Valid @RequestBody UpdateUserRole request) {
-        authService.updateUserRole(userId, request.role());
+        authService.updateUserRole(userId, request.roles());
 
         return ResponseEntity
                 .status(HttpStatus.CREATED)

@@ -5,12 +5,15 @@ info:
 
 http:
   method: PATCH
-  url: https://localhost/identity/admin/api/v1/users/f16461ea-dd0a-4b72-be05-470f5025b1d4
+  url: https://localhost/identity/admin/api/v1/users/61305239-1c1d-4e45-91d9-e6dd7f790573
   body:
     type: json
-    data: |-
+    data: |
       {
-        "role": "ADMIN"
+        "roles": [
+          "ADMIN",
+          "STOCK_MANAGER"
+        ]
       }
   auth: inherit
 

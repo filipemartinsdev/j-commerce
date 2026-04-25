@@ -8,7 +8,7 @@ http:
   url: https://localhost/product/admin/api/v1/products
   body:
     type: json
-    data: |-
+    data: |
       {
         "name": "Mouse Atack Shark x11",
         "categoryId": 3

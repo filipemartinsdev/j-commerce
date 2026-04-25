@@ -8,10 +8,11 @@ http:
   url: https://localhost/product/api/v1/wishlist
   body:
     type: json
-    data: |
+    data: |+
       {
         "productSKUId": "fd957b6e-b656-4b5a-9736-6dba2ad8d25e"
       }
+
   auth: inherit
 
 settings:

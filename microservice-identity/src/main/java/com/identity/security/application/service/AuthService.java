@@ -8,16 +8,16 @@ import com.identity.security.application.exception.ForbiddenOperationException;
 import com.identity.security.application.exception.UserAlreadyExistsException;
 import com.identity.security.application.exception.UserNotFoundException;
 import com.identity.security.domain.entity.RefreshToken;
+import com.identity.security.domain.entity.Role;
 import com.identity.security.domain.entity.UserCredentials;
-import com.identity.security.domain.entity.UserRole;
 import com.identity.security.infra.persistence.RefreshTokenRepository;
+import com.identity.security.infra.persistence.RoleRepository;
 import com.identity.security.infra.persistence.UserCredentialsRepository;
-import com.identity.security.infra.web.UserCredentialsResponse;
+import com.identity.security.application.dto.UserCredentialsResponse;
 import com.nimbusds.jose.jwk.JWKSet;
 import com.nimbusds.jose.jwk.RSAKey;
 import jakarta.transaction.Transactional;
 import jakarta.validation.Valid;
-import jakarta.validation.constraints.NotNull;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.data.domain.Page;
@@ -28,6 +28,7 @@ import org.springframework.stereotype.Service;
 
 import java.security.interfaces.RSAPublicKey;
 import java.time.Instant;
+import java.util.List;
 import java.util.Map;
 import java.util.UUID;
 
@@ -44,11 +45,12 @@ public class AuthService {
     private final RefreshTokenRepository refreshTokenRepository;
     private final ApplicationEventPublisher applicationEventPublisher;
     private final UserCredentialsMapper userCredentialsMapper;
+    private final RoleRepository roleRepository;
 
     @Value("${jwt.public-key}")
     private RSAPublicKey publicKey;
 
-    public AuthService(UserCredentialsRepository userCredentialsRepository, PasswordEncoder passwordEncoder, JwtEncoder jwtEncoder, JwtDecoder jwtDecoder, RefreshTokenRepository refreshTokenRepository, ApplicationEventPublisher applicationEventPublisher, UserCredentialsMapper userCredentialsMapper) {
+    public AuthService(UserCredentialsRepository userCredentialsRepository, PasswordEncoder passwordEncoder, JwtEncoder jwtEncoder, JwtDecoder jwtDecoder, RefreshTokenRepository refreshTokenRepository, ApplicationEventPublisher applicationEventPublisher, UserCredentialsMapper userCredentialsMapper, RoleRepository roleRepository) {
         this.userCredentialsRepository = userCredentialsRepository;
         this.passwordEncoder = passwordEncoder;
         this.jwtEncoder = jwtEncoder;
@@ -56,6 +58,7 @@ public class AuthService {
         this.refreshTokenRepository = refreshTokenRepository;
         this.applicationEventPublisher = applicationEventPublisher;
         this.userCredentialsMapper = userCredentialsMapper;
+        this.roleRepository = roleRepository;
     }
 
     @Transactional
@@ -69,9 +72,11 @@ public class AuthService {
         newUserCredentials.setEmail(request.email());
         newUserCredentials.setFirstName(request.firstName());
         newUserCredentials.setLastName(request.lastName());
-        newUserCredentials.setRole(UserRole.USER);
         newUserCredentials.setIsActive(true);
         newUserCredentials.setEncryptedPassword(encryptedPassword);
+        newUserCredentials.getRoles().add(
+                roleRepository.getReferenceById(Role.Value.USER.getId())
+        );
 
         UserCredentials createdUserCredentials = userCredentialsRepository.save(newUserCredentials);
 
@@ -97,17 +102,27 @@ public class AuthService {
         if (!passwordEncoder.matches(request.password(), userCredentials.getEncryptedPassword()))
             throw new ForbiddenOperationException("Wrong password");
 
-        return generateTokens(userCredentials.getUserId(), userCredentials.getRole().toString());
+        return generateTokens(userCredentials.getUserId(), getScopeByRoleList(userCredentials.getRoles()));
     }
 
-    private LoginResponse generateTokens(UUID userId, String role){
-        TokenResponse accessToken = generateAccessToken(userId, role);
-        TokenResponse refreshToken = generateRefreshToken(userId, role);
+    private String getScopeByRoleList(List<Role> roleList){
+        StringBuilder stringBuilder = new StringBuilder();
+
+        for (Role role : roleList) {
+            stringBuilder.append(role.getName()).append(" ");
+        }
+
+        return stringBuilder.toString();
+    }
+
+    private LoginResponse generateTokens(UUID userId, String scope){
+        TokenResponse accessToken = generateAccessToken(userId, scope);
+        TokenResponse refreshToken = generateRefreshToken(userId, scope);
 
         return new LoginResponse(accessToken, refreshToken);
     }
 
-    private TokenResponse generateAccessToken(UUID userId, String role){
+    private TokenResponse generateAccessToken(UUID userId, String scope){
         Instant now = Instant.now();
         Instant expiration = now.plusSeconds(ACCESS_TOKEN_EXPIRATION_SECONDS);
 
@@ -117,7 +132,7 @@ public class AuthService {
                 .expiresAt(expiration)
                 .subject(userId.toString())
                 .claim("token_type", "access")
-                .claim("scope", role)
+                .claim("scope", scope)
                 .build();
 
         String jwtValue = jwtEncoder.encode(
@@ -127,7 +142,7 @@ public class AuthService {
         return new TokenResponse(jwtValue, expiration);
     }
 
-    private TokenResponse generateRefreshToken(UUID userId, String role){
+    private TokenResponse generateRefreshToken(UUID userId, String scope){
         Instant now = Instant.now();
         Instant expiration = now.plusSeconds(REFRESH_TOKEN_EXPIRATION_SECONDS);
 
@@ -145,7 +160,7 @@ public class AuthService {
                 .expiresAt(expiration)
                 .subject(userId.toString())
                 .claim("token_type", "refresh")
-                .claim("scope", role)
+                .claim("scope", scope)
                 .build();
 
         String jwtValue = jwtEncoder.encode(
@@ -172,7 +187,7 @@ public class AuthService {
 
         revokeRefreshToken(tokenId);
 
-        return generateTokens(userId, user.getRole().toString());
+        return generateTokens(userId, getScopeByRoleList(user.getRoles()));
     }
 
     private Jwt decodeToken(String token) {
@@ -228,11 +243,15 @@ public class AuthService {
         return new JWKSet(jwk).toJSONObject();
     }
 
-
-    public void updateUserRole(UUID userId, UserRole role) {
+    public void updateUserRole(UUID userId, List<Role.Value> roles) {
         UserCredentials userCredentials = userCredentialsRepository.findById(userId)
                 .orElseThrow(() -> new UserNotFoundException("user not found with id: "+userId));
-        userCredentials.setRole(role);
+
+        userCredentials.getRoles().clear();
+        for (Role.Value role : roles) {
+            userCredentials.getRoles().add(roleRepository.getReferenceById(role.getId()));
+        }
+
         userCredentialsRepository.save(userCredentials);
     }
 

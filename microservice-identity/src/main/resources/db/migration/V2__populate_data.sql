@@ -1,11 +1,17 @@
-INSERT INTO user_credentials (user_id, email, encrypted_password, first_name, last_name, role, created_at, is_active)
+INSERT INTO role (id, name)
+VALUES
+    (1, 'USER'),
+    (2, 'ADMIN'),
+    (3, 'STOCK_MANAGER'),
+    (4, 'DRIVER');
+
+INSERT INTO user_credentials (user_id, email, encrypted_password, first_name, last_name, created_at, is_active)
 VALUES(
     gen_random_uuid(),
     'admin@gmail.com',
     '$2a$10$WhEbY/14jwqrMrzS0dIUGeb839nF9GaYbnstoWWyG1a0.xbvOgH5K',
     'admin',
     'test',
-    'ADMIN',
     CURRENT_TIMESTAMP,
     TRUE
 );
@@ -15,7 +21,7 @@ VALUES (
     (
         SELECT u.user_id
         FROM user_credentials u
-        WHERE u.role = 'ADMIN'
+        WHERE u.email = 'admin@gmail.com'
         LIMIT 1
     ),
     'admin@gmail.com',
@@ -23,4 +29,15 @@ VALUES (
     'test',
     CURRENT_TIMESTAMP,
     TRUE
+);
+
+INSERT INTO user_role (user_id, role_id)
+VALUES (
+    (
+        SELECT u.user_id
+        FROM user_credentials u
+        WHERE u.email = 'admin@gmail.com'
+        LIMIT 1
+    ),
+    2
 );

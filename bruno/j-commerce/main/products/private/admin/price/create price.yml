@@ -10,9 +10,9 @@ http:
     type: json
     data: |-
       {
-        "productSKUId": "c35fa22c-413e-4c81-ba82-d85b6e225da0",
-        "price": 149.99,
-        "priceTypeId": 3 
+        "productSKUId": "749fc9de-ff4f-4fc4-b345-a983f79aab23",
+        "price": 129.99,
+        "priceTypeId": 1
       }
   auth: inherit
 

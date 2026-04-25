@@ -1,6 +1,9 @@
-package com.identity.security.infra.web;
+package com.identity.security.application.dto;
+
+import com.identity.security.domain.entity.Role;
 
 import java.time.Instant;
+import java.util.List;
 import java.util.UUID;
 
 public record UserCredentialsResponse(
@@ -8,7 +11,7 @@ public record UserCredentialsResponse(
         String email,
         String firstName,
         String lastName,
-        String role,
+        List<Role.Value> roles,
         Instant createdAt
 ) {
 }

@@ -30,6 +30,10 @@ public class StandardResponse<T> {
         return new StandardResponse<T>("fail", message, data);
     }
 
+    public static <T> StandardResponse<T> error(){
+        return new StandardResponse<T>("error", null, null);
+    }
+
     public static <T> StandardResponse<T> error(String message){
         return new StandardResponse<T>("error", message, null);
     }

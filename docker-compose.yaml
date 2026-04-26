@@ -49,6 +49,18 @@ services:
     volumes:
       - order_data:/var/lib/postgresql/data
 
+  notification_db:
+    image: postgres:17-alpine
+    container_name: order_db
+    ports:
+      - "5435:5432"
+    environment:
+      POSTGRES_DB: ${PG_NOTIFICATION_DATABASE}
+      POSTGRES_USER: ${PG_NOTIFICATION_USER}
+      POSTGRES_PASSWORD: ${PG_NOTIFICATION_PASSWORD}
+    volumes:
+      - notification_data:/var/lib/postgresql/data
+
   cache:
     container_name: cache
     image: redis:7.4-alpine
@@ -207,3 +219,4 @@ volumes:
   prometheus_data:
   grafana_data:
   rabbitmq_data:
+  notification_data:

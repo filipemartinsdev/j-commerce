@@ -19,7 +19,6 @@ public class MessageBrokerProducer {
     }
 
     public void produceGeneratePayment(GeneratePaymentMessage message){
-        log.info("producing Generate Payment Message");
         rabbitTemplate.convertAndSend("", GENERATE_PAYMENT_QUEUE_NAME, message);
     }
 }

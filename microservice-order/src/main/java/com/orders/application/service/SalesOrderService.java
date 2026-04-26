@@ -45,9 +45,10 @@ public class SalesOrderService {
 
     @Transactional
     public void createOrder(CreateOrderMessage message) {
-        SalesOrder order = registerNewOrder(message.userId());
-        registerSalesOrderItems(order, message.items());
+        SalesOrder order = registerNewOrder(message.userId(), message.items());
+//        registerSalesOrderItems(order, message.items());
         registerShipping(message.deliveryAddressId(), order);
+
 
         messageBrokerProducer.produceGeneratePayment(
                 new GeneratePaymentMessage(order.getId(), message.userId(), getTotalAmount(order))
@@ -64,28 +65,31 @@ public class SalesOrderService {
         return value;
     }
 
-    private SalesOrder registerNewOrder(UUID userId) {
-        var newSalesOrder = new SalesOrder();
-        newSalesOrder.setUserId(userId);
-        newSalesOrder.setStatus(
+    private SalesOrder registerNewOrder(UUID userId, List<OrderItem> items) {
+        var order = new SalesOrder();
+        order.setUserId(userId);
+        order.setStatus(
                 salesOrderStatusRepository.getReferenceById(SalesOrderStatus.Value.PENDING.getId())
         );
-        return salesOrderRepository.save(newSalesOrder);
+
+        setSalesOrderItems(order, items);
+
+        return salesOrderRepository.save(order);
     }
 
-    private void registerSalesOrderItems(SalesOrder salesOrder, List<OrderItem> shoppingCartItems) {
-        List<SalesOrderItem> salesOrderItems = shoppingCartItems.stream()
-                .map(shoppingCartItem -> {
+    private void setSalesOrderItems(SalesOrder salesOrder, List<OrderItem> items) {
+        List<SalesOrderItem> salesOrderItems = items.stream()
+                .map(item -> {
                     var salesOrderItem = new SalesOrderItem();
                     salesOrderItem.setSalesOrder(salesOrder);
-                    salesOrderItem.setProductSkuId(shoppingCartItem.getProductSKUId());
-                    salesOrderItem.setUnits(shoppingCartItem.getUnits());
-                    salesOrderItem.setUnitPrice(shoppingCartItem.getUnitPrice());
-                    salesOrderItem.setProductSkuName(shoppingCartItem.getName());
+                    salesOrderItem.setProductSkuId(item.getProductSKUId());
+                    salesOrderItem.setUnits(item.getUnits());
+                    salesOrderItem.setUnitPrice(item.getUnitPrice());
+                    salesOrderItem.setProductSkuName(item.getName());
                     return salesOrderItem;
                 })
                 .toList();
-        salesOrderItemRepository.saveAll(salesOrderItems);
+        salesOrder.setItems(salesOrderItems);
     }
 
     private void registerShipping(UUID deliveryAddressId, SalesOrder salesOrder) {

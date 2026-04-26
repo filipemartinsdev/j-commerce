@@ -1,6 +1,12 @@
 package com.notification.application.message;
 
-public record NotifyPaymentGeneratedMessage (
+import java.math.BigDecimal;
+import java.util.UUID;
 
+public record NotifyPaymentGeneratedMessage (
+        UUID paymentId,
+        UUID orderId,
+        UUID userId,
+        BigDecimal value
 ) {
 }

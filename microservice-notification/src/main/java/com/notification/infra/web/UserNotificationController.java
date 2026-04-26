@@ -9,9 +9,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.security.oauth2.jwt.Jwt;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 import java.util.UUID;
 
@@ -25,7 +23,10 @@ public class UserNotificationController {
     }
 
     @GetMapping
-    public ResponseEntity<StandardResponse<PagedResponse<UserNotificationResponse>>> getUserNotifications(@AuthenticationPrincipal Jwt jwt, Pageable pageable) {
+    public ResponseEntity<StandardResponse<PagedResponse<UserNotificationResponse>>> getUserNotifications(
+            @AuthenticationPrincipal Jwt jwt,
+            Pageable pageable
+    ) {
         UUID authenticatedUserId = UUID.fromString(jwt.getSubject());
 
         return ResponseEntity
@@ -33,5 +34,19 @@ public class UserNotificationController {
                 .body(StandardResponse.success(
                         userNotificationService.getAll(authenticatedUserId, pageable)
                 ));
+    }
+
+    @PostMapping("/{id}/read")
+    public ResponseEntity<Void> markNotificationAsRead(
+            @PathVariable UUID id,
+            @AuthenticationPrincipal Jwt jwt
+    ) {
+        UUID authenticatedUserId = UUID.fromString(jwt.getSubject());
+
+        userNotificationService.markAsRead(id, authenticatedUserId);
+
+        return ResponseEntity
+                .status(HttpStatus.CREATED)
+                .build();
     }
 }

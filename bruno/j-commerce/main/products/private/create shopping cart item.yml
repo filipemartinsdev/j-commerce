@@ -8,17 +8,12 @@ http:
   url: https://localhost/product/api/v1/shopping-cart
   body:
     type: json
-    data: |+
+    data: |-
       {
-        "productSKUId": "749fc9de-ff4f-4fc4-b345-a983f79aab23",
-        "units": 3
+        "productSKUId": "ac0d3df3-cd0e-49d7-8586-749b0f71fef1",
+        "units": 30
         
       }
-
-
-
-
-
   auth: inherit
 
 settings:

@@ -1,7 +1,7 @@
 info:
   name: delete shopping cart item
   type: http
-  seq: 13
+  seq: 10
 
 http:
   method: DELETE

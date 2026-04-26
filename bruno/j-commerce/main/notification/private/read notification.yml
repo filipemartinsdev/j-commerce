@@ -1,0 +1,19 @@
+info:
+  name: read notification
+  type: http
+  seq: 2
+
+http:
+  method: POST
+  url: https://localhost/notification/api/v1/notifications/:id/read
+  params:
+    - name: id
+      value: ""
+      type: path
+  auth: inherit
+
+settings:
+  encodeUrl: true
+  timeout: 0
+  followRedirects: true
+  maxRedirects: 5

@@ -1,6 +1,6 @@
 spring:
   application:
-    name: microservice-identity
+    name: microservice-notification
 
   datasource:
     url: jdbc:h2:mem:test

@@ -3,7 +3,7 @@ server:
 
 spring:
   application:
-    name: microservice-identity
+    name: microservice-notification
 
   profiles:
     active: ${ACTIVE_PROFILE:test}

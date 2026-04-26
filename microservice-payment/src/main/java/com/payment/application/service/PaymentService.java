@@ -2,8 +2,11 @@ package com.payment.application.service;
 
 import com.payment.application.message.GeneratePaymentMessage;
 import com.payment.application.message.PaymentConfirmedMessage;
+import com.payment.application.message.PaymentGeneratedMessage;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
+
+import java.util.UUID;
 
 @Slf4j
 @Component
@@ -16,9 +19,14 @@ public class PaymentService {
     }
 
     public void generatePayment(GeneratePaymentMessage message){
-        messageBrokerProducer.producePaymentGeneratedMessage(new PaymentGeneratedMessage());
-        log.info("Producing Payment Generated message");
-        messageBrokerProducer.producePaymentConfirmedMessage(new PaymentConfirmedMessage());
-        log.info("Producing Payment Confirmed message");
+        UUID mockPaymentId = UUID.randomUUID();
+
+        messageBrokerProducer.producePaymentGeneratedMessage(new PaymentGeneratedMessage(
+                mockPaymentId, message.orderId(), message.userId(), message.totalAmount()
+        ));
+
+        messageBrokerProducer.producePaymentConfirmedMessage(new PaymentConfirmedMessage(
+                mockPaymentId, message.orderId(), message.userId(), message.totalAmount()
+        ));
     }
 }

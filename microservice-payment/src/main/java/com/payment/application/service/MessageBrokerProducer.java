@@ -1,6 +1,7 @@
 package com.payment.application.service;
 
 import com.payment.application.message.PaymentConfirmedMessage;
+import com.payment.application.message.PaymentGeneratedMessage;
 import org.springframework.amqp.rabbit.core.RabbitTemplate;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;

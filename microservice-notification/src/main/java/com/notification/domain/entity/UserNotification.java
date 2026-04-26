@@ -33,6 +33,9 @@ public class UserNotification {
     private UserNotificationCategory category;
 
     @NotNull
+    @Column(name = "is_read")
+    private Boolean isRead = false;
+
     @CreationTimestamp
     @Column(name = "created_at")
     private Instant createdAt;

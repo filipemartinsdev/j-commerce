@@ -1,5 +1,5 @@
 CREATE TABLE user_notification_category (
-    id   SERIAL PRIMARY KEY,
+    id   INTEGER PRIMARY KEY,
     name VARCHAR(50) NOT NULL
 );
 
@@ -9,6 +9,9 @@ CREATE TABLE user_notification (
     title       VARCHAR(50) NOT NULL,
     description VARCHAR(255) NOT NULL,
     category_id INT REFERENCES user_notification_category(id) NOT NULL,
+    is_read     BOOLEAN NOT NULL DEFAULT FALSE,
     created_at  TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT CURRENT_TIMESTAMP
 );
 
+CREATE INDEX user_notification_user_id_idx
+    ON user_notification(user_id);

@@ -8,7 +8,7 @@ public record UserNotificationResponse(
         String title,
         String description,
         String category,
-        boolean isRead,
+        boolean viewed,
         Instant createdAt
 ) {
 }

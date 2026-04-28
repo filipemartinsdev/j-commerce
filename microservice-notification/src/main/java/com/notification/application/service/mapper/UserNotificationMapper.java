@@ -12,7 +12,7 @@ public class UserNotificationMapper {
                 userNotification.getTitle(),
                 userNotification.getDescription(),
                 userNotification.getCategory().getName(),
-                userNotification.getIsRead(),
+                userNotification.getViewed(),
                 userNotification.getCreatedAt()
         );
     }

@@ -33,8 +33,8 @@ public class UserNotification {
     private UserNotificationCategory category;
 
     @NotNull
-    @Column(name = "is_read")
-    private Boolean isRead = false;
+    @Column(name = "viewed")
+    private Boolean viewed = false;
 
     @CreationTimestamp
     @Column(name = "created_at")

@@ -1,5 +1,6 @@
 package com.notification.infra.messaging;
 
+import com.notification.application.message.NotifyOrderCancelledMessage;
 import com.notification.application.message.NotifyPaymentConfirmedMessage;
 import com.notification.application.message.NotifyPaymentGeneratedMessage;
 import com.notification.application.service.UserNotificationService;
@@ -20,7 +21,6 @@ public class MessageBrokerListener {
             queues = "${broker.queues.notifyPaymentGenerated.name}"
     )
     public void listenNotifyPaymentGenerated(NotifyPaymentGeneratedMessage message) {
-        log.info("Received Notify Payment Generated message");
         userNotificationService.notifyPaymentGenerated(message);
     }
 
@@ -28,7 +28,13 @@ public class MessageBrokerListener {
             queues = "${broker.queues.notifyPaymentConfirmed.name}"
     )
     public void listenNotifyConfirmed(NotifyPaymentConfirmedMessage message) {
-        log.info("Received Notify Payment Confirmed message");
         userNotificationService.notifyPaymentConfirmed(message);
+    }
+
+    @RabbitListener(
+            queues = "${broker.queues.notifyCancelledOrder.name}"
+    )
+    public void listenNotifyOrderCancelled(NotifyOrderCancelledMessage message) {
+        userNotificationService.notifyCancelledOrder(message);
     }
 }

@@ -4,6 +4,7 @@ import com.notification.application.dto.PagedResponse;
 import com.notification.application.dto.UserNotificationResponse;
 import com.notification.application.exception.UserNotificationHasAlreadyBeenReadException;
 import com.notification.application.exception.UserNotificationNotFoundException;
+import com.notification.application.message.NotifyOrderCancelledMessage;
 import com.notification.application.message.NotifyPaymentConfirmedMessage;
 import com.notification.application.message.NotifyPaymentGeneratedMessage;
 import com.notification.application.service.mapper.UserNotificationMapper;
@@ -48,10 +49,10 @@ public class UserNotificationService {
         UserNotification notification = userNotificationRepository.findByIdAndUserId(id, userId)
                 .orElseThrow(() -> new UserNotificationNotFoundException("User notification not found with ID: "+id));
 
-        if (notification.getIsRead())
+        if (notification.getViewed())
             throw new UserNotificationHasAlreadyBeenReadException("User notification has already been read");
 
-        notification.setIsRead(true);
+        notification.setViewed(true);
         userNotificationRepository.save(notification);
     }
 
@@ -75,6 +76,18 @@ public class UserNotificationService {
         );
         notification.setTitle("Payment Confirmed");
         notification.setDescription("Your payment of R$"+message.value()+" has been confirmed. Your order will be shipped soon");
+
+        userNotificationRepository.save(notification);
+    }
+
+    public void notifyCancelledOrder(NotifyOrderCancelledMessage message) {
+        UserNotification notification = new UserNotification();
+        notification.setUserId(message.userId());
+        notification.setCategory(
+                userNotificationCategoryRepository.getReferenceById(UserNotificationCategory.Value.PURCHASE.getId())
+        );
+        notification.setTitle("Order Cancelled");
+        notification.setDescription("Your order of R$"+message.value()+" has been cancelled. More details were sent by email");
 
         userNotificationRepository.save(notification);
     }

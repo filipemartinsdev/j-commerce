@@ -1,0 +1,64 @@
+localhost {
+    tls internal
+
+    handle_path /identity/* {
+        reverse_proxy identity:8080
+
+        rate_limit {
+            zone dynamic_zone {
+                key     {http.request.remote.host}
+                events  30
+                window  1m
+            }
+        }
+    }
+
+    handle_path /product/* {
+        reverse_proxy product:8080
+
+        rate_limit {
+            zone dynamic_zone {
+                key     {http.request.remote.host}
+                events  30
+                window  1m
+            }
+        }
+    }
+
+    handle_path /order/* {
+        reverse_proxy order:8080
+
+        rate_limit {
+            zone dynamic_zone {
+                key     {http.request.remote.host}
+                events  30
+                window  1m
+            }
+        }
+    }
+
+    handle_path /notification/* {
+        reverse_proxy notification:8080
+
+        rate_limit {
+            zone dynamic_zone {
+                key     {http.request.remote.host}
+                events  30
+                window  1m
+            }
+        }
+    }
+
+    handle_path /payment/* {
+        reverse_proxy payment:8080
+    }
+
+    handle {
+        abort
+    }
+
+    log {
+        output stdout
+        format json
+    }
+}

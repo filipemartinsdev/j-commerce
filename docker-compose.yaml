@@ -12,6 +12,8 @@ services:
       - caddy_data:/data
       - caddy_config:/config
     restart: unless-stopped
+    environment:
+      SERVER_DOMAIN:
 
 # ----- DATA ------
 

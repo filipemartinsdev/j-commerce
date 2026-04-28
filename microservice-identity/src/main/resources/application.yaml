@@ -8,11 +8,25 @@ spring:
   profiles:
     active: ${ACTIVE_PROFILE:test}
 
+  cache:
+    type: redis
+
   security:
     oauth2:
       resourceserver:
         jwt:
           jwk-set-uri: http://localhost:8080/.well-known/jwks.json
+
+  rabbitmq:
+    listener:
+      direct:
+        prefetch: 20
+
+        retry:
+          enabled: true
+          max-retries: 3
+          multiplier: 2.0
+          initial-interval: 2000ms
 
 management:
   endpoints:

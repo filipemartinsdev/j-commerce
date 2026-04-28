@@ -1,5 +1,5 @@
 {$SERVER_DOMAIN} {
-    handle_path /rabbitmq/* {
+    handle_path rabbitmq.{$SERVER_DOMAIN} {
         reverse_proxy rabbitmq:15672
 
         rate_limit {
@@ -11,7 +11,7 @@
         }
     }
 
-    handle_path /grafana/* {
+    handle_path grafana.{$SERVER_DOMAIN} {
         reverse_proxy grafana:3000
 
         rate_limit {
@@ -23,7 +23,7 @@
         }
     }
 
-    handle_path /prometheus/* {
+    handle_path prometheus.{$SERVER_DOMAIN} {
         reverse_proxy prometheus:9090
 
         rate_limit {

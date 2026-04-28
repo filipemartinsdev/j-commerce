@@ -21,7 +21,7 @@ public class StockMovementType {
     public static enum Value {
         ENTRY(1, "ENTRY"),
         SALE(2, "SALE"),
-        REFOUND(3, "REFOUND"),
+        REFUND(3, "REFUND"),
         ADJUST(4, "ADJUST"),
         OTHER(5, "OTHER");
 

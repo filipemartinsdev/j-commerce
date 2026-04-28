@@ -29,6 +29,6 @@ INSERT INTO product_category (id, name, description) VALUES
 INSERT INTO stock_movement_type (id, name) VALUES
     (1, 'ENTRY'),
     (2, 'SALE'),
-    (3, 'REFOUND'),
+    (3, 'REFUND'),
     (4, 'ADJUST'),
     (5, 'OTHER');

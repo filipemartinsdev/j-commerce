@@ -7,6 +7,7 @@ import com.products.application.dto.admin.StockMovementResponse;
 import com.products.application.exception.ProductNotFoundException;
 import com.products.application.exception.ProductSKUNotFoundException;
 import com.products.application.exception.ProductStockNotFoundException;
+import com.products.application.message.RefundItemsMessage;
 import com.products.application.service.mapper.ProductStockMapper;
 import com.products.application.service.mapper.StockMovementMapper;
 import com.products.domain.entity.ProductSKU;
@@ -29,16 +30,14 @@ public class AdminProductStockService {
     private final StockMovementRepository stockMovementRepository;
     private final StockMovementMapper stockMovementMapper;
     private final ProductSKURepository productSKURepository;
-    private final ProductRepository productRepository;
 
-    public AdminProductStockService(ProductStockRepository productStockRepository, ProductStockMapper productStockMapper, StockMovementTypeRepository stockMovementTypeRepository, StockMovementRepository stockMovementRepository, StockMovementMapper stockMovementMapper, ProductSKURepository productSKURepository, ProductRepository productRepository) {
+    public AdminProductStockService(ProductStockRepository productStockRepository, ProductStockMapper productStockMapper, StockMovementTypeRepository stockMovementTypeRepository, StockMovementRepository stockMovementRepository, StockMovementMapper stockMovementMapper, ProductSKURepository productSKURepository) {
         this.productStockRepository = productStockRepository;
         this.productStockMapper = productStockMapper;
         this.stockMovementTypeRepository = stockMovementTypeRepository;
         this.stockMovementRepository = stockMovementRepository;
         this.stockMovementMapper = stockMovementMapper;
         this.productSKURepository = productSKURepository;
-        this.productRepository = productRepository;
     }
 
     public PagedResponse<ProductStockResponse> getAll(Pageable pageable){
@@ -143,5 +142,35 @@ public class AdminProductStockService {
                 .orElseThrow(() -> new ProductStockNotFoundException("ProductStock not found with SKU ID: "+productSKUId));
         stock.setIsActive(false);
         productStockRepository.save(stock);
+    }
+
+    @Transactional
+    public void refundItems(RefundItemsMessage message){
+        for (RefundItemsMessage.OrderItem item : message.items()){
+            increaseProductSKUStock(item.productSKUId(), item.units());
+            registerRefundStockMovement(item.productSKUId(), item.units(), message.userId());
+        }
+    }
+
+    private void increaseProductSKUStock(UUID productSKUId, int units){
+        ProductStock stock = productStockRepository.findByProductSKU_id(productSKUId)
+                .orElseThrow(() -> new ProductStockNotFoundException("Product stock not found with productSKUId: "+productSKUId));
+
+        stock.setUnits(stock.getUnits() + units);
+        productStockRepository.save(stock);
+    }
+
+    private void registerRefundStockMovement(UUID productSKUId, Integer units, UUID userId) {
+        StockMovement stockMovement = new StockMovement();
+        stockMovement.setType(
+                stockMovementTypeRepository.getReferenceById(StockMovementType.Value.REFUND.getId())
+        );
+        stockMovement.setProductSKU(
+                productSKURepository.getReferenceById(productSKUId)
+        );
+        stockMovement.setUnits(units);
+        stockMovement.setCreatedBy(userId);
+
+        stockMovementRepository.save(stockMovement);
     }
 }

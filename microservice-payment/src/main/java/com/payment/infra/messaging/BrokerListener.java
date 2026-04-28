@@ -24,12 +24,4 @@ public class BrokerListener {
         log.info("Received Generate Payment message");
         paymentService.generatePayment(message);
     }
-
-    @RabbitListener(
-            queues = "${broker.queues.waitPendingPayment.name}"
-    )
-    public void listenWaitPendingPayment(@Payload WaitPendingPaymentMessage message){
-        log.info("Received Wait Pending Payment message");
-        // FIXME: remove this consumer method
-    }
 }

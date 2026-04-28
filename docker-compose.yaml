@@ -95,7 +95,7 @@ services:
     image: prom/prometheus:v3.1.0
     container_name: "prometheus"
     ports:
-      - "9090:9090"
+      - "9090"
     restart: unless-stopped
     volumes:
       - ./observability/prometheus.yml:/etc/prometheus/prometheus.yml:Z
@@ -105,7 +105,7 @@ services:
     image: grafana/grafana-oss:11.5.0
     container_name: "grafana"
     ports:
-      - "3000:3000"
+      - "3000"
     restart: unless-stopped
     environment:
       GF_SECURITY_ADMIN_USER: admin

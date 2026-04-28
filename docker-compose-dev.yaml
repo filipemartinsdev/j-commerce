@@ -8,7 +8,7 @@ services:
       - "80:80"
       - "443:443"
     volumes:
-      - ./caddy/dev.Caddyfile:/etc/caddy/dev.Caddyfile:Z
+      - ./caddy/dev.Caddyfile:/etc/caddy/Caddyfile:Z
       - caddy_data:/data
       - caddy_config:/config
     restart: unless-stopped

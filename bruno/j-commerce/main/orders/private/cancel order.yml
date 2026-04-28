@@ -1,14 +1,14 @@
 info:
-  name: delete shopping cart item
+  name: cancel order
   type: http
-  seq: 11
+  seq: 6
 
 http:
   method: DELETE
-  url: https://localhost/product/api/v1/shopping-cart/81b69dd4-5e96-4ce2-aada-b0838599c8d2
+  url: https://localhost/order/api/v1/sales-orders/5e286899-5170-42bb-9ded-0845155f0ed4
   body:
     type: json
-    data: ""
+    data: "\n"
   auth: inherit
 
 settings:

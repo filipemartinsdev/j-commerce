@@ -5,7 +5,7 @@ info:
 
 http:
   method: GET
-  url: https://localhost/order/api/v1/sales-orders/3115c6c0-ec42-45dc-a24d-4dd7690023d0
+  url: https://localhost/order/api/v1/sales-orders/e33434d8-23c2-4b64-bf7f-3ac78b643e27
   body:
     type: json
     data: ""

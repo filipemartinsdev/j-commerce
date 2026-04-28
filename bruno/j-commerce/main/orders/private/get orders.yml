@@ -8,7 +8,7 @@ http:
   url: https://localhost/order/api/v1/sales-orders
   body:
     type: json
-    data: "\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n"
+    data: ""
   auth: inherit
 
 settings:

@@ -8,10 +8,10 @@ http:
   url: https://localhost/identity/api/v1/auth/login
   body:
     type: json
-    data: |+
+    data: |-
       {
-        "email": "admin@gmail.com",
-        "password": "admin123"
+        "email": "common@gmail.com",
+        "password": "common123"
       }
 
 settings:

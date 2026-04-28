@@ -3,6 +3,7 @@ package com.orders.infra.messaging;
 import com.orders.application.message.ConfirmOrderMessage;
 import com.orders.application.message.CreateOrderMessage;
 import com.orders.application.message.HandlePaymentTimeoutMessage;
+import com.orders.application.message.PaymentConfirmedMessage;
 import com.orders.application.service.SalesOrderService;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.amqp.rabbit.annotation.RabbitListener;
@@ -24,7 +25,6 @@ public class MessageBrokerListener {
             queues = "${broker.queues.createOrder.name}"
     )
     public void listenCreateOrder(@Payload CreateOrderMessage message){
-        log.info("Received Create Order Message");
         salesOrderService.createOrder(message);
     }
 
@@ -32,15 +32,13 @@ public class MessageBrokerListener {
             queues = "${broker.queues.handlePaymentTimeout.name}"
     )
     public void listenHandlePaymentTimeout(@Payload HandlePaymentTimeoutMessage message){
-        log.info("Received Handle Payment Timeout Message");
-        // TODO
+        salesOrderService.handleSalesOrderPaymentTimeout(message);
     }
 
     @RabbitListener(
             queues = "${broker.queues.confirmOrderPayment.name}"
     )
-    public void listenConfirmOrder(@Payload ConfirmOrderMessage message){
-        log.info("Received Confirm Order Message");
-        // TODO
+    public void listenConfirmOrder(@Payload PaymentConfirmedMessage message){
+        salesOrderService.confirmOrderPayment(message);
     }
 }

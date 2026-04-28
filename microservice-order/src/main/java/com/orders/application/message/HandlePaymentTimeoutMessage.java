@@ -1,4 +1,12 @@
 package com.orders.application.message;
 
-public record HandlePaymentTimeoutMessage() {
+import java.math.BigDecimal;
+import java.util.UUID;
+
+public record HandlePaymentTimeoutMessage(
+        UUID paymentId,
+        UUID orderId,
+        UUID userId,
+        BigDecimal value
+) {
 }

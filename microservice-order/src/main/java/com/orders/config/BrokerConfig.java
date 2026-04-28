@@ -1,8 +1,10 @@
 package com.orders.config;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
+import org.springframework.amqp.core.Binding;
+import org.springframework.amqp.core.BindingBuilder;
+import org.springframework.amqp.core.FanoutExchange;
 import org.springframework.amqp.core.Queue;
-import org.springframework.amqp.support.converter.Jackson2JsonMessageConverter;
+import org.springframework.amqp.support.converter.JacksonJsonMessageConverter;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -11,6 +13,9 @@ import org.springframework.context.annotation.Profile;
 @Configuration
 @Profile("!test")
 public class BrokerConfig {
+    @Value("${broker.exchanges.orderCancelledFanout.name}")
+    private String ORDER_CANCELLED_EXCHANGE_NAME;
+
     @Value("${broker.queues.createOrder.name}")
     private String CREATE_ORDER_QUEUE_NAME;
 
@@ -22,6 +27,13 @@ public class BrokerConfig {
 
     @Value("${broker.queues.confirmOrderPayment.name}")
     private String CONFIRM_ORDER_PAYMENT_QUEUE_NAME;
+
+    @Value("${broker.queues.refundItems.name}")
+    private String REFUND_ITEMS_QUEUE_NAME;
+
+    @Value("${broker.queues.notifyCancelledOrder.name}")
+    private String NOTIFY_CANCELLED_ORDER_QUEUE_NAME;
+
 
     @Bean
     public Queue createOrderQueue() {
@@ -44,7 +56,32 @@ public class BrokerConfig {
     }
 
     @Bean
-    public Jackson2JsonMessageConverter jackson2JsonMessageConverter() {
-        return new Jackson2JsonMessageConverter(new ObjectMapper());
+    public FanoutExchange orderCancelledFanoutExchange() {
+        return new FanoutExchange(ORDER_CANCELLED_EXCHANGE_NAME);
+    }
+
+    @Bean
+    public Queue refundItemsQueue() {
+        return new Queue(REFUND_ITEMS_QUEUE_NAME, true);
+    }
+
+    @Bean
+    public Queue notifyCancelledOrderQueue() {
+        return new Queue(NOTIFY_CANCELLED_ORDER_QUEUE_NAME, true);
+    }
+
+    @Bean
+    public Binding bindingOrderCancelled1(Queue refundItemsQueue, FanoutExchange orderCancelledFanoutExchange) {
+        return BindingBuilder.bind(refundItemsQueue).to(orderCancelledFanoutExchange);
+    }
+
+    @Bean
+    public Binding bindingOrderCancelled2(Queue notifyCancelledOrderQueue, FanoutExchange orderCancelledFanoutExchange) {
+        return BindingBuilder.bind(notifyCancelledOrderQueue).to(orderCancelledFanoutExchange);
+    }
+
+    @Bean
+    public JacksonJsonMessageConverter jacksonJsonMessageConverter() {
+        return new JacksonJsonMessageConverter();
     }
 }

@@ -11,4 +11,5 @@ INSERT INTO shipping_status (id, name) VALUES
     (1, 'PENDING'),
     (2, 'IN_TRANSIT'),
     (3, 'IN_DISTRIBUTION_CENTER'),
-    (4, 'DELIVERED');
+    (4, 'DELIVERED'),
+    (5, 'CANCELLED');

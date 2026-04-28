@@ -34,7 +34,8 @@ public class SalesOrder {
 
     @OneToMany(
             fetch = FetchType.LAZY,
-            mappedBy = "salesOrder"
+            mappedBy = "salesOrder",
+            cascade = CascadeType.ALL
     )
     @SQLRestriction("is_active IS TRUE")
     private List<SalesOrderItem> items = new ArrayList<>();

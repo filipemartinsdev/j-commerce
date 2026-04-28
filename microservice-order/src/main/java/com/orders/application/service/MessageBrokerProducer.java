@@ -1,16 +1,23 @@
 package com.orders.application.service;
 
 import com.orders.application.message.GeneratePaymentMessage;
+import com.orders.application.message.SalesOrderCancelledMessage;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.amqp.rabbit.core.RabbitTemplate;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
+
+import java.util.List;
+import java.util.UUID;
 
 @Slf4j
 @Component
 public class MessageBrokerProducer {
     @Value("${broker.queues.generatePayment.name}")
     private String GENERATE_PAYMENT_QUEUE_NAME;
+
+    @Value("${broker.exchanges.orderCancelledFanout.name}")
+    private String ORDER_CANCELLED_FANOUT_NAME;
 
     private final RabbitTemplate rabbitTemplate;
 
@@ -20,5 +27,9 @@ public class MessageBrokerProducer {
 
     public void produceGeneratePayment(GeneratePaymentMessage message){
         rabbitTemplate.convertAndSend("", GENERATE_PAYMENT_QUEUE_NAME, message);
+    }
+
+    public void produceOrderCancelled(SalesOrderCancelledMessage message) {
+        rabbitTemplate.convertAndSend(ORDER_CANCELLED_FANOUT_NAME, "", message);
     }
 }

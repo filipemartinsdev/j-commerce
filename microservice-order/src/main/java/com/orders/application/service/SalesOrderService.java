@@ -3,12 +3,11 @@ package com.orders.application.service;
 import com.orders.application.dto.PagedResponse;
 import com.orders.application.dto.SalesOrderResponse;
 import com.orders.application.dto.SalesOrderSummaryResponse;
-import com.orders.application.exception.DeliveryAddressNotFoundException;
-import com.orders.application.exception.SalesOrderNotFoundException;
-import com.orders.application.message.CreateOrderMessage;
+import com.orders.application.exception.*;
+import com.orders.application.message.*;
+
 import static com.orders.application.message.CreateOrderMessage.OrderItem;
 
-import com.orders.application.message.GeneratePaymentMessage;
 import com.orders.application.service.mapper.SalesOrderMapper;
 import com.orders.domain.entity.*;
 import com.orders.infra.persistence.*;
@@ -45,10 +44,11 @@ public class SalesOrderService {
 
     @Transactional
     public void createOrder(CreateOrderMessage message) {
-        SalesOrder order = registerNewOrder(message.userId(), message.items());
-//        registerSalesOrderItems(order, message.items());
-        registerShipping(message.deliveryAddressId(), order);
+        if(message.items().isEmpty())
+            throw new CantCreateSalesOrderException("Cant create order because items is empty");
 
+        SalesOrder order = registerNewOrder(message.userId(), message.items());
+        registerShipping(message.deliveryAddressId(), order);
 
         messageBrokerProducer.produceGeneratePayment(
                 new GeneratePaymentMessage(order.getId(), message.userId(), getTotalAmount(order))
@@ -56,13 +56,9 @@ public class SalesOrderService {
     }
 
     private BigDecimal getTotalAmount(SalesOrder salesOrder){
-        BigDecimal value = new BigDecimal(0);
-
-        for (SalesOrderItem item : salesOrder.getItems()){
-            value = value.add(item.getUnitPrice().multiply(new BigDecimal(item.getUnits())));
-        }
-
-        return value;
+        return salesOrder.getItems().stream()
+                .map(item -> item.getUnitPrice().multiply(new BigDecimal(item.getUnits())))
+                .reduce(BigDecimal.ZERO, BigDecimal::add);
     }
 
     private SalesOrder registerNewOrder(UUID userId, List<OrderItem> items) {
@@ -126,5 +122,78 @@ public class SalesOrderService {
                 salesOrderRepository.findByIdAndUserId(id, userId)
                         .orElseThrow(() -> new SalesOrderNotFoundException("Sales order not found with ID: "+id))
         );
+    }
+
+    @Transactional
+    public void handleSalesOrderPaymentTimeout(HandlePaymentTimeoutMessage message) {
+        SalesOrder order = salesOrderRepository.findById(message.orderId())
+                .orElseThrow(() -> new SalesOrderNotFoundException("Sales order not found with ID: "+message.orderId()));
+
+        if (order.getStatus().getId().equals(SalesOrderStatus.Value.PENDING.getId())) {
+            cancelOrder(order);
+        }
+    }
+
+    private void cancelOrder(SalesOrder order) {
+        order.setStatus(salesOrderStatusRepository.getReferenceById(SalesOrderStatus.Value.CANCELLED.getId()));
+        order.getShipping().setStatus(
+                shippingStatusRepository.getReferenceById(ShippingStatus.Value.CANCELLED.getId())
+        );
+        salesOrderRepository.save(order);
+
+        publishOrderCancelledMessage(order);
+    }
+
+    private void publishOrderCancelledMessage(SalesOrder order){
+        SalesOrderCancelledMessage message = new SalesOrderCancelledMessage(
+                order.getId(),
+                order.getUserId(),
+                order.getItems().stream()
+                        .map(salesOrderItem ->
+                                new SalesOrderCancelledMessage.OrderItem(salesOrderItem.getProductSkuId(), salesOrderItem.getUnits())
+                        )
+                        .toList(),
+                getTotalAmount(order)
+        );
+
+        messageBrokerProducer.produceOrderCancelled(message);
+    }
+
+
+    public void confirmOrderPayment(PaymentConfirmedMessage message) {
+        SalesOrder order = salesOrderRepository.findById(message.orderId())
+                .orElseThrow(() -> new SalesOrderNotFoundException("Sales order not found with ID: "+message.orderId()));
+
+        order.setStatus(salesOrderStatusRepository.getReferenceById(SalesOrderStatus.Value.PROCESSING.getId()));
+        salesOrderRepository.save(order);
+    }
+
+    public void requestToCancelOrder(UUID id, UUID userId) {
+        SalesOrder order = salesOrderRepository.findById(id)
+                .orElseThrow(() -> new SalesOrderNotFoundException("Sales order not found with ID: "+id));
+
+        if (canUserCancelOrder(userId, order)){
+            cancelOrder(order);
+        }
+
+        else {
+            throw new CantCancelSalesOrderException("Can't cancel this order");
+        }
+    }
+
+    private boolean canUserCancelOrder(UUID userId, SalesOrder order) {
+        return (isOrderStatusPending(order) || isOrderStatusProcessing(order)) && isUserOwnerOfOrder(userId, order);
+    }
+
+    private boolean isOrderStatusPending(SalesOrder order) {
+        return order.getStatus().getId().equals(SalesOrderStatus.Value.PENDING.getId());
+    }
+
+    private boolean isOrderStatusProcessing(SalesOrder order) {
+        return order.getStatus().getId().equals(SalesOrderStatus.Value.PROCESSING.getId());
+    }
+
+    private boolean isUserOwnerOfOrder(UUID userId, SalesOrder order) {
+        return order.getUserId().equals(userId);
     }
 }

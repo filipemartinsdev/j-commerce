@@ -43,4 +43,17 @@ public class SalesOrderController {
                 .status(HttpStatus.OK)
                 .body(StandardResponse.success(salesOrderService.getSummaryById(id, authenticatedUserId)));
     }
+
+    @DeleteMapping("/{id}")
+    public ResponseEntity<Void> requestToCancelSalesOrder(
+            @AuthenticationPrincipal Jwt jwt,
+            @PathVariable UUID id
+    ) {
+        UUID authenticatedUserId = UUID.fromString(jwt.getSubject());
+        salesOrderService.requestToCancelOrder(id, authenticatedUserId);
+
+        return ResponseEntity
+                .status(HttpStatus.OK)
+                .build();
+    }
 }

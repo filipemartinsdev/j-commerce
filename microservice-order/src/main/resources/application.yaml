@@ -14,6 +14,16 @@ spring:
         jwt:
           jwk-set-uri: http://identity:8080/.well-known/jwks.json
 
+  rabbitmq:
+    listener:
+      direct:
+        prefetch: 20
+
+        retry:
+          enabled: true
+          max-retries: 3
+          multiplier: 2.0
+
 management:
   endpoints:
     web:
@@ -28,6 +38,9 @@ broker:
     paymentConfirmedFanout:
       name: payment.confirmed.fanout
 
+    orderCancelledFanout:
+      name: order.cancelled.fanout
+
   queues:
     createOrder:
       name: order.create_order
@@ -40,3 +53,9 @@ broker:
 
     confirmOrderPayment:
       name: order.confirm_order_payment
+
+    refundItems:
+      name: product.refund_items
+
+    notifyCancelledOrder:
+      name: notification.notify_cancelled_order

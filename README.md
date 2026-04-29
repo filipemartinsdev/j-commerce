@@ -76,7 +76,7 @@ E-Commerce platform
 2. Start all microservices and infrastructure:
 
     ```bash
-    docker compose up -d --build
+    docker compose -f docker-compose-dev.yaml up -d --build
     ```
 
 Services will be available at:

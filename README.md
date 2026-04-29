@@ -58,7 +58,16 @@ E-Commerce platform
 
 ### Running with Docker Compose
 
-1. Generate RSA Key pair*
+1. **Define environment variables**
+
+   ````bash
+   cp .example.env
+   ````
+   
+   Update de `.env` file.
+
+
+2. **Generate RSA Key pair***
     ````bash
     cd microservice-identity/src/main/resources
     ````
@@ -73,7 +82,7 @@ E-Commerce platform
     *You can also use the default key pair for **testing**. 
 
 
-2. Start all microservices and infrastructure with docker:
+3. **Start all microservices and infrastructure with docker**:
 
     ```bash
     docker compose -f docker-compose-dev.yaml up -d --build

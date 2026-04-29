@@ -1,18 +1,16 @@
 package com.products.application.service.mapper;
 
 import com.products.application.dto.catalogue.ProductPriceCatalogueResponse;
-import com.products.application.dto.catalogue.ProductSKUSummaryCatalogueResponse;
+import com.products.application.dto.catalogue.ProductSKUCatalogueResponse;
 import com.products.application.dto.StockStatus;
 import com.products.domain.entity.PriceType;
 import com.products.domain.entity.ProductSKUSummaryCatalogue;
 import org.springframework.stereotype.Component;
 
-import java.math.BigDecimal;
-
 @Component
-public class ProductSKUSummaryCatalogueMapper {
-    public ProductSKUSummaryCatalogueResponse toResponse(ProductSKUSummaryCatalogue entity, Integer discountPercent) {
-        return new ProductSKUSummaryCatalogueResponse(
+public class ProductSKUCatalogueMapper {
+    public ProductSKUCatalogueResponse toResponse(ProductSKUSummaryCatalogue entity, Integer discountPercent) {
+        return new ProductSKUCatalogueResponse(
                 entity.getId(),
                 entity.getSKU(),
                 entity.getName(),

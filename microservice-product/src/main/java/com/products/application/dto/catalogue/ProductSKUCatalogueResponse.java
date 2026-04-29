@@ -4,7 +4,7 @@ import com.products.application.dto.StockStatus;
 
 import java.util.UUID;
 
-public record ProductSKUSummaryCatalogueResponse(
+public record ProductSKUCatalogueResponse(
         UUID id,
         String SKU,
         String name,

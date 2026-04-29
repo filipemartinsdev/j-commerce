@@ -4,13 +4,13 @@ import com.products.application.dto.PagedResponse;
 import com.products.application.dto.ProductCategoryResponse;
 import com.products.application.dto.StockStatus;
 import com.products.application.dto.catalogue.ProductPriceCatalogueResponse;
-import com.products.application.dto.catalogue.ProductResumeCatalogueResponse;
-import com.products.application.dto.catalogue.ProductSKUSummaryCatalogueResponse;
 import com.products.application.dto.catalogue.ProductSummaryCatalogueResponse;
+import com.products.application.dto.catalogue.ProductSKUCatalogueResponse;
+import com.products.application.dto.catalogue.ProductCatalogueResponse;
 import com.products.application.exception.InvalidProductCategoryException;
 import com.products.application.exception.ProductNotFoundException;
 import com.products.application.service.mapper.ProductCategoryMapper;
-import com.products.application.service.mapper.ProductSKUSummaryCatalogueMapper;
+import com.products.application.service.mapper.ProductSKUCatalogueMapper;
 import com.products.domain.entity.*;
 import com.products.infra.persistence.*;
 import org.junit.jupiter.api.DisplayName;
@@ -40,7 +40,7 @@ public class ProductCatalogueServiceTests {
     @Mock private ProductCategoryMapper productCategoryMapper;
     @Mock private ProductRepository productRepository;
     @Mock private ProductSKUSummaryCatalogueRepository productSKUSummaryCatalogueRepository;
-    @Mock private ProductSKUSummaryCatalogueMapper productSKUSummaryCatalogueMapper;
+    @Mock private ProductSKUCatalogueMapper productSKUSummaryCatalogueMapper;
     @Mock private ProductDiscountCalculator productDiscountCalculator;
 
     @InjectMocks
@@ -77,7 +77,7 @@ public class ProductCatalogueServiceTests {
         when(productDiscountCalculator.getDiscountPercent(any(), any())).thenReturn(50);
 
         // When
-        PagedResponse<ProductResumeCatalogueResponse> result = productCatalogueService.getAll(pageable);
+        PagedResponse<ProductSummaryCatalogueResponse> result = productCatalogueService.getAll(pageable);
 
         // Then
         assertNotNull(result);
@@ -99,7 +99,7 @@ public class ProductCatalogueServiceTests {
         when(productCatalogueResumeRepository.findAll(pageable)).thenReturn(emptyPage);
 
         // When
-        PagedResponse<ProductResumeCatalogueResponse> result = productCatalogueService.getAll(pageable);
+        PagedResponse<ProductSummaryCatalogueResponse> result = productCatalogueService.getAll(pageable);
 
         // Then
         assertNotNull(result);
@@ -130,7 +130,7 @@ public class ProductCatalogueServiceTests {
         when(productDiscountCalculator.getDiscountPercent(any(), any())).thenReturn(0);
 
         // When
-        PagedResponse<ProductResumeCatalogueResponse> result = productCatalogueService.getAllByCategoryId(categoryId, pageable);
+        PagedResponse<ProductSummaryCatalogueResponse> result = productCatalogueService.getAllByCategoryId(categoryId, pageable);
 
         // Then
         assertNotNull(result);
@@ -151,7 +151,7 @@ public class ProductCatalogueServiceTests {
         when(productCatalogueResumeRepository.findAllByCategoryId(categoryId, pageable)).thenReturn(emptyPage);
 
         // When
-        PagedResponse<ProductResumeCatalogueResponse> result = productCatalogueService.getAllByCategoryId(categoryId, pageable);
+        PagedResponse<ProductSummaryCatalogueResponse> result = productCatalogueService.getAllByCategoryId(categoryId, pageable);
 
         // Then
         assertNotNull(result);
@@ -255,7 +255,7 @@ public class ProductCatalogueServiceTests {
                 new BigDecimal("100.00"), new BigDecimal("50.00"), 20, "Sale"
         );
 
-        ProductSKUSummaryCatalogueResponse skuResponse = new ProductSKUSummaryCatalogueResponse(
+        ProductSKUCatalogueResponse skuResponse = new ProductSKUCatalogueResponse(
                 sku1.getId(), "SKU1", "Product SKU 1", StockStatus.IN_STOCK, priceResponse
         );
 
@@ -268,7 +268,7 @@ public class ProductCatalogueServiceTests {
         when(productSKUSummaryCatalogueMapper.toResponse(sku1, 50)).thenReturn(skuResponse);
 
         // When
-        ProductSummaryCatalogueResponse result = productCatalogueService.getProductSummaryByProductId(productId);
+        ProductCatalogueResponse result = productCatalogueService.getProductSummaryByProductId(productId);
 
         // Then
         assertNotNull(result);

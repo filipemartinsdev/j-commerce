@@ -1,8 +1,8 @@
 package com.products.infra.web.catalogue;
 
 import com.products.application.dto.*;
-import com.products.application.dto.catalogue.ProductResumeCatalogueResponse;
 import com.products.application.dto.catalogue.ProductSummaryCatalogueResponse;
+import com.products.application.dto.catalogue.ProductCatalogueResponse;
 import com.products.application.service.ProductCatalogueService;
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
@@ -32,11 +32,11 @@ public class ProductController {
     }
 
     @GetMapping("/products")
-    public ResponseEntity<StandardResponse<PagedResponse<ProductResumeCatalogueResponse>>> getProducts(
+    public ResponseEntity<StandardResponse<PagedResponse<ProductSummaryCatalogueResponse>>> getProducts(
             @RequestParam(name = "category", required = false, defaultValue = "-1") Integer category,
             Pageable pageable
     ) {
-        PagedResponse<ProductResumeCatalogueResponse> response;
+        PagedResponse<ProductSummaryCatalogueResponse> response;
 
         if (category == -1)
             response = productCatalogueResumeService.getAll(pageable);
@@ -49,7 +49,7 @@ public class ProductController {
     }
 
     @GetMapping("/products/{productId}")
-    public ResponseEntity<StandardResponse<ProductSummaryCatalogueResponse>> getProductById(@PathVariable UUID productId) {
+    public ResponseEntity<StandardResponse<ProductCatalogueResponse>> getProductById(@PathVariable UUID productId) {
         return ResponseEntity
                 .status(HttpStatus.OK)
                 .body(StandardResponse.success(productCatalogueService.getProductSummaryByProductId(productId)));

@@ -2,12 +2,12 @@ package com.products.application.service;
 
 import com.products.application.dto.*;
 import com.products.application.dto.catalogue.ProductPriceCatalogueResponse;
-import com.products.application.dto.catalogue.ProductResumeCatalogueResponse;
 import com.products.application.dto.catalogue.ProductSummaryCatalogueResponse;
+import com.products.application.dto.catalogue.ProductCatalogueResponse;
 import com.products.application.exception.InvalidProductCategoryException;
 import com.products.application.exception.ProductNotFoundException;
 import com.products.application.service.mapper.ProductCategoryMapper;
-import com.products.application.service.mapper.ProductSKUSummaryCatalogueMapper;
+import com.products.application.service.mapper.ProductSKUCatalogueMapper;
 import com.products.domain.entity.Product;
 import com.products.domain.entity.ProductCategory;
 import com.products.domain.entity.ProductResumeCatalogue;
@@ -17,8 +17,6 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
-import java.math.BigDecimal;
-import java.math.RoundingMode;
 import java.util.List;
 import java.util.UUID;
 
@@ -29,10 +27,10 @@ public class ProductCatalogueService {
     private final ProductCategoryMapper productCategoryMapper;
     private final ProductRepository productRepository;
     private final ProductSKUSummaryCatalogueRepository productSKUSummaryCatalogueRepository;
-    private final ProductSKUSummaryCatalogueMapper productSKUSummaryCatalogueMapper;
+    private final ProductSKUCatalogueMapper productSKUSummaryCatalogueMapper;
     private final ProductDiscountCalculator productDiscountCalculator;
 
-    public ProductCatalogueService(ProductResumeCatalogueRepository productCatalogueResumeRepository, ProductCategoryRepository productCategoryRepository, ProductCategoryMapper productCategoryMapper, ProductRepository productRepository, ProductSKUSummaryCatalogueRepository productSKUSummaryCatalogueRepository, ProductSKUSummaryCatalogueMapper productSKUSummaryCatalogueMapper, ProductDiscountCalculator productDiscountCalculator) {
+    public ProductCatalogueService(ProductResumeCatalogueRepository productCatalogueResumeRepository, ProductCategoryRepository productCategoryRepository, ProductCategoryMapper productCategoryMapper, ProductRepository productRepository, ProductSKUSummaryCatalogueRepository productSKUSummaryCatalogueRepository, ProductSKUCatalogueMapper productSKUSummaryCatalogueMapper, ProductDiscountCalculator productDiscountCalculator) {
         this.productCatalogueResumeRepository = productCatalogueResumeRepository;
         this.productCategoryRepository = productCategoryRepository;
         this.productCategoryMapper = productCategoryMapper;
@@ -42,10 +40,10 @@ public class ProductCatalogueService {
         this.productDiscountCalculator = productDiscountCalculator;
     }
 
-    public PagedResponse<ProductResumeCatalogueResponse> getAll(Pageable pageable) {
+    public PagedResponse<ProductSummaryCatalogueResponse> getAll(Pageable pageable) {
         Page<ProductResumeCatalogue> page = productCatalogueResumeRepository.findAll(pageable);
 
-        return PagedResponse.<ProductResumeCatalogueResponse>builder()
+        return PagedResponse.<ProductSummaryCatalogueResponse>builder()
                 .page(page.getNumber())
                 .size(page.getSize())
                 .totalPages(page.getTotalPages())
@@ -58,13 +56,13 @@ public class ProductCatalogueService {
                 .build();
     }
 
-    private ProductResumeCatalogueResponse createResumeCatalogueResponse(ProductResumeCatalogue entity) {
+    private ProductSummaryCatalogueResponse createResumeCatalogueResponse(ProductResumeCatalogue entity) {
         int discountPercent = productDiscountCalculator.getDiscountPercent(
                 entity.getOriginalPriceValue(),
                 entity.getCurrentPriceValue()
         );
 
-        return new ProductResumeCatalogueResponse(
+        return new ProductSummaryCatalogueResponse(
                 entity.getProductId(),
                 entity.getName(),
 
@@ -82,13 +80,13 @@ public class ProductCatalogueService {
         );
     }
 
-    public PagedResponse<ProductResumeCatalogueResponse> getAllByCategoryId(Integer categoryId, Pageable pageable) {
+    public PagedResponse<ProductSummaryCatalogueResponse> getAllByCategoryId(Integer categoryId, Pageable pageable) {
         if(!productCategoryRepository.existsById(categoryId))
             throw new InvalidProductCategoryException("Invalid product category with ID: "+categoryId);
 
         Page<ProductResumeCatalogue> page = productCatalogueResumeRepository.findAllByCategoryId(categoryId, pageable);
 
-        return PagedResponse.<ProductResumeCatalogueResponse>builder()
+        return PagedResponse.<ProductSummaryCatalogueResponse>builder()
                 .page(page.getNumber())
                 .size(page.getSize())
                 .totalPages(page.getTotalPages())
@@ -117,13 +115,13 @@ public class ProductCatalogueService {
                 .build();
     }
 
-    public ProductSummaryCatalogueResponse getProductSummaryByProductId(UUID productId) {
+    public ProductCatalogueResponse getProductSummaryByProductId(UUID productId) {
         Product product = productRepository.findById(productId)
                 .orElseThrow(() -> new ProductNotFoundException("Product not found with ID:"+productId));
 
         List<ProductSKUSummaryCatalogue> SKUs = productSKUSummaryCatalogueRepository.findAllByProductId(productId);
 
-        return new ProductSummaryCatalogueResponse(
+        return new ProductCatalogueResponse(
                 product.getId(),
                 product.getName(),
                 product.getDescription(),

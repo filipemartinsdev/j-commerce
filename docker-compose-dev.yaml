@@ -18,8 +18,8 @@ services:
   identity_db:
     image: postgres:17-alpine
     container_name: identity_db
-    ports:
-      - "5432:5432"
+#    ports:
+#      - "5432:5432"
     environment:
       POSTGRES_DB: ${PG_IDENTITY_DATABASE}
       POSTGRES_USER: ${PG_IDENTITY_USER}
@@ -30,8 +30,8 @@ services:
   product_db:
     image: postgres:17-alpine
     container_name: product_db
-    ports:
-      - "5433:5432"
+#    ports:
+#      - "5433:5432"
     environment:
       POSTGRES_DB: ${PG_PRODUCT_DATABASE}
       POSTGRES_USER: ${PG_PRODUCT_USER}
@@ -42,8 +42,8 @@ services:
   order_db:
     image: postgres:17-alpine
     container_name: order_db
-    ports:
-      - "5434:5432"
+#    ports:
+#      - "5434:5432"
     environment:
       POSTGRES_DB: ${PG_ORDER_DATABASE}
       POSTGRES_USER: ${PG_ORDER_USER}
@@ -54,8 +54,8 @@ services:
   notification_db:
     image: postgres:17-alpine
     container_name: notification_db
-    ports:
-      - "5435:5432"
+#    ports:
+#      - "5435:5432"
     environment:
       POSTGRES_DB: ${PG_NOTIFICATION_DATABASE}
       POSTGRES_USER: ${PG_NOTIFICATION_USER}
@@ -67,8 +67,8 @@ services:
     container_name: cache
     image: redis:7.4-alpine
     restart: unless-stopped
-    ports:
-      - "6379"
+#    ports:
+#      - "6379"
     volumes:
       - cache_data:/data
 
@@ -78,9 +78,9 @@ services:
     container_name: rabbitmq
     image: rabbitmq:4-management-alpine
     hostname: rabbitmq-local
-    ports:
-      - "5672:5672"
-      - "15672:15672"
+#    ports:
+#      - "5672:5672"
+#      - "15672:15672"
     volumes:
       - rabbitmq_data:/var/lib/rabbitmq
     environment:
@@ -92,8 +92,8 @@ services:
   prometheus:
     image: prom/prometheus:v3.1.0
     container_name: "prometheus"
-    ports:
-      - "9090:9090"
+#    ports:
+#      - "9090:9090"
     restart: unless-stopped
     volumes:
       - ./observability/prometheus.yml:/etc/prometheus/prometheus.yml:Z
@@ -102,8 +102,8 @@ services:
   grafana:
     image: grafana/grafana-oss:11.5.0
     container_name: "grafana"
-    ports:
-      - "3000:3000"
+#    ports:
+#      - "3000:3000"
     restart: unless-stopped
     environment:
       GF_SECURITY_ADMIN_USER: admin
@@ -123,8 +123,8 @@ services:
     depends_on:
       - identity_db
     restart: unless-stopped
-    ports:
-      - "8080"
+#    ports:
+#      - "8080"
     environment:
       PG_IDENTITY_DATABASE:
       PG_IDENTITY_USER:
@@ -144,8 +144,8 @@ services:
     depends_on:
       - product_db
     restart: unless-stopped
-    ports:
-      - "8080"
+#    ports:
+#      - "8080"
     environment:
       PG_PRODUCT_DATABASE:
       PG_PRODUCT_USER:
@@ -165,8 +165,8 @@ services:
     depends_on:
       - product_db
     restart: unless-stopped
-    ports:
-      - "8080"
+#    ports:
+#      - "8080"
     environment:
       PG_PRODUCT_DATABASE:
       PG_PRODUCT_USER:
@@ -184,8 +184,8 @@ services:
       context: microservice-notification/
       dockerfile: Dockerfile
     restart: unless-stopped
-    ports:
-      - "8080"
+#    ports:
+#      - "8080"
     environment:
       PG_PRODUCT_DATABASE:
       PG_PRODUCT_USER:
@@ -204,8 +204,8 @@ services:
       context: microservice-payment/
       dockerfile: Dockerfile
     restart: unless-stopped
-    ports:
-      - "8080"
+#    ports:
+#      - "8080"
     environment:
       PG_PRODUCT_DATABASE:
       PG_PRODUCT_USER:

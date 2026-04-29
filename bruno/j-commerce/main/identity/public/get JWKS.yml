@@ -5,7 +5,7 @@ info:
 
 http:
   method: GET
-  url: https://localhost/identity/.well-known/jwks.json
+  url: "{{base_url}}/identity/.well-known/jwks.json"
 
 settings:
   encodeUrl: true

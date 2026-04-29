@@ -5,7 +5,7 @@ info:
 
 http:
   method: GET
-  url: https://localhost/identity/api/v1/users/me
+  url: "{{base_url}}/identity/api/v1/users/me"
   auth: inherit
 
 settings:

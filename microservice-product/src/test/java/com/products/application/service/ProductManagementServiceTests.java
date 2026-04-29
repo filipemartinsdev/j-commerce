@@ -2,8 +2,6 @@ package com.products.application.service;
 
 import com.products.application.dto.PagedResponse;
 import com.products.application.dto.admin.*;
-import com.products.application.event.ProductSKUCreatedEvent;
-import com.products.application.event.ProductSKUDeletedEvent;
 import com.products.application.exception.*;
 import com.products.application.service.mapper.ProductAdminMapper;
 import com.products.application.service.mapper.ProductSKUAdminMapper;
@@ -16,7 +14,6 @@ import com.products.infra.persistence.ProductSKURepository;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
-import org.mockito.ArgumentCaptor;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
@@ -33,7 +30,7 @@ import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.*;
 
 @ExtendWith(MockitoExtension.class)
-public class AdminProductServiceTests {
+public class ProductManagementServiceTests {
     @Mock
     private ProductRepository productRepository;
 
@@ -53,7 +50,7 @@ public class AdminProductServiceTests {
     private ApplicationEventPublisher applicationEventPublisher;
 
     @InjectMocks
-    private AdminProductService adminProductService;
+    private ProductManagementService productManagementService;
 
     @Test @DisplayName("Should create new product and retrieve it DTO successfully if everything is OK")
     void createProductTestCase1() {
@@ -87,7 +84,7 @@ public class AdminProductServiceTests {
                 .thenReturn(response);
 
         // When
-        ProductAdminResponse result = adminProductService.createProduct(request);
+        ProductAdminResponse result = productManagementService.createProduct(request);
 
         // Then
         assertNotNull(result);
@@ -108,7 +105,7 @@ public class AdminProductServiceTests {
 
         // When & Then
         assertThrows(InvalidProductCategoryException.class, () -> {
-            adminProductService.createProduct(request);
+            productManagementService.createProduct(request);
         });
 
         verify(productCategoryRepository).findById(999);
@@ -158,7 +155,7 @@ public class AdminProductServiceTests {
                 .thenReturn(response);
 
         // When
-        ProductAdminResponse result = adminProductService.updateProduct(productId, request);
+        ProductAdminResponse result = productManagementService.updateProduct(productId, request);
 
         // Then
         assertNotNull(result);
@@ -184,7 +181,7 @@ public class AdminProductServiceTests {
 
         // When & Then
         assertThrows(ProductNotFoundException.class, () -> {
-            adminProductService.updateProduct(productId, request);
+            productManagementService.updateProduct(productId, request);
         });
 
         verify(productRepository).findById(productId);
@@ -225,7 +222,7 @@ public class AdminProductServiceTests {
                 .thenReturn(response2);
 
         // When
-        PagedResponse<ProductAdminResponse> result = adminProductService.getAllProducts(pageable);
+        PagedResponse<ProductAdminResponse> result = productManagementService.getAllProducts(pageable);
 
         // Then
         assertNotNull(result);
@@ -248,7 +245,7 @@ public class AdminProductServiceTests {
                 .thenReturn(emptyPage);
 
         // When
-        PagedResponse<ProductAdminResponse> result = adminProductService.getAllProducts(pageable);
+        PagedResponse<ProductAdminResponse> result = productManagementService.getAllProducts(pageable);
 
         // Then
         assertNotNull(result);
@@ -278,7 +275,7 @@ public class AdminProductServiceTests {
                 .thenReturn(response);
 
         // When
-        ProductAdminResponse result = adminProductService.getProductById(productId);
+        ProductAdminResponse result = productManagementService.getProductById(productId);
 
         // Then
         assertNotNull(result);
@@ -298,7 +295,7 @@ public class AdminProductServiceTests {
 
         // When & Then
         assertThrows(ProductNotFoundException.class, () -> {
-            adminProductService.getProductById(productId);
+            productManagementService.getProductById(productId);
         });
 
         verify(productRepository).findById(productId);
@@ -319,7 +316,7 @@ public class AdminProductServiceTests {
                 .thenReturn(Optional.of(product));
 
         // When
-        adminProductService.deleteProductById(productId);
+        productManagementService.deleteProductById(productId);
 
         // Then
         assertFalse(product.isActive());
@@ -337,7 +334,7 @@ public class AdminProductServiceTests {
 
         // When & Then
         assertThrows(ProductNotFoundException.class, () -> {
-            adminProductService.deleteProductById(productId);
+            productManagementService.deleteProductById(productId);
         });
 
         verify(productRepository).findById(productId);
@@ -364,7 +361,7 @@ public class AdminProductServiceTests {
 
         // When & Then
         assertThrows(CantDeleteProductException.class, () -> {
-            adminProductService.deleteProductById(productId);
+            productManagementService.deleteProductById(productId);
         });
 
         verify(productRepository).findById(productId);
@@ -390,7 +387,7 @@ public class AdminProductServiceTests {
                 .thenReturn(Optional.of(product));
 
         // When
-        adminProductService.deleteProductById(productId);
+        productManagementService.deleteProductById(productId);
 
         // Then
         assertFalse(product.isActive());

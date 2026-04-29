@@ -3,13 +3,11 @@ package com.products.infra.web.admin;
 import com.products.application.dto.PagedResponse;
 import com.products.application.dto.StandardResponse;
 import com.products.application.dto.admin.*;
-import com.products.application.service.AdminProductService;
+import com.products.application.service.ProductManagementService;
 import jakarta.validation.Valid;
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.core.annotation.AuthenticationPrincipal;
-import org.springframework.security.oauth2.jwt.Jwt;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.UUID;
@@ -17,9 +15,9 @@ import java.util.UUID;
 @RestController
 @RequestMapping("/admin/api/v1")
 public class AdminProductController {
-    private final AdminProductService adminProductService;
+    private final ProductManagementService adminProductService;
 
-    public AdminProductController(AdminProductService adminProductService) {
+    public AdminProductController(ProductManagementService adminProductService) {
         this.adminProductService = adminProductService;
     }
 

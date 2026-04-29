@@ -43,14 +43,14 @@ import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.*;
 
 @ExtendWith(MockitoExtension.class)
-public class AdminProductSKUServiceTests {
+public class ProductSKUManagementServiceTests {
     @Mock private ProductRepository productRepository;
     @Mock private ProductSKURepository productSKURepository;
     @Mock private ApplicationEventPublisher applicationEventPublisher;
     @Mock private ProductSKUAdminMapper productSKUAdminMapper;
 
     @InjectMocks
-    private AdminProductSKUService adminProductSKUService;
+    private ProductSKUManagementService productSKUManagementService;
 
 
     @Test
@@ -95,7 +95,7 @@ public class AdminProductSKUServiceTests {
                 .thenReturn(response);
 
         // When
-        ProductSKUAdminResponse result = adminProductSKUService.createProductSKU(request, userId);
+        ProductSKUAdminResponse result = productSKUManagementService.createProductSKU(request, userId);
 
         // Then
         assertNotNull(result);
@@ -120,7 +120,7 @@ public class AdminProductSKUServiceTests {
 
         // When & Then
         assertThrows(ProductNotFoundException.class, () -> {
-            adminProductSKUService.createProductSKU(request, userId);
+            productSKUManagementService.createProductSKU(request, userId);
         });
 
         verify(productRepository).findById(productId);
@@ -157,7 +157,7 @@ public class AdminProductSKUServiceTests {
 
         // When & Then
         assertThrows(SKUAlreadyInUseException.class, () -> {
-            adminProductSKUService.createProductSKU(request, userId);
+            productSKUManagementService.createProductSKU(request, userId);
         });
 
         verify(productRepository).findById(productId);
@@ -182,7 +182,7 @@ public class AdminProductSKUServiceTests {
 
         // When & Then
         assertThrows(ProductNotActiveException.class, () -> {
-            adminProductSKUService.createProductSKU(request, userId);
+            productSKUManagementService.createProductSKU(request, userId);
         });
 
         verify(productRepository).findById(productId);
@@ -228,7 +228,7 @@ public class AdminProductSKUServiceTests {
                 .thenReturn(response);
 
         // When
-        ProductSKUAdminResponse result = adminProductSKUService.updateProductSKU(skuId, request);
+        ProductSKUAdminResponse result = productSKUManagementService.updateProductSKU(skuId, request);
 
         // Then
         assertNotNull(result);
@@ -252,7 +252,7 @@ public class AdminProductSKUServiceTests {
 
         // When & Then
         assertThrows(ProductSKUNotFoundException.class, () -> {
-            adminProductSKUService.updateProductSKU(skuId, request);
+            productSKUManagementService.updateProductSKU(skuId, request);
         });
 
         verify(productSKURepository).findActiveById(skuId);
@@ -281,7 +281,7 @@ public class AdminProductSKUServiceTests {
 
         // When & Then
         assertThrows(SKUAlreadyInUseException.class, () -> {
-            adminProductSKUService.updateProductSKU(skuId, request);
+            productSKUManagementService.updateProductSKU(skuId, request);
         });
 
         verify(productSKURepository).findActiveById(skuId);
@@ -321,7 +321,7 @@ public class AdminProductSKUServiceTests {
                 .thenReturn(response2);
 
         // When
-        PagedResponse<ProductSKUAdminResponse> result = adminProductSKUService.getAllProductSKUs(pageable);
+        PagedResponse<ProductSKUAdminResponse> result = productSKUManagementService.getAllProductSKUs(pageable);
 
         // Then
         assertNotNull(result);
@@ -344,7 +344,7 @@ public class AdminProductSKUServiceTests {
                 .thenReturn(emptyPage);
 
         // When
-        PagedResponse<ProductSKUAdminResponse> result = adminProductSKUService.getAllProductSKUs(pageable);
+        PagedResponse<ProductSKUAdminResponse> result = productSKUManagementService.getAllProductSKUs(pageable);
 
         // Then
         assertNotNull(result);
@@ -388,7 +388,7 @@ public class AdminProductSKUServiceTests {
                 .thenReturn(response2);
 
         // When
-        PagedResponse<ProductSKUAdminResponse> result = adminProductSKUService.getAllProductSKUsByProductId(productId, pageable);
+        PagedResponse<ProductSKUAdminResponse> result = productSKUManagementService.getAllProductSKUsByProductId(productId, pageable);
 
         // Then
         assertNotNull(result);
@@ -412,7 +412,7 @@ public class AdminProductSKUServiceTests {
                 .thenReturn(emptyPage);
 
         // When
-        PagedResponse<ProductSKUAdminResponse> result = adminProductSKUService.getAllProductSKUsByProductId(productId, pageable);
+        PagedResponse<ProductSKUAdminResponse> result = productSKUManagementService.getAllProductSKUsByProductId(productId, pageable);
 
         // Then - The current implementation doesn't validate product existence
         // It returns empty page for non-existent products
@@ -432,7 +432,7 @@ public class AdminProductSKUServiceTests {
                 .thenReturn(emptyPage);
 
         // When
-        PagedResponse<ProductSKUAdminResponse> result = adminProductSKUService.getAllProductSKUsByProductId(productId, pageable);
+        PagedResponse<ProductSKUAdminResponse> result = productSKUManagementService.getAllProductSKUsByProductId(productId, pageable);
 
         // Then
         assertNotNull(result);
@@ -463,7 +463,7 @@ public class AdminProductSKUServiceTests {
                 .thenReturn(response);
 
         // When
-        ProductSKUAdminResponse result = adminProductSKUService.getProductSKUById(skuId);
+        ProductSKUAdminResponse result = productSKUManagementService.getProductSKUById(skuId);
 
         // Then
         assertNotNull(result);
@@ -484,7 +484,7 @@ public class AdminProductSKUServiceTests {
 
         // When & Then
         assertThrows(ProductSKUNotFoundException.class, () -> {
-            adminProductSKUService.getProductSKUById(skuId);
+            productSKUManagementService.getProductSKUById(skuId);
         });
 
         verify(productSKURepository).findActiveById(skuId);
@@ -505,7 +505,7 @@ public class AdminProductSKUServiceTests {
                 .thenReturn(Optional.of(sku));
 
         // When
-        adminProductSKUService.deleteProductSKUById(skuId);
+        productSKUManagementService.deleteProductSKUById(skuId);
 
         // Then
         assertFalse(sku.getIsActive());
@@ -524,7 +524,7 @@ public class AdminProductSKUServiceTests {
 
         // When & Then
         assertThrows(ProductSKUNotFoundException.class, () -> {
-            adminProductSKUService.deleteProductSKUById(skuId);
+            productSKUManagementService.deleteProductSKUById(skuId);
         });
 
         verify(productSKURepository).findActiveById(skuId);

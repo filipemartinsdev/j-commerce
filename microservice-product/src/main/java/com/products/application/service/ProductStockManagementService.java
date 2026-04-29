@@ -4,7 +4,7 @@ import com.products.application.dto.PagedResponse;
 import com.products.application.dto.admin.CreateStockEntryRequest;
 import com.products.application.dto.admin.ProductStockResponse;
 import com.products.application.dto.admin.StockMovementResponse;
-import com.products.application.exception.ProductNotFoundException;
+import com.products.application.exception.ProductOutOfStockException;
 import com.products.application.exception.ProductSKUNotFoundException;
 import com.products.application.exception.ProductStockNotFoundException;
 import com.products.application.message.RefundItemsMessage;
@@ -23,7 +23,7 @@ import org.springframework.transaction.annotation.Transactional;
 import java.util.UUID;
 
 @Service
-public class AdminProductStockService {
+public class ProductStockManagementService {
     private final ProductStockRepository productStockRepository;
     private final ProductStockMapper productStockMapper;
     private final StockMovementTypeRepository stockMovementTypeRepository;
@@ -31,7 +31,7 @@ public class AdminProductStockService {
     private final StockMovementMapper stockMovementMapper;
     private final ProductSKURepository productSKURepository;
 
-    public AdminProductStockService(ProductStockRepository productStockRepository, ProductStockMapper productStockMapper, StockMovementTypeRepository stockMovementTypeRepository, StockMovementRepository stockMovementRepository, StockMovementMapper stockMovementMapper, ProductSKURepository productSKURepository) {
+    public ProductStockManagementService(ProductStockRepository productStockRepository, ProductStockMapper productStockMapper, StockMovementTypeRepository stockMovementTypeRepository, StockMovementRepository stockMovementRepository, StockMovementMapper stockMovementMapper, ProductSKURepository productSKURepository) {
         this.productStockRepository = productStockRepository;
         this.productStockMapper = productStockMapper;
         this.stockMovementTypeRepository = stockMovementTypeRepository;
@@ -172,5 +172,19 @@ public class AdminProductStockService {
         stockMovement.setCreatedBy(userId);
 
         stockMovementRepository.save(stockMovement);
+    }
+
+    public void reduceProductStock(UUID productSKUId, int units){
+        var stock = productStockRepository.findByProductSKU_id(productSKUId)
+                .orElseThrow(() -> new ProductStockNotFoundException("Product stock not found with productSKUId: "+productSKUId));
+
+        if (!stock.getIsActive())
+            throw new ProductStockNotFoundException("Product stock not found with productSKUId: "+productSKUId);
+
+        if (stock.getUnits() < units)
+            throw new ProductOutOfStockException("Product out of stock with productSKUId: "+productSKUId);
+
+        stock.setUnits(stock.getUnits() - units);
+        productStockRepository.save(stock);
     }
 }

@@ -6,7 +6,8 @@ import com.products.application.dto.admin.CreateStockEntryRequest;
 import com.products.application.dto.admin.ProductStockResponse;
 import com.products.application.dto.admin.StockMovementResponse;
 import com.products.application.dto.admin.StockMovementTypeResponse;
-import com.products.application.service.AdminProductStockService;
+import com.products.application.service.ProductStockManagementService;
+import com.products.application.service.StockMovementTypeService;
 import com.products.application.service.mapper.StockMovementTypeMapper;
 import com.products.infra.persistence.StockMovementTypeRepository;
 import jakarta.validation.Valid;
@@ -23,14 +24,16 @@ import java.util.UUID;
 @RestController
 @RequestMapping("/admin/api/v1/stock")
 public class AdminStockController {
-    private final AdminProductStockService adminProductStockService;
+    private final ProductStockManagementService adminProductStockService;
     private final StockMovementTypeRepository stockMovementTypeRepository;
     private final StockMovementTypeMapper stockMovementTypeMapper;
+    private final StockMovementTypeService stockMovementTypeService;
 
-    public AdminStockController(AdminProductStockService adminProductStockService, StockMovementTypeRepository stockMovementTypeRepository, StockMovementTypeMapper stockMovementTypeMapper) {
+    public AdminStockController(ProductStockManagementService adminProductStockService, StockMovementTypeRepository stockMovementTypeRepository, StockMovementTypeMapper stockMovementTypeMapper, StockMovementTypeService stockMovementTypeService) {
         this.adminProductStockService = adminProductStockService;
         this.stockMovementTypeRepository = stockMovementTypeRepository;
         this.stockMovementTypeMapper = stockMovementTypeMapper;
+        this.stockMovementTypeService = stockMovementTypeService;
     }
 
     @GetMapping
@@ -85,9 +88,7 @@ public class AdminStockController {
         return ResponseEntity
                 .status(HttpStatus.OK)
                 .body(StandardResponse.success(
-                        stockMovementTypeRepository.findAll().stream()
-                            .map(entity -> stockMovementTypeMapper.toResponse(entity))
-                            .toList()
+                        stockMovementTypeService.getAll()
                 ));
     }
 }

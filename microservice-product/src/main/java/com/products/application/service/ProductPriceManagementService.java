@@ -25,13 +25,13 @@ import java.util.List;
 import java.util.UUID;
 
 @Service
-public class AdminProductPriceService {
+public class ProductPriceManagementService {
     private final ProductSKUPriceRepository productSKUPriceRepository;
     private final ProductSKUPriceMapper productSKUPriceMapper;
     private final ProductSKURepository productSKURepository;
     private final PriceTypeRepository priceTypeRepository;
 
-    public AdminProductPriceService(ProductSKUPriceRepository productSKUPriceRepository, ProductSKUPriceMapper productSKUPriceMapper, ProductSKURepository productSKURepository, PriceTypeRepository priceTypeRepository) {
+    public ProductPriceManagementService(ProductSKUPriceRepository productSKUPriceRepository, ProductSKUPriceMapper productSKUPriceMapper, ProductSKURepository productSKURepository, PriceTypeRepository priceTypeRepository) {
         this.productSKUPriceRepository = productSKUPriceRepository;
         this.productSKUPriceMapper = productSKUPriceMapper;
         this.productSKURepository = productSKURepository;

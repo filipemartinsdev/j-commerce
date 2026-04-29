@@ -5,7 +5,7 @@ import com.products.application.dto.StandardResponse;
 import com.products.application.dto.admin.CreateProductSKURequest;
 import com.products.application.dto.admin.ProductSKUAdminResponse;
 import com.products.application.dto.admin.UpdateProductSKURequest;
-import com.products.application.service.AdminProductSKUService;
+import com.products.application.service.ProductSKUManagementService;
 import jakarta.validation.Valid;
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
@@ -19,9 +19,9 @@ import java.util.UUID;
 @RestController
 @RequestMapping("/admin/api/v1")
 public class AdminProductSKUController {
-    private final AdminProductSKUService adminProductSKUService;
+    private final ProductSKUManagementService adminProductSKUService;
 
-    public AdminProductSKUController(AdminProductSKUService adminProductSKUService) {
+    public AdminProductSKUController(ProductSKUManagementService adminProductSKUService) {
         this.adminProductSKUService = adminProductSKUService;
     }
 

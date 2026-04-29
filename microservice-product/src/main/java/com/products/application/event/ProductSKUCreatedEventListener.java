@@ -1,14 +1,14 @@
 package com.products.application.event;
 
-import com.products.application.service.AdminProductStockService;
+import com.products.application.service.ProductStockManagementService;
 import org.springframework.context.ApplicationListener;
 import org.springframework.stereotype.Component;
 
 @Component
 public class ProductSKUCreatedEventListener implements ApplicationListener<ProductSKUCreatedEvent> {
-    private final AdminProductStockService adminProductStockService;
+    private final ProductStockManagementService adminProductStockService;
 
-    public ProductSKUCreatedEventListener(AdminProductStockService adminProductStockService) {
+    public ProductSKUCreatedEventListener(ProductStockManagementService adminProductStockService) {
         this.adminProductStockService = adminProductStockService;
     }
 

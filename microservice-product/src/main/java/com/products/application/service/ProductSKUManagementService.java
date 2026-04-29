@@ -24,13 +24,13 @@ import org.springframework.stereotype.Service;
 import java.util.UUID;
 
 @Service
-public class AdminProductSKUService {
+public class ProductSKUManagementService {
     private final ProductRepository productRepository;
     private final ProductSKURepository productSKURepository;
     private final ApplicationEventPublisher applicationEventPublisher;
     private final ProductSKUAdminMapper productSKUAdminMapper;
 
-    public AdminProductSKUService(ProductRepository productRepository, ProductSKURepository productSKURepository, ApplicationEventPublisher applicationEventPublisher, ProductSKUAdminMapper productSKUAdminMapper) {
+    public ProductSKUManagementService(ProductRepository productRepository, ProductSKURepository productSKURepository, ApplicationEventPublisher applicationEventPublisher, ProductSKUAdminMapper productSKUAdminMapper) {
         this.productRepository = productRepository;
         this.productSKURepository = productSKURepository;
         this.applicationEventPublisher = applicationEventPublisher;

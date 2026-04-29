@@ -30,20 +30,20 @@ public class ShoppingCartService {
     private final ProductSKURepository productSKURepository;
     private final ProductStockChecker productStockChecker;
     private final MessageBrokerProducer shoppingCartConfirmationProducer;
-    private final ProductStockManager productStockManager;
-    private final StockMovementManager stockMovementManager;
+    private final StockMovementManagementService stockMovementService;
     private final SalesOrderClient salesOrderClient;
+    private final ProductStockManagementService productStockManagementService;
 
-    public ShoppingCartService(ShoppingCartItemRepository shoppingCartItemRepository, ShoppingCartItemMapper shoppingCartItemProductSKUMapper, ShoppingCartItemProductSKUSummaryRepository shoppingCartItemProductSKUSummaryRepository, ProductSKURepository productSKURepository, ProductStockChecker productStockChecker, MessageBrokerProducer shoppingCartConfirmationProducer, ProductStockManager productStockManager, StockMovementManager stockMovementManager, SalesOrderClient salesOrderClient) {
+    public ShoppingCartService(ShoppingCartItemRepository shoppingCartItemRepository, ShoppingCartItemMapper shoppingCartItemProductSKUMapper, ShoppingCartItemProductSKUSummaryRepository shoppingCartItemProductSKUSummaryRepository, ProductSKURepository productSKURepository, ProductStockChecker productStockChecker, MessageBrokerProducer shoppingCartConfirmationProducer, StockMovementManagementService stockMovementService, SalesOrderClient salesOrderClient, ProductStockManagementService productStockManagementService) {
         this.shoppingCartItemRepository = shoppingCartItemRepository;
         this.shoppingCartItemProductSKUMapper = shoppingCartItemProductSKUMapper;
         this.shoppingCartItemProductSKUSummaryRepository = shoppingCartItemProductSKUSummaryRepository;
         this.productSKURepository = productSKURepository;
         this.productStockChecker = productStockChecker;
         this.shoppingCartConfirmationProducer = shoppingCartConfirmationProducer;
-        this.productStockManager = productStockManager;
-        this.stockMovementManager = stockMovementManager;
+        this.stockMovementService = stockMovementService;
         this.salesOrderClient = salesOrderClient;
+        this.productStockManagementService = productStockManagementService;
     }
 
     public void createItemByUserId(CreateShoppingCartItemRequest request, UUID authenticatedUserId) {
@@ -120,8 +120,8 @@ public class ShoppingCartService {
 
     private void updateStock(List<CreateOrderMessage.OrderItem> items, UUID userId) {
         for (var item : items) {
-            productStockManager.reduceProductStock(item.productSKUId(), item.units());
-            stockMovementManager.registerSale(item.productSKUId(), item.units(), userId);
+            productStockManagementService.reduceProductStock(item.productSKUId(), item.units());
+            stockMovementService.registerSale(item.productSKUId(), item.units(), userId);
         }
     }
 

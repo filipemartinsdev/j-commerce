@@ -5,7 +5,7 @@ import com.products.application.dto.admin.CreateProductSKUPrice;
 import com.products.application.dto.admin.ProductSKUPriceResponse;
 import com.products.application.dto.StandardResponse;
 import com.products.application.dto.admin.UpdateProductSKUPriceRequest;
-import com.products.application.service.AdminProductPriceService;
+import com.products.application.service.ProductPriceManagementService;
 import jakarta.validation.Valid;
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
@@ -17,9 +17,9 @@ import java.util.UUID;
 @RestController
 @RequestMapping("/admin/api/v1/prices")
 public class AdminPriceController {
-    private final AdminProductPriceService productPriceService;
+    private final ProductPriceManagementService productPriceService;
 
-    public AdminPriceController(AdminProductPriceService productPriceService) {
+    public AdminPriceController(ProductPriceManagementService productPriceService) {
         this.productPriceService = productPriceService;
     }
 

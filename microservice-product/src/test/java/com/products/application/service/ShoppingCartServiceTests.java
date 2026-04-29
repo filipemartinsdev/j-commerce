@@ -62,10 +62,10 @@ class ShoppingCartServiceTests {
     private MessageBrokerProducer shoppingCartConfirmationProducer;
 
     @Mock
-    private ProductStockManager productStockManager;
+    private ProductStockManagementService productStockManagementService;
 
     @Mock
-    private StockMovementManager stockMovementManager;
+    private StockMovementManagementService stockMovementService;
 
     @Mock
     private SalesOrderClient salesOrderClient;
@@ -261,8 +261,8 @@ class ShoppingCartServiceTests {
 
         shoppingCartService.confirmShoppingCart(request, userId, jwtBearer);
 
-        verify(productStockManager).reduceProductStock(any(), anyInt());
-        verify(stockMovementManager).registerSale(any(), anyInt(), eq(userId));
+        verify(productStockManagementService).reduceProductStock(any(), anyInt());
+        verify(stockMovementService).registerSale(any(), anyInt(), eq(userId));
         verify(shoppingCartConfirmationProducer).produce(any(CreateOrderMessage.class));
         verify(shoppingCartItemRepository).markAllAsInactiveByUserId(userId);
     }
@@ -339,8 +339,8 @@ class ShoppingCartServiceTests {
 
         shoppingCartService.confirmShoppingCart(request, userId, jwtBearer);
 
-        verify(productStockManager, times(2)).reduceProductStock(any(), anyInt());
-        verify(stockMovementManager, times(2)).registerSale(any(), anyInt(), eq(userId));
+        verify(productStockManagementService, times(2)).reduceProductStock(any(), anyInt());
+        verify(stockMovementService, times(2)).registerSale(any(), anyInt(), eq(userId));
         verify(shoppingCartConfirmationProducer).produce(any(CreateOrderMessage.class));
     }
 

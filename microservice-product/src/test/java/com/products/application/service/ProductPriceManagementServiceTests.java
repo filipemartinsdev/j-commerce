@@ -38,7 +38,7 @@ import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.*;
 
 @ExtendWith(MockitoExtension.class)
-public class AdminProductPriceServiceTests {
+public class ProductPriceManagementServiceTests {
     @Mock
     private ProductSKUPriceRepository productSKUPriceRepository;
 
@@ -52,7 +52,7 @@ public class AdminProductPriceServiceTests {
     private PriceTypeRepository priceTypeRepository;
 
     @InjectMocks
-    private AdminProductPriceService adminProductPriceService;
+    private ProductPriceManagementService productPriceManagementService;
 
     @Test @DisplayName("Should retrieve all active ProductSKUPrice successfully")
     void getAllPricesTestCase1() {
@@ -88,7 +88,7 @@ public class AdminProductPriceServiceTests {
                 .thenReturn(response2);
 
         // When
-        PagedResponse<ProductSKUPriceResponse> result = adminProductPriceService.getAllPrices(pageable);
+        PagedResponse<ProductSKUPriceResponse> result = productPriceManagementService.getAllPrices(pageable);
 
         // Then
         assertNotNull(result);
@@ -111,7 +111,7 @@ public class AdminProductPriceServiceTests {
                 .thenReturn(emptyPage);
 
         // When
-        PagedResponse<ProductSKUPriceResponse> result = adminProductPriceService.getAllPrices(pageable);
+        PagedResponse<ProductSKUPriceResponse> result = productPriceManagementService.getAllPrices(pageable);
 
         // Then
         assertNotNull(result);
@@ -155,7 +155,7 @@ public class AdminProductPriceServiceTests {
                 .thenReturn(response2);
 
         // When
-        PagedResponse<ProductSKUPriceResponse> result = adminProductPriceService.getAllPricesByProductSKUId(productSKUId, pageable);
+        PagedResponse<ProductSKUPriceResponse> result = productPriceManagementService.getAllPricesByProductSKUId(productSKUId, pageable);
 
         // Then
         assertNotNull(result);
@@ -175,7 +175,7 @@ public class AdminProductPriceServiceTests {
 
         // When & Then
         assertThrows(ProductSKUNotFoundException.class, () -> {
-            adminProductPriceService.getAllPricesByProductSKUId(productSKUId, pageable);
+            productPriceManagementService.getAllPricesByProductSKUId(productSKUId, pageable);
         });
 
         verify(productSKUPriceRepository).findAllActiveByProductSKUId(productSKUId, pageable);
@@ -192,7 +192,7 @@ public class AdminProductPriceServiceTests {
                 .thenReturn(emptyPage);
 
         // When
-        PagedResponse<ProductSKUPriceResponse> result = adminProductPriceService.getAllPricesByProductSKUId(productSKUId, pageable);
+        PagedResponse<ProductSKUPriceResponse> result = productPriceManagementService.getAllPricesByProductSKUId(productSKUId, pageable);
 
         // Then
         assertNotNull(result);
@@ -242,7 +242,7 @@ public class AdminProductPriceServiceTests {
                 .thenReturn(response);
 
         // When
-        ProductSKUPriceResponse result = adminProductPriceService.create(request);
+        ProductSKUPriceResponse result = productPriceManagementService.create(request);
 
         // Then
         assertNotNull(result);
@@ -270,7 +270,7 @@ public class AdminProductPriceServiceTests {
 
         // When & Then
         assertThrows(ProductSKUNotFoundException.class, () -> {
-            adminProductPriceService.create(request);
+            productPriceManagementService.create(request);
         });
 
         verify(productSKURepository).findById(productSKUId);
@@ -303,7 +303,7 @@ public class AdminProductPriceServiceTests {
 
         // When & Then
         assertThrows(InvalidProductPriceTypeException.class, () -> {
-            adminProductPriceService.create(request);
+            productPriceManagementService.create(request);
         });
 
         verify(productSKURepository).findById(productSKUId);
@@ -329,7 +329,7 @@ public class AdminProductPriceServiceTests {
 
         // When & Then
         assertThrows(ProductSKUWithoutBasePriceException.class, () -> {
-            adminProductPriceService.create(request);
+            productPriceManagementService.create(request);
         });
 
         verify(productSKURepository).findById(productSKUId);
@@ -357,7 +357,7 @@ public class AdminProductPriceServiceTests {
                 .thenReturn(inactivePrice);
 
         // When
-        adminProductPriceService.deleteById(priceId);
+        productPriceManagementService.deleteById(priceId);
 
         // Then
         verify(productSKUPriceRepository).findById(priceId);
@@ -374,7 +374,7 @@ public class AdminProductPriceServiceTests {
 
         // When & Then
         assertThrows(ProductSKUPriceNotFoundException.class, () -> {
-            adminProductPriceService.deleteById(priceId);
+            productPriceManagementService.deleteById(priceId);
         });
 
         verify(productSKUPriceRepository).findById(priceId);
@@ -422,7 +422,7 @@ public class AdminProductPriceServiceTests {
                 .thenReturn(response);
 
         // When
-        ProductSKUPriceResponse result = adminProductPriceService.update(priceId, request);
+        ProductSKUPriceResponse result = productPriceManagementService.update(priceId, request);
 
         // Then
         assertNotNull(result);
@@ -448,7 +448,7 @@ public class AdminProductPriceServiceTests {
 
         // When & Then
         assertThrows(ProductSKUPriceNotFoundException.class, () -> {
-            adminProductPriceService.update(priceId, request);
+            productPriceManagementService.update(priceId, request);
         });
 
         verify(productSKUPriceRepository).findById(priceId);
@@ -478,7 +478,7 @@ public class AdminProductPriceServiceTests {
 
         // When & Then
         assertThrows(InvalidProductPriceTypeException.class, () -> {
-            adminProductPriceService.update(priceId, request);
+            productPriceManagementService.update(priceId, request);
         });
 
         verify(productSKUPriceRepository).findById(priceId);
@@ -492,7 +492,7 @@ public class AdminProductPriceServiceTests {
         UUID productSKUId = UUID.randomUUID();
 
         // When
-        adminProductPriceService.deleteAllByProductSKUId(productSKUId);
+        productPriceManagementService.deleteAllByProductSKUId(productSKUId);
 
         // Then
         verify(productSKUPriceRepository).setInactiveAllByProductSKUId(productSKUId);

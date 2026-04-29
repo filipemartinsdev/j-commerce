@@ -20,7 +20,7 @@ import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.*;
 
 @ExtendWith(MockitoExtension.class)
-class StockMovementManagerTests {
+class StockMovementManagementServiceTests {
 
     @Mock
     private StockMovementRepository stockMovementRepository;
@@ -32,7 +32,7 @@ class StockMovementManagerTests {
     private StockMovementTypeRepository stockMovementTypeRepository;
 
     @InjectMocks
-    private StockMovementManager stockMovementManager;
+    private StockMovementManagementService stockMovementManagementService;
 
     @Test
     @DisplayName("Should register sale successfully")
@@ -48,7 +48,7 @@ class StockMovementManagerTests {
         when(stockMovementRepository.save(any(StockMovement.class)))
                 .thenAnswer(invocation -> invocation.getArgument(0));
 
-        stockMovementManager.registerSale(productSKUId, units, userId);
+        stockMovementManagementService.registerSale(productSKUId, units, userId);
 
         ArgumentCaptor<StockMovement> movementCaptor = ArgumentCaptor.forClass(StockMovement.class);
         verify(stockMovementRepository).save(movementCaptor.capture());
@@ -72,7 +72,7 @@ class StockMovementManagerTests {
         when(stockMovementRepository.save(any(StockMovement.class)))
                 .thenAnswer(invocation -> invocation.getArgument(0));
 
-        stockMovementManager.registerSale(productSKUId, units, userId);
+        stockMovementManagementService.registerSale(productSKUId, units, userId);
 
         verify(stockMovementRepository).save(any(StockMovement.class));
     }
@@ -91,7 +91,7 @@ class StockMovementManagerTests {
         when(stockMovementRepository.save(any(StockMovement.class)))
                 .thenAnswer(invocation -> invocation.getArgument(0));
 
-        stockMovementManager.registerSale(productSKUId, units, userId);
+        stockMovementManagementService.registerSale(productSKUId, units, userId);
 
         ArgumentCaptor<StockMovement> movementCaptor = ArgumentCaptor.forClass(StockMovement.class);
         verify(stockMovementRepository).save(movementCaptor.capture());
@@ -117,7 +117,7 @@ class StockMovementManagerTests {
         when(stockMovementRepository.save(any(StockMovement.class)))
                 .thenAnswer(invocation -> invocation.getArgument(0));
 
-        stockMovementManager.registerSale(productSKUId, units, userId);
+        stockMovementManagementService.registerSale(productSKUId, units, userId);
 
         ArgumentCaptor<StockMovement> movementCaptor = ArgumentCaptor.forClass(StockMovement.class);
         verify(stockMovementRepository).save(movementCaptor.capture());

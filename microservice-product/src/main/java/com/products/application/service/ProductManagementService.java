@@ -2,20 +2,14 @@ package com.products.application.service;
 
 import com.products.application.dto.PagedResponse;
 import com.products.application.dto.admin.*;
-import com.products.application.event.ProductSKUCreatedEvent;
-import com.products.application.event.ProductSKUDeletedEvent;
 import com.products.application.exception.*;
 import com.products.application.service.mapper.ProductAdminMapper;
-import com.products.application.service.mapper.ProductSKUAdminMapper;
 import com.products.domain.entity.Product;
 import com.products.domain.entity.ProductCategory;
 import com.products.domain.entity.ProductSKU;
 import com.products.infra.persistence.ProductCategoryRepository;
 import com.products.infra.persistence.ProductRepository;
-import com.products.infra.persistence.ProductSKURepository;
-import jakarta.transaction.Transactional;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
@@ -24,12 +18,12 @@ import java.util.UUID;
 
 @Slf4j
 @Service
-public class AdminProductService {
+public class ProductManagementService {
     private final ProductRepository productRepository;
     private final ProductCategoryRepository productCategoryRepository;
     private final ProductAdminMapper productAdminMapper;
 
-    public AdminProductService(ProductRepository productRepository, ProductCategoryRepository productCategoryRepository, ProductAdminMapper productAdminMapper) {
+    public ProductManagementService(ProductRepository productRepository, ProductCategoryRepository productCategoryRepository, ProductAdminMapper productAdminMapper) {
         this.productRepository = productRepository;
         this.productCategoryRepository = productCategoryRepository;
         this.productAdminMapper = productAdminMapper;

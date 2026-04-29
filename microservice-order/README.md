@@ -9,6 +9,10 @@
 ![sales_order_status.png](../images/sales_order_status.png)
 
 
+## Shopping cart confirmation
+
+![order_activity_diagram.png](../images/order_activity_diagram.png)
+
 ## Database
 
 - PostgreSQL 17

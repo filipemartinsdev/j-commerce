@@ -20,8 +20,6 @@ services:
   identity_db:
     image: postgres:17-alpine
     container_name: identity_db
-#    ports:
-#      - "5432:5432"
     environment:
       POSTGRES_DB: ${PG_IDENTITY_DATABASE}
       POSTGRES_USER: ${PG_IDENTITY_USER}
@@ -32,8 +30,6 @@ services:
   product_db:
     image: postgres:17-alpine
     container_name: product_db
-#    ports:
-#      - "5433:5432"
     environment:
       POSTGRES_DB: ${PG_PRODUCT_DATABASE}
       POSTGRES_USER: ${PG_PRODUCT_USER}
@@ -44,8 +40,6 @@ services:
   order_db:
     image: postgres:17-alpine
     container_name: order_db
-#    ports:
-#      - "5434:5432"
     environment:
       POSTGRES_DB: ${PG_ORDER_DATABASE}
       POSTGRES_USER: ${PG_ORDER_USER}
@@ -56,8 +50,6 @@ services:
   notification_db:
     image: postgres:17-alpine
     container_name: notification_db
-#    ports:
-#      - "5435:5432"
     environment:
       POSTGRES_DB: ${PG_NOTIFICATION_DATABASE}
       POSTGRES_USER: ${PG_NOTIFICATION_USER}
@@ -69,8 +61,6 @@ services:
     container_name: cache
     image: redis:7.4-alpine
     restart: unless-stopped
-#    ports:
-#      - "6379"
     volumes:
       - cache_data:/data
 
@@ -80,22 +70,17 @@ services:
     container_name: rabbitmq
     image: rabbitmq:4-management-alpine
     hostname: rabbitmq-local
-#    ports:
-#      - "5672:5672"
-#      - "15672:15672"
     volumes:
       - rabbitmq_data:/var/lib/rabbitmq
     environment:
-      - RABBITMQ_DEFAULT_USER=admin
-      - RABBITMQ_DEFAULT_PASS=admin
+      RABBITMQ_DEFAULT_USER: ${RABBITMQ_USER}
+      RABBITMQ_DEFAULT_PASS: ${RABBITMQ_PASSWORD}
 
 # ----- OBSERVABILITY ------
 
   prometheus:
     image: prom/prometheus:v3.1.0
     container_name: "prometheus"
-#    ports:
-#      - "9090"
     restart: unless-stopped
     volumes:
       - ./observability/prometheus.yml:/etc/prometheus/prometheus.yml:Z
@@ -104,12 +89,10 @@ services:
   grafana:
     image: grafana/grafana-oss:11.5.0
     container_name: "grafana"
-#    ports:
-#      - "3000"
     restart: unless-stopped
     environment:
-      GF_SECURITY_ADMIN_USER: admin
-      GF_SECURITY_ADMIN_PASSWORD: admin
+      GF_SECURITY_ADMIN_USER: ${GRAFANA_USER}
+      GF_SECURITY_ADMIN_PASSWORD: ${GRAFANA_PASSWORD}
       GF_SERVER_HTTP_ADDR: "0.0.0.0"
     volumes:
       - ./observability/grafana.yml:/etc/grafana/provisioning/datasources/grafana.yml:Z
@@ -124,10 +107,9 @@ services:
       context: microservice-identity/
       dockerfile: Dockerfile
     depends_on:
-      - identity_db
+      identity_db:
+        condition: service_started
     restart: unless-stopped
-#    ports:
-#      - "8080"
     environment:
       PG_IDENTITY_DATABASE:
       PG_IDENTITY_USER:
@@ -145,10 +127,9 @@ services:
       context: microservice-product/
       dockerfile: Dockerfile
     depends_on:
-      - product_db
+      product_db:
+        condition: service_started
     restart: unless-stopped
-#    ports:
-#      - "8080"
     environment:
       PG_PRODUCT_DATABASE:
       PG_PRODUCT_USER:
@@ -166,10 +147,9 @@ services:
       context: microservice-order/
       dockerfile: Dockerfile
     depends_on:
-      - product_db
+      order_db:
+        condition: service_started
     restart: unless-stopped
-#    ports:
-#      - "8080"
     environment:
       PG_PRODUCT_DATABASE:
       PG_PRODUCT_USER:
@@ -187,8 +167,9 @@ services:
       context: microservice-notification/
       dockerfile: Dockerfile
     restart: unless-stopped
-#    ports:
-#      - "8080"
+    depends_on:
+      notification_db:
+        condition: service_started
     environment:
       PG_PRODUCT_DATABASE:
       PG_PRODUCT_USER:
@@ -207,16 +188,11 @@ services:
       context: microservice-payment/
       dockerfile: Dockerfile
     restart: unless-stopped
-#    ports:
-#      - "8080"
     environment:
       PG_PRODUCT_DATABASE:
       PG_PRODUCT_USER:
       PG_PRODUCT_PASSWORD:
       SPRING_RABBITMQ_ADDRESSES: amqp://admin:admin@rabbitmq:5672/
-      SPRING_DATASOURCE_URL: jdbc:postgresql://identity_db:5432/${PG_IDENTITY_DATABASE}
-      SPRING_DATASOURCE_USERNAME: ${PG_IDENTITY_USER}
-      SPRING_DATASOURCE_PASSWORD: ${PG_IDENTITY_PASSWORD}
       SPRING_DATA_REDIS_URL: redis://cache:6379
       ACTIVE_PROFILE: dev
 

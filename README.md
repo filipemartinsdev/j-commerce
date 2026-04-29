@@ -73,13 +73,13 @@ E-Commerce platform
     *You can also use the default key pair for **testing**. 
 
 
-2. Start all microservices and infrastructure:
+2. Start all microservices and infrastructure with docker:
 
     ```bash
     docker compose -f docker-compose-dev.yaml up -d --build
     ```
 
-Services will be available at:
+The HTTPS will be automatically configured with Caddy, and services will be available at:
 
 | Service       | URL                      |
 |---------------|--------------------------|
@@ -103,6 +103,29 @@ The Identity microservice creates default users via Flyway migration:
 | common@gmail.com | common123 | `USER` |
 | stockman@gmail.com | stockman123 | `USER`, `STOCK_MANAGER` |
 | driver@gmail.com | driver123 | `USER`, `DRIVER` |
+
+---
+
+## VPS-ready application
+
+You can also use the `docker-compose.yaml` file for a VPS-ready application. However, you need to define the _domain_ in the `.env` file:
+
+````dotenv
+SERVER_DOMAIN=yourdomain.com
+````
+
+Services will be available at:
+
+| Service       | URL                      |
+|---------------|--------------------------|
+| Identity      | https://yourdomain.com/identity    |
+| Product       | https://yourdomain.com/product     |
+| Order         | https://yourdomain.com/order     |
+| Payment       | https://yourdomain.com/payment     |
+| Notification | https://yourdomain.com/notification     |
+| Grafana       | https://grafana.yourdomain.com   |
+| Prometheus Panel   | https://prometheus.yourdomain.com   |
+| RabbitMQ Panel     | https://rabbitmq.yourdomain.com  |
 
 ---
 

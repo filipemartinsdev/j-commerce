@@ -66,11 +66,15 @@ Microservice for authentication, user management and profile handling.
 
 ## Default Users
 
-On first run, a default admin user is created via Flyway migration:
+On first run, default users are created via Flyway migration:
 
-- **Email**: admin@gmail.com
-- **Password**: admin123
-- **Role**: ADMIN
+| Email | Password | Roles |
+|-------|----------|------|
+| admin@gmail.com | admin123 | `USER`, `ADMIN` |
+| common@gmail.com | common123 | `USER` |
+| stockman@gmail.com | stockman123 | `USER`, `STOCK_MANAGER` |
+| driver@gmail.com | driver123 | `USER`, `DRIVER` |
+
 
 ## Database
 

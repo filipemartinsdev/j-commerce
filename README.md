@@ -64,7 +64,7 @@ E-Commerce platform
    cp .example.env .env
    ````
    
-   Update de `.env` file.
+   Update the `.env` file.
 
 
 2. **Generate RSA Key pair***

@@ -10,12 +10,12 @@ import org.springframework.stereotype.Component;
 import java.util.UUID;
 
 @Component
-public class StockMovementManager {
+public class StockMovementService {
     private final StockMovementRepository stockMovementRepository;
     private final ProductSKURepository productSKURepository;
     private final StockMovementTypeRepository stockMovementTypeRepository;
 
-    public StockMovementManager(StockMovementRepository stockMovementRepository, ProductSKURepository productSKURepository, StockMovementTypeRepository stockMovementTypeRepository) {
+    public StockMovementService(StockMovementRepository stockMovementRepository, ProductSKURepository productSKURepository, StockMovementTypeRepository stockMovementTypeRepository) {
         this.stockMovementRepository = stockMovementRepository;
         this.productSKURepository = productSKURepository;
         this.stockMovementTypeRepository = stockMovementTypeRepository;

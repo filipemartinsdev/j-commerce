@@ -61,7 +61,7 @@ E-Commerce platform
 1. **Define environment variables**
 
    ````bash
-   cp .example.env
+   cp .example.env .env
    ````
    
    Update de `.env` file.

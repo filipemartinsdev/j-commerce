@@ -17,8 +17,8 @@ Microservice for authentication, user management and profile handling.
 ### User Management
 
 - User profile management
-- Role-based access control (ADMIN, USER)
-- User listing (paginated)
+- Role-based access control (`USER`, `ADMIN`, `STOCK_MANAGER` and `DRIVER`)
+- User listing
 - User role update
 
 ### Profile

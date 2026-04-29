@@ -47,41 +47,42 @@ Microservice for managing product catalogue, stock, pricing, shopping cart, wish
 ### Public Catalogue
 
 | Method | Endpoint | Description | Query Parameters |
-|--------|----------|-------------|----------------|
+|--------|----------|------------|----------------|
 | GET | /api/v1/categories | List product categories | `page`, `size`, `sort` |
 | GET | /api/v1/products | List products | `category`, `page`, `size`, `sort` |
 | GET | /api/v1/products/{productId} | Get product details | - |
-| GET | /api/v1/shopping-cart | Get user shopping cart | `page`, `size`, `sort` |
-| POST | /api/v1/shopping-cart | Add item to cart | - |
-| DELETE | /api/v1/shopping-cart/{id} | Remove item from cart | - |
-| DELETE | /api/v1/shopping-cart | Clear cart | - |
 | GET | /api/v1/wishlist | Get user wishlist | `page`, `size`, `sort` |
 | POST | /api/v1/wishlist | Add item to wishlist | - |
 | DELETE | /api/v1/wishlist/{id} | Remove item from wishlist | - |
 | DELETE | /api/v1/wishlist | Clear wishlist | - |
+| GET | /api/v1/shopping-cart | Get user shopping cart | `page`, `size`, `sort` |
+| POST | /api/v1/shopping-cart | Add item to cart | - |
+| DELETE | /api/v1/shopping-cart/{id} | Remove item from cart | - |
+| DELETE | /api/v1/shopping-cart | Clear cart | - |
+| DELETE | /api/v1/shopping-cart/chekout | Confirm shopping cart | - |
 
-### Admin
+### Private Management
 
-| Method | Endpoint | Description | Query Parameters |
-|--------|----------|-------------|----------------|
-| GET | /admin/api/v1/products | List products | `page`, `size`, `sort` |
-| GET | /admin/api/v1/products/{productId} | Get product by ID | - |
-| POST | /admin/api/v1/products | Create product | - |
-| PATCH | /admin/api/v1/products/{productId} | Update product | - |
-| DELETE | /admin/api/v1/products/{productId} | Delete product | - |
-| GET | /admin/api/v1/skus | List SKUs | `productId`, `page`, `size`, `sort` |
-| GET | /admin/api/v1/skus/{skuId} | Get SKU by ID | - |
-| POST | /admin/api/v1/skus | Create SKU | - |
-| PATCH | /admin/api/v1/skus/{skuId} | Update SKU | - |
-| DELETE | /admin/api/v1/skus/{productSKUId} | Delete SKU | - |
-| GET | /admin/api/v1/prices | List prices | `productSKUId`, `page`, `size`, `sort` |
-| POST | /admin/api/v1/prices | Create price | - |
-| PATCH | /admin/api/v1/prices/{priceId} | Update price | - |
-| DELETE | /admin/api/v1/prices/{priceId} | Delete price | - |
-| GET | /admin/api/v1/stock | List stock entries | `productId`, `page`, `size`, `sort` |
-| POST | /admin/api/v1/stock/entries | Create stock entry | - |
-| GET | /admin/api/v1/stock/movements | List stock movements | `productSKUId`, `page`, `size`, `sort` |
-| GET | /admin/api/v1/stock/movements/types | List movement types | - |
+| Method | Endpoint | Description | Query Parameters | Roles |
+|--------|----------|-------------|----------------|-----------|
+| GET | /admin/api/v1/products | List products | `page`, `size`, `sort` | `ADMIN`, `STOCK_MANAGER` |
+| GET | /admin/api/v1/products/{productId} | Get product by ID | - | `ADMIN`, `STOCK_MANAGER` |
+| POST | /admin/api/v1/products | Create product | - | `ADMIN` |
+| PATCH | /admin/api/v1/products/{productId} | Update product | - | `ADMIN` |
+| DELETE | /admin/api/v1/products/{productId} | Delete product | - | `ADMIN` |
+| GET | /admin/api/v1/skus | List SKUs | `productId`, `page`, `size`, `sort` | `ADMIN`, `STOCK_MANAGER` |
+| GET | /admin/api/v1/skus/{skuId} | Get SKU by ID | - | `ADMIN`, `STOCK_MANAGER` |
+| POST | /admin/api/v1/skus | Create SKU | - | `ADMIN` |
+| PATCH | /admin/api/v1/skus/{skuId} | Update SKU | - | `ADMIN` |
+| DELETE | /admin/api/v1/skus/{productSKUId} | Delete SKU | - | `ADMIN` |
+| GET | /admin/api/v1/prices | List prices | `productSKUId`, `page`, `size`, `sort` | `ADMIN`, `STOCK_MANAGER` |
+| POST | /admin/api/v1/prices | Create price | - | `ADMIN` |
+| PATCH | /admin/api/v1/prices/{priceId} | Update price | - | `ADMIN` |
+| DELETE | /admin/api/v1/prices/{priceId} | Delete price | - | `ADMIN` |
+| GET | /admin/api/v1/stock | List stock entries | `productId`, `page`, `size`, `sort` | `ADMIN`, `STOCK_MANAGER` |
+| POST | /admin/api/v1/stock/entries | Create stock entry | - | `ADMIN`, `STOCK_MANAGER` |
+| GET | /admin/api/v1/stock/movements | List stock movements | `productSKUId`, `page`, `size`, `sort` | `ADMIN`, `STOCK_MANAGER` |
+| GET | /admin/api/v1/stock/movements/types | List movement types | - | `ADMIN`, `STOCK_MANAGER` |
 
 ## Database
 

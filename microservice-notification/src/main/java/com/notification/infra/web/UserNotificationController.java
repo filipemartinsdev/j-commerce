@@ -36,7 +36,7 @@ public class UserNotificationController {
                 ));
     }
 
-    @PostMapping("/{id}/read")
+    @PostMapping("/{id}/view")
     public ResponseEntity<Void> markNotificationAsRead(
             @PathVariable UUID id,
             @AuthenticationPrincipal Jwt jwt

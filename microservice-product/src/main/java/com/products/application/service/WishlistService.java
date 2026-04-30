@@ -10,6 +10,7 @@ import com.products.application.service.mapper.WishlistItemMapper;
 import com.products.domain.entity.*;
 import com.products.infra.persistence.*;
 import jakarta.validation.Valid;
+import org.springframework.cache.annotation.Cacheable;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;

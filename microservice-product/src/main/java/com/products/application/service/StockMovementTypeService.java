@@ -3,6 +3,7 @@ package com.products.application.service;
 import com.products.application.dto.admin.StockMovementTypeResponse;
 import com.products.application.service.mapper.StockMovementTypeMapper;
 import com.products.infra.persistence.StockMovementTypeRepository;
+import org.springframework.cache.annotation.Cacheable;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -17,6 +18,9 @@ public class StockMovementTypeService {
         this.stockMovementTypeMapper = stockMovementTypeMapper;
     }
 
+    @Cacheable(
+            value = "stock_movement_types"
+    )
     public List<StockMovementTypeResponse> getAll(){
         return stockMovementTypeRepository.findAll().stream()
                 .map(stockMovementTypeMapper::toResponse)

@@ -5,6 +5,7 @@ import com.products.application.dto.catalogue.ProductPriceCatalogueResponse;
 import com.products.application.dto.catalogue.ProductSummaryCatalogueResponse;
 import com.products.application.dto.catalogue.ProductCatalogueResponse;
 import com.products.application.exception.InvalidProductCategoryException;
+import com.products.application.exception.ProductCategoryNotFoundException;
 import com.products.application.exception.ProductNotFoundException;
 import com.products.application.service.mapper.ProductCategoryMapper;
 import com.products.application.service.mapper.ProductSKUCatalogueMapper;
@@ -13,11 +14,13 @@ import com.products.domain.entity.ProductCategory;
 import com.products.domain.entity.ProductResumeCatalogue;
 import com.products.domain.entity.ProductSKUSummaryCatalogue;
 import com.products.infra.persistence.*;
+import org.springframework.cache.annotation.Cacheable;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
+import java.util.Optional;
 import java.util.UUID;
 
 @Service
@@ -81,9 +84,6 @@ public class ProductCatalogueService {
     }
 
     public PagedResponse<ProductSummaryCatalogueResponse> getAllByCategoryId(Integer categoryId, Pageable pageable) {
-        if(!productCategoryRepository.existsById(categoryId))
-            throw new InvalidProductCategoryException("Invalid product category with ID: "+categoryId);
-
         Page<ProductResumeCatalogue> page = productCatalogueResumeRepository.findAllByCategoryId(categoryId, pageable);
 
         return PagedResponse.<ProductSummaryCatalogueResponse>builder()
@@ -94,22 +94,6 @@ public class ProductCatalogueService {
                 .isLast(page.isLast())
                 .content(page.getContent().stream()
                         .map(entity -> createResumeCatalogueResponse(entity))
-                        .toList()
-                )
-                .build();
-    }
-
-    public PagedResponse<ProductCategoryResponse> getAllCategories(Pageable pageable){
-        Page<ProductCategory> page = productCategoryRepository.findAll(pageable);
-
-        return PagedResponse.<ProductCategoryResponse>builder()
-                .page(page.getNumber())
-                .size(page.getSize())
-                .totalPages(page.getTotalPages())
-                .totalElements(page.getTotalElements())
-                .isLast(page.isLast())
-                .content(page.getContent().stream()
-                        .map(productCategoryMapper::toResponse)
                         .toList()
                 )
                 .build();

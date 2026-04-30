@@ -4,6 +4,7 @@ import com.products.application.dto.*;
 import com.products.application.dto.catalogue.ProductSummaryCatalogueResponse;
 import com.products.application.dto.catalogue.ProductCatalogueResponse;
 import com.products.application.service.ProductCatalogueService;
+import com.products.application.service.ProductCategoryService;
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -15,9 +16,11 @@ import java.util.UUID;
 @RequestMapping("/api/v1")
 public class ProductController {
     private final ProductCatalogueService productCatalogueService;
+    private final ProductCategoryService productCategoryService;
 
-    public ProductController(ProductCatalogueService productCatalogueService) {
+    public ProductController(ProductCatalogueService productCatalogueService, ProductCategoryService productCategoryService) {
         this.productCatalogueService = productCatalogueService;
+        this.productCategoryService = productCategoryService;
     }
 
     @GetMapping("/categories")
@@ -25,7 +28,7 @@ public class ProductController {
         return ResponseEntity
                 .status(HttpStatus.OK)
                 .body(
-                        StandardResponse.success(productCatalogueService.getAllCategories(pageable))
+                        StandardResponse.success(productCategoryService.getAll(pageable))
                 );
     }
 

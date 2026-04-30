@@ -130,4 +130,11 @@ public class GlobalExceptionHandler {
                 .status(HttpStatus.NOT_FOUND)
                 .body(StandardResponse.fail(e.getMessage()));
     }
+    
+    @ExceptionHandler(ProductCategoryNotFoundException.class)
+    public ResponseEntity<StandardResponse<Void>> handleProductCategoryNotFound(ProductCategoryNotFoundException e) {
+        return ResponseEntity
+                .status(HttpStatus.NOT_FOUND)
+                .body(StandardResponse.fail(e.getMessage()));
+    }
 }

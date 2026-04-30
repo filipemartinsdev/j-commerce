@@ -80,7 +80,6 @@ public class ProductManagementService {
                 .build();
     }
 
-//    TODO: unit tests
     public PagedResponse<ProductAdminResponse> getAllProductsByCategoryId(Integer categoryId, Pageable pageable){
         Page<Product> page = productRepository.findAllByCategoryId(categoryId, pageable);
 

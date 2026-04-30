@@ -17,6 +17,7 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
+import org.mockito.Mockito;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.data.domain.Page;
@@ -52,6 +53,93 @@ public class ProductManagementServiceTests {
 
     @InjectMocks
     private ProductManagementService productManagementService;
+
+    @Test @DisplayName("Should retrieve all products by category ID successfully")
+    void getAllProductsByCategoryIdTestCase1() {
+        // Given
+        Integer categoryId = 1;
+        Pageable pageable = PageRequest.of(0, 10);
+
+        ProductCategory category = new ProductCategory();
+        category.setId(categoryId);
+        category.setName("Electronics");
+
+        Product product1 = new Product();
+        product1.setId(UUID.randomUUID());
+        product1.setName("Laptop");
+        product1.setDescription("Gaming Laptop");
+        product1.setCategory(category);
+        product1.setActive(true);
+
+        Product product2 = new Product();
+        product2.setId(UUID.randomUUID());
+        product2.setName("Mouse");
+        product2.setDescription("Wireless Mouse");
+        product2.setCategory(category);
+        product2.setActive(true);
+
+        Page<Product> page = new PageImpl<>(List.of(product1, product2), pageable, 2);
+
+        ProductAdminResponse response1 = new ProductAdminResponse(
+                product1.getId(),
+                "Laptop",
+                "Gaming Laptop",
+                new ProductCategoryResponse(1, "Electronics"),
+                Instant.now(),
+                Instant.now()
+        );
+        ProductAdminResponse response2 = new ProductAdminResponse(
+                product2.getId(),
+                "Mouse",
+                "Wireless Mouse",
+                new ProductCategoryResponse(1, "Electronics"),
+                Instant.now(),
+                Instant.now()
+        );
+
+        when(productRepository.findAllByCategoryId(categoryId, pageable))
+                .thenReturn(page);
+        when(productAdminMapper.toResponse(product1))
+                .thenReturn(response1);
+        when(productAdminMapper.toResponse(product2))
+                .thenReturn(response2);
+
+        // When
+        PagedResponse<ProductAdminResponse> result = productManagementService.getAllProductsByCategoryId(categoryId, pageable);
+
+        // Then
+        assertNotNull(result);
+        assertEquals(0, result.page());
+        assertEquals(10, result.size());
+        assertEquals(2, result.totalElements());
+        assertEquals(1, result.totalPages());
+        assertTrue(result.isLast());
+        assertEquals(2, result.content().size());
+        verify(productRepository).findAllByCategoryId(categoryId, pageable);
+    }
+
+    @Test @DisplayName("Should retrieve empty PagedResponse if not exists products by category ID")
+    void getAllProductsByCategoryIdTestCase2() {
+        //        Given
+        Integer categoryId = 1;
+
+        var expectedResponse = PagedResponse.builder()
+                .content(new ArrayList<>())
+                .size(0)
+                .page(0)
+                .isLast(true)
+                .totalPages(1)
+                .totalElements(0L)
+                .build();
+
+        Mockito.when(productRepository.findAllByCategoryId(any(), any())).thenReturn(Page.empty());
+
+//        When
+        PagedResponse<ProductAdminResponse> response = productManagementService.getAllProductsByCategoryId(categoryId, Pageable.unpaged());
+
+//        Then
+        assertEquals(expectedResponse, response);
+    }
 
     @Test @DisplayName("Should create new product and retrieve it DTO successfully if everything is OK")
     void createProductTestCase1() {

@@ -25,10 +25,11 @@ public class SecurityConfig {
 
                 .authorizeHttpRequests(auth -> auth
                         .dispatcherTypeMatchers(DispatcherType.ERROR).permitAll()
+                        .requestMatchers("/admin/api/v1/stock/**").hasAnyAuthority("SCOPE_STOCK_MANAGER", "SCOPE_ADMIN")
+                        .requestMatchers(HttpMethod.GET, "/admin/api/v1/products/**").hasAnyAuthority("SCOPE_STOCK_MANAGER", "SCOPE_ADMIN")
+                        .requestMatchers(HttpMethod.GET, "/admin/api/v1/prices/**").hasAnyAuthority("SCOPE_STOCK_MANAGER", "SCOPE_ADMIN")
+                        .requestMatchers(HttpMethod.GET, "/admin/api/v1/skus/**").hasAnyAuthority("SCOPE_STOCK_MANAGER", "SCOPE_ADMIN")
                         .requestMatchers("/admin/**").hasAuthority("SCOPE_ADMIN")
-                        .requestMatchers("/admin/api/v1/stock").hasAnyAuthority("SCOPE_STOCK_MANAGER", "SCOPE_ADMIN")
-                        .requestMatchers(HttpMethod.GET, "/admin/api/v1/products").hasAnyAuthority("SCOPE_STOCK_MANAGER", "SCOPE_ADMIN")
-                        .requestMatchers(HttpMethod.GET, "/admin/api/v1/prices").hasAnyAuthority("SCOPE_STOCK_MANAGER", "SCOPE_ADMIN")
                         .requestMatchers("/v3/api-docs/**", "/swagger-ui/index.html", "/h2-console/**").permitAll()
                         .requestMatchers("/api/v1/register", "/api/v1/login", "/api/v1/refresh").permitAll()
                         .requestMatchers("/actuator/**").permitAll()

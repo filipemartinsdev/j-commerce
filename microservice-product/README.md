@@ -49,7 +49,7 @@ Microservice for managing product catalogue, stock, pricing, shopping cart, wish
 | Method | Endpoint | Description | Query Parameters |
 |--------|----------|------------|----------------|
 | GET | /api/v1/categories | List product categories | `page`, `size`, `sort` |
-| GET | /api/v1/products | List products | `category`, `page`, `size`, `sort` |
+| GET | /api/v1/products | List products | `categoryId`, `page`, `size`, `sort` |
 | GET | /api/v1/products/{productId} | Get product details | - |
 | GET | /api/v1/wishlist | Get user wishlist | `page`, `size`, `sort` |
 | POST | /api/v1/wishlist | Add item to wishlist | - |
@@ -65,7 +65,7 @@ Microservice for managing product catalogue, stock, pricing, shopping cart, wish
 
 | Method | Endpoint | Description | Query Parameters | Roles |
 |--------|----------|-------------|----------------|-----------|
-| GET | /admin/api/v1/products | List products | `page`, `size`, `sort` | `ADMIN`, `STOCK_MANAGER` |
+| GET | /admin/api/v1/products | List products | `page`, `size`, `sort`, `categoryId` | `ADMIN`, `STOCK_MANAGER` |
 | GET | /admin/api/v1/products/{productId} | Get product by ID | - | `ADMIN`, `STOCK_MANAGER` |
 | POST | /admin/api/v1/products | Create product | - | `ADMIN` |
 | PATCH | /admin/api/v1/products/{productId} | Update product | - | `ADMIN` |

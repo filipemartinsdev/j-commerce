@@ -74,7 +74,24 @@ public class ProductManagementService {
                 .totalPages(page.getTotalPages())
                 .totalElements(page.getTotalElements())
                 .content(page.getContent().stream()
-                        .map(entity -> productAdminMapper.toResponse(entity))
+                        .map(productAdminMapper::toResponse)
+                        .toList()
+                )
+                .build();
+    }
+
+//    TODO: unit tests
+    public PagedResponse<ProductAdminResponse> getAllProductsByCategoryId(Integer categoryId, Pageable pageable){
+        Page<Product> page = productRepository.findAllByCategoryId(categoryId, pageable);
+
+        return PagedResponse.<ProductAdminResponse>builder()
+                .page(page.getNumber())
+                .size(page.getSize())
+                .isLast(page.isLast())
+                .totalPages(page.getTotalPages())
+                .totalElements(page.getTotalElements())
+                .content(page.getContent().stream()
+                        .map(productAdminMapper::toResponse)
                         .toList()
                 )
                 .build();

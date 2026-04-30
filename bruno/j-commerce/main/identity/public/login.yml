@@ -10,8 +10,8 @@ http:
     type: json
     data: |-
       {
-        "email": "common@gmail.com",
-        "password": "common123"
+        "email": "admin@gmail.com",
+        "password": "admin123"
       }
 
 settings:

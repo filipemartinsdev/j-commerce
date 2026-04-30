@@ -22,12 +22,20 @@ public class AdminProductController {
     }
 
     @GetMapping("/products")
-    public ResponseEntity<StandardResponse<PagedResponse<ProductAdminResponse>>> getAllProducts(Pageable pageable) {
+    public ResponseEntity<StandardResponse<PagedResponse<ProductAdminResponse>>> getAllProducts(
+            @RequestParam(required = false, defaultValue = "-1") Integer categoryId,
+            Pageable pageable
+    ) {
+        PagedResponse<ProductAdminResponse> pagedResponse;
+
+        if (categoryId == -1)
+            pagedResponse = adminProductService.getAllProducts(pageable);
+        else
+            pagedResponse = adminProductService.getAllProductsByCategoryId(categoryId, pageable);
+
         return ResponseEntity
                 .status(HttpStatus.OK)
-                .body(StandardResponse.success(
-                        adminProductService.getAllProducts(pageable)
-                ));
+                .body(StandardResponse.success(pagedResponse));
     }
 
     @GetMapping("/products/{productId}")

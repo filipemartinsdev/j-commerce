@@ -15,11 +15,9 @@ import java.util.UUID;
 @RequestMapping("/api/v1")
 public class ProductController {
     private final ProductCatalogueService productCatalogueService;
-    private final ProductCatalogueService productCatalogueResumeService;
 
-    public ProductController(ProductCatalogueService productCatalogueService, ProductCatalogueService productCatalogueResumeService) {
+    public ProductController(ProductCatalogueService productCatalogueService) {
         this.productCatalogueService = productCatalogueService;
-        this.productCatalogueResumeService = productCatalogueResumeService;
     }
 
     @GetMapping("/categories")
@@ -33,15 +31,15 @@ public class ProductController {
 
     @GetMapping("/products")
     public ResponseEntity<StandardResponse<PagedResponse<ProductSummaryCatalogueResponse>>> getProducts(
-            @RequestParam(name = "category", required = false, defaultValue = "-1") Integer category,
+            @RequestParam(name = "categoryId", required = false, defaultValue = "-1") Integer category,
             Pageable pageable
     ) {
         PagedResponse<ProductSummaryCatalogueResponse> response;
 
         if (category == -1)
-            response = productCatalogueResumeService.getAll(pageable);
+            response = productCatalogueService.getAll(pageable);
         else
-            response = productCatalogueResumeService.getAllByCategoryId(category, pageable);
+            response = productCatalogueService.getAllByCategoryId(category, pageable);
 
         return ResponseEntity
                 .status(HttpStatus.OK)

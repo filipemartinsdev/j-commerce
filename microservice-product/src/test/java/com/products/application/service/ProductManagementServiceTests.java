@@ -1,6 +1,7 @@
 package com.products.application.service;
 
 import com.products.application.dto.PagedResponse;
+import com.products.application.dto.ProductCategoryResponse;
 import com.products.application.dto.admin.*;
 import com.products.application.exception.*;
 import com.products.application.service.mapper.ProductAdminMapper;
@@ -72,6 +73,7 @@ public class ProductManagementServiceTests {
                 productEntity.getId(),
                 "Laptop",
                 "Gaming Laptop",
+                new ProductCategoryResponse(1, "Electronics"),
                 Instant.now(),
                 Instant.now()
         );
@@ -143,6 +145,7 @@ public class ProductManagementServiceTests {
                 productId,
                 "Updated Laptop",
                 "Updated Description",
+                new ProductCategoryResponse(1, "Eletronics"),
                 Instant.now(),
                 Instant.now()
         );
@@ -208,10 +211,20 @@ public class ProductManagementServiceTests {
         Page<Product> page = new PageImpl<>(List.of(product1, product2), pageable, 2);
 
         ProductAdminResponse response1 = new ProductAdminResponse(
-                product1.getId(), "Product 1", "Description 1", Instant.now(), Instant.now()
+                product1.getId(),
+                "Product 1",
+                "Description 1",
+                new ProductCategoryResponse(1, "Electronics"),
+                Instant.now(),
+                Instant.now()
         );
         ProductAdminResponse response2 = new ProductAdminResponse(
-                product2.getId(), "Product 2", "Description 2", Instant.now(), Instant.now()
+                product2.getId(),
+                "Product 2",
+                "Description 2",
+                new ProductCategoryResponse(1, "Electronics"),
+                Instant.now(),
+                Instant.now()
         );
 
         when(productRepository.findAll(pageable))
@@ -266,7 +279,12 @@ public class ProductManagementServiceTests {
         product.setActive(true);
 
         ProductAdminResponse response = new ProductAdminResponse(
-                productId, "Laptop", "Gaming Laptop", Instant.now(), Instant.now()
+                productId,
+                "Laptop",
+                "Gaming Laptop",
+                new ProductCategoryResponse(1, "Electronics"),
+                Instant.now(),
+                Instant.now()
         );
 
         when(productRepository.findById(productId))

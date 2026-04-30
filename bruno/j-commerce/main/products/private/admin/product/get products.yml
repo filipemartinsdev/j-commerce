@@ -6,6 +6,11 @@ info:
 http:
   method: GET
   url: https://localhost/product/admin/api/v1/products
+  params:
+    - name: categoryId
+      value: "3"
+      type: query
+      disabled: true
   auth: inherit
 
 settings:

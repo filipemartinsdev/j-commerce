@@ -125,7 +125,6 @@ public class ProductCatalogueServiceTests {
 
         Page<ProductResumeCatalogue> page = new PageImpl<>(List.of(product1), pageable, 1);
 
-        when(productCategoryRepository.existsById(categoryId)).thenReturn(true);
         when(productCatalogueResumeRepository.findAllByCategoryId(categoryId, pageable)).thenReturn(page);
         when(productDiscountCalculator.getDiscountPercent(any(), any())).thenReturn(0);
 
@@ -136,7 +135,6 @@ public class ProductCatalogueServiceTests {
         assertNotNull(result);
         assertEquals(1, result.totalElements());
         assertEquals(1, result.content().size());
-        verify(productCategoryRepository).existsById(categoryId);
         verify(productCatalogueResumeRepository).findAllByCategoryId(categoryId, pageable);
     }
 
@@ -147,7 +145,6 @@ public class ProductCatalogueServiceTests {
         Pageable pageable = PageRequest.of(0, 10);
         Page<ProductResumeCatalogue> emptyPage = new PageImpl<>(Collections.emptyList(), pageable, 0);
 
-        when(productCategoryRepository.existsById(categoryId)).thenReturn(true);
         when(productCatalogueResumeRepository.findAllByCategoryId(categoryId, pageable)).thenReturn(emptyPage);
 
         // When
@@ -157,7 +154,6 @@ public class ProductCatalogueServiceTests {
         assertNotNull(result);
         assertEquals(0, result.totalElements());
         assertTrue(result.content().isEmpty());
-        verify(productCategoryRepository).existsById(categoryId);
         verify(productCatalogueResumeRepository).findAllByCategoryId(categoryId, pageable);
     }
 

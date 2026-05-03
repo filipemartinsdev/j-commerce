@@ -5,6 +5,7 @@ import com.products.application.dto.PagedResponse;
 import com.products.application.dto.StandardResponse;
 import com.products.application.dto.catalogue.WishlistItemResponse;
 import com.products.application.service.WishlistService;
+import com.products.docs.WishlistControllerDocs;
 import jakarta.validation.Valid;
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
@@ -17,7 +18,7 @@ import java.util.UUID;
 
 @RestController
 @RequestMapping("/api/v1/wishlist")
-public class WishlistController {
+public class WishlistController implements WishlistControllerDocs {
     private final WishlistService wishlistService;
 
     public WishlistController(WishlistService wishlistService) {

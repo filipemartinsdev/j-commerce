@@ -6,6 +6,7 @@ import com.products.application.dto.catalogue.ConfirmShoppingCartRequest;
 import com.products.application.dto.catalogue.CreateShoppingCartItemRequest;
 import com.products.application.dto.catalogue.ShoppingCartItemResponse;
 import com.products.application.service.ShoppingCartService;
+import com.products.docs.ShoppingCartControllerDocs;
 import jakarta.validation.Valid;
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
@@ -18,7 +19,7 @@ import java.util.UUID;
 
 @RestController
 @RequestMapping("/api/v1/shopping-cart")
-public class ShoppingCartController {
+public class ShoppingCartController implements ShoppingCartControllerDocs {
     private final ShoppingCartService shoppingCartService;
 
     public ShoppingCartController(ShoppingCartService shoppingCartService) {

@@ -9,6 +9,7 @@ import com.products.application.dto.admin.StockMovementTypeResponse;
 import com.products.application.service.ProductStockManagementService;
 import com.products.application.service.StockMovementTypeService;
 import com.products.application.service.mapper.StockMovementTypeMapper;
+import com.products.docs.AdminStockControllerDocs;
 import com.products.infra.persistence.StockMovementTypeRepository;
 import jakarta.validation.Valid;
 import org.springframework.data.domain.Pageable;
@@ -23,7 +24,7 @@ import java.util.UUID;
 
 @RestController
 @RequestMapping("/admin/api/v1/stock")
-public class AdminStockController {
+public class AdminStockController implements AdminStockControllerDocs {
     private final ProductStockManagementService adminProductStockService;
     private final StockMovementTypeRepository stockMovementTypeRepository;
     private final StockMovementTypeMapper stockMovementTypeMapper;

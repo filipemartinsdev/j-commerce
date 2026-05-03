@@ -5,6 +5,7 @@ import com.products.application.dto.catalogue.ProductSummaryCatalogueResponse;
 import com.products.application.dto.catalogue.ProductCatalogueResponse;
 import com.products.application.service.ProductCatalogueService;
 import com.products.application.service.ProductCategoryService;
+import com.products.docs.ProductControllerDocs;
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -14,7 +15,7 @@ import java.util.UUID;
 
 @RestController
 @RequestMapping("/api/v1")
-public class ProductController {
+public class ProductController implements ProductControllerDocs {
     private final ProductCatalogueService productCatalogueService;
     private final ProductCategoryService productCategoryService;
 

@@ -4,6 +4,7 @@ import com.products.application.dto.PagedResponse;
 import com.products.application.dto.StandardResponse;
 import com.products.application.dto.admin.*;
 import com.products.application.service.ProductManagementService;
+import com.products.docs.AdminProductControllerDocs;
 import jakarta.validation.Valid;
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
@@ -14,7 +15,7 @@ import java.util.UUID;
 
 @RestController
 @RequestMapping("/admin/api/v1")
-public class AdminProductController {
+public class AdminProductController implements AdminProductControllerDocs {
     private final ProductManagementService adminProductService;
 
     public AdminProductController(ProductManagementService adminProductService) {

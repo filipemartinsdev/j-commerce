@@ -3,6 +3,7 @@ package com.identity.profile.infra.web;
 import com.identity.common.dto.StandardResponse;
 import com.identity.profile.application.dto.UserProfileResponse;
 import com.identity.profile.application.service.UserProfileService;
+import com.identity.profile.docs.UserControllerDocs;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
@@ -15,7 +16,7 @@ import java.util.UUID;
 
 @RestController
 @RequestMapping("/api/v1/users")
-public class UserController {
+public class UserController implements UserControllerDocs {
     private final UserProfileService userProfileService;
 
     public UserController(UserProfileService userProfileService) {

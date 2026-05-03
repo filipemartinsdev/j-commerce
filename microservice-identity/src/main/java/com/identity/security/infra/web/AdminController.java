@@ -6,6 +6,7 @@ import com.identity.security.application.dto.UpdateUserRole;
 import com.identity.security.application.dto.UserCredentialsResponse;
 import com.identity.security.application.service.AuthService;
 import com.identity.security.application.service.mapper.UserCredentialsMapper;
+import com.identity.security.docs.AdminControllerDocs;
 import jakarta.validation.Valid;
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
@@ -16,7 +17,7 @@ import java.util.UUID;
 
 @RestController
 @RequestMapping("/admin/api/v1")
-public class AdminController {
+public class AdminController implements AdminControllerDocs {
     private final AuthService authService;
     private final UserCredentialsMapper userCredentialsMapper;
 

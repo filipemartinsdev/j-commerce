@@ -92,14 +92,23 @@ The HTTPS will be automatically configured with Caddy, and services will be avai
 
 | Service       | URL                      |
 |---------------|--------------------------|
-| Identity      | https://localhosts/identity    |
+| Identity      | https://localhost/identity    |
 | Product       | https://localhost/product     |
 | Order         | https://localhost/order     |
 | Payment       | https://localhost/payment     |
-| Notification | https://localhost/notification     |
+| Notification | https://localhost/notification    |
 | Grafana       | http://localhost:3000   |
 | Prometheus Panel   | http://localhost:9090   |
 | RabbitMQ Panel     | http://localhost:15672  |
+
+The Swagger UI for each microservice will be available at:
+
+| Service       | URL                      |
+|---------------|--------------------------|
+| Identity      | http://localhost:8080/swagger-ui/index.html |
+| Product       | http://localhost:8081/swagger-ui/index.html |
+| Order         | http://localhost:8082/swagger-ui/index.html |
+| Payment       | http://localhost:8083/swagger-ui/index.html |
 
 
 ## Default Users

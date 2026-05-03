@@ -4,6 +4,7 @@ import com.notification.application.dto.PagedResponse;
 import com.notification.application.dto.StandardResponse;
 import com.notification.application.dto.UserNotificationResponse;
 import com.notification.application.service.UserNotificationService;
+import com.notification.docs.UserNotificationControllerDocs;
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -15,7 +16,7 @@ import java.util.UUID;
 
 @RestController
 @RequestMapping("/api/v1/notifications")
-public class UserNotificationController {
+public class UserNotificationController implements UserNotificationControllerDocs {
     private final UserNotificationService userNotificationService;
 
     public UserNotificationController(UserNotificationService userNotificationService) {

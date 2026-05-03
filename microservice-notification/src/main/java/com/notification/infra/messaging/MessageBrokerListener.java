@@ -6,10 +6,11 @@ import com.notification.application.message.NotifyPaymentGeneratedMessage;
 import com.notification.application.service.UserNotificationService;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.amqp.rabbit.annotation.RabbitListener;
+import org.springframework.context.annotation.Profile;
 import org.springframework.stereotype.Component;
 
 @Slf4j
-@Component
+@Component @Profile("!test")
 public class MessageBrokerListener {
     private final UserNotificationService userNotificationService;
 

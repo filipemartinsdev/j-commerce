@@ -2,6 +2,7 @@ package com.orders.infra.web;
 
 import com.orders.application.dto.*;
 import com.orders.application.service.SalesOrderService;
+import com.orders.docs.SalesOrderControllerDocs;
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -13,7 +14,7 @@ import java.util.UUID;
 
 @RestController
 @RequestMapping("/api/v1/sales-orders")
-public class SalesOrderController {
+public class SalesOrderController implements SalesOrderControllerDocs {
     private final SalesOrderService salesOrderService;
 
     public SalesOrderController(SalesOrderService salesOrderService) {

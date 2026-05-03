@@ -2,6 +2,7 @@ package com.orders.infra.web;
 
 import com.orders.application.dto.*;
 import com.orders.application.service.DeliveryAddressService;
+import com.orders.docs.DeliveryAddressControllerDocs;
 import com.orders.domain.entity.DeliveryAddress;
 import jakarta.validation.Valid;
 import org.springframework.data.domain.Pageable;
@@ -15,7 +16,7 @@ import java.util.UUID;
 
 @RestController
 @RequestMapping("/api/v1/delivery-addresses")
-public class DeliveryAddressController {
+public class DeliveryAddressController implements DeliveryAddressControllerDocs {
     private final DeliveryAddressService deliveryAddressService;
 
     public DeliveryAddressController(DeliveryAddressService deliveryAddressService) {
@@ -37,7 +38,7 @@ public class DeliveryAddressController {
     }
 
     @GetMapping("/{id}")
-    public ResponseEntity<StandardResponse<DeliveryAddressResponse>> getAllAddressesByUser(
+    public ResponseEntity<StandardResponse<DeliveryAddressResponse>> getAddressById(
             @PathVariable UUID id,
             @AuthenticationPrincipal Jwt jwt
     ) {
@@ -65,7 +66,7 @@ public class DeliveryAddressController {
     }
 
     @DeleteMapping("/{id}")
-    public ResponseEntity<StandardResponse<DeliveryAddressResponse>> createAddress(
+    public ResponseEntity<StandardResponse<DeliveryAddressResponse>> deleteAddress(
             @PathVariable UUID id,
             @AuthenticationPrincipal Jwt jwt
     ) {
@@ -79,7 +80,7 @@ public class DeliveryAddressController {
     }
 
     @PatchMapping("/{id}")
-    public ResponseEntity<StandardResponse<DeliveryAddressResponse>> createAddress(
+    public ResponseEntity<StandardResponse<DeliveryAddressResponse>> updateAddress(
             @PathVariable UUID id,
             @Valid @RequestBody UpdateDeliveryAddressRequest request,
             @AuthenticationPrincipal Jwt jwt

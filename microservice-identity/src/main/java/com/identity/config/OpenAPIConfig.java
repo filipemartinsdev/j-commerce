@@ -9,7 +9,7 @@ import org.springframework.context.annotation.Configuration;
 
 @Configuration
 public class OpenAPIConfig {
-    private final String TITLE = "Authentication Service";
+    private final String TITLE = "Identity Service";
     private final String VERSION = "1.0.0";
 
     @Bean

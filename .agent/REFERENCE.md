@@ -46,11 +46,46 @@ Structure to replicate when creating unit tests:
 ## Exception Patterns
 
 - `microservice-identity/src/main/java/com/identity/security/application/exception/UserNotFoundException.java`
+- `microservice-identity/src/main/java/com/identity/security/application/exception/ForbiddenOperationException.java`
 - `microservice-product/src/main/java/com/products/application/exception/ProductNotFoundException.java`
+- `microservice-order/src/main/java/com/orders/application/exception/SalesOrderNotFoundException.java`
+- `microservice-order/src/main/java/com/orders/application/exception/DeliveryAddressNotFoundException.java`
+- `microservice-order/src/main/java/com/orders/application/exception/CantCreateSalesOrderException.java`
+- `microservice-order/src/main/java/com/orders/application/exception/CantCancelSalesOrderException.java`
+- `microservice-order/src/main/java/com/orders/application/exception/ForbiddenOperationException.java`
 
-## Global Exception Handler
+## Global Exception Handlers
 
 - `microservice-identity/src/main/java/com/identity/common/handler/GlobalExceptionHandler.java`
+- `microservice-product/src/main/java/com/products/application/handler/GlobalExceptionHandler.java`
+- `microservice-order/src/main/java/com/orders/application/handler/GlobalExceptionHandler.java`
+
+## OpenAPI Documentation Patterns
+
+### Documentation Interfaces (Reference Implementations)
+
+- `microservice-identity/src/main/java/com/identity/security/docs/AuthControllerDocs.java`
+- `microservice-identity/src/main/java/com/identity/security/docs/AdminControllerDocs.java`
+- `microservice-identity/src/main/java/com/identity/profile/docs/UserControllerDocs.java`
+- `microservice-identity/src/main/java/com/identity/security/docs/WellKnownControllerDocs.java`
+
+### Controller Implementations (Implementing Docs Interfaces)
+
+- `microservice-identity/src/main/java/com/identity/security/infra/web/AuthController.java`
+- `microservice-identity/src/main/java/com/identity/security/infra/web/AdminController.java`
+- `microservice-identity/src/main/java/com/identity/profile/infra/web/UserController.java`
+- `microservice-identity/src/main/java/com/identity/security/infra/web/WellKnownController.java`
+
+### OpenAPI Configuration
+
+- `microservice-identity/src/main/java/com/identity/config/OpenAPIConfig.java`
+
+### Exception Classes (Documented in @ApiResponses)
+
+- `microservice-identity/src/main/java/com/identity/security/application/exception/UserNotFoundException.java`
+- `microservice-identity/src/main/java/com/identity/security/application/exception/UserAlreadyExistsException.java`
+- `microservice-identity/src/main/java/com/identity/security/application/exception/ForbiddenOperationException.java`
+- `microservice-identity/src/main/java/com/identity/profile/application/exception/UserProfileNotFoundException.java`
 
 ## Mapper Pattern
 

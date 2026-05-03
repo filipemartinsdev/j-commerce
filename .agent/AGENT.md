@@ -82,6 +82,13 @@ src/main/java/com/{module}/
 - ApplicationEventPublisher for domain events
 - Async event handling via @Async or RabbitMQ
 
+## API Documentation
+
+All APIs MUST be documented using Swagger OpenAPI following the interface-based pattern.
+Every microservice MUST have `*ControllerDocs` interfaces that hold all OpenAPI annotations.
+Controllers implement these interfaces - NO Swagger annotations on controller classes directly.
+See API_DOCS.md for the complete documentation standard, annotation rules, and review checklist.
+
 ## Testing Requirements
 
 All service tests must follow the exact pattern defined in TESTING.md.

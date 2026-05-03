@@ -124,10 +124,12 @@ public class EntityService {
 
 ## Controller Pattern
 
+Controllers implementing docs interfaces do NOT use `@Override`:
+
 ```java
 @RestController
 @RequestMapping("/api/v1")
-public class EntityController {
+public class EntityController implements EntityControllerDocs {
     private final EntityService service;
 
     @PostMapping
@@ -141,6 +143,67 @@ public class EntityController {
     }
 }
 ```
+
+## Documentation Architecture
+
+### Interface-Based OpenAPI Pattern
+
+```
+src/main/java/com/{module}/
+├── docs/                          # Documentation interfaces (Swagger annotations only)
+│   └── EntityControllerDocs.java  # @Tag, @Operation, @ApiResponses, @Schema
+└── infra/web/
+    └── EntityController.java      # implements EntityControllerDocs (no Swagger annotations)
+```
+
+### Documentation Interface
+
+```java
+@Tag(name = "Entity management")
+public interface EntityControllerDocs {
+    @Operation(summary = "Create new entity")
+    @ApiResponses({
+            @ApiResponse(responseCode = "201", description = "Entity created successfully",
+                    content = @Content(mediaType = "application/json",
+                            schema = @Schema(implementation = StandardResponse.class))),
+            @ApiResponse(responseCode = "400", description = "Validation error",
+                    content = @Content(mediaType = "application/json",
+                            schema = @Schema(implementation = StandardResponse.class)))
+    })
+    ResponseEntity<StandardResponse<EntityResponse>> create(@Valid @RequestBody CreateEntityRequest request);
+}
+```
+
+### OpenAPI Configuration Bean
+
+```java
+@Configuration
+public class OpenAPIConfig {
+    @Bean
+    public OpenAPI customOpenAPI() {
+        return new OpenAPI()
+                .info(new Info().title("Service Name").version("1.0.0"))
+                .components(new Components()
+                        .addSecuritySchemes("bearerAuth",
+                                new SecurityScheme()
+                                        .type(SecurityScheme.Type.HTTP)
+                                        .scheme("bearer")
+                                        .bearerFormat("JWT")));
+    }
+}
+```
+
+### Exception-to-Response Mapping
+
+GlobalExceptionHandler maps exceptions to HTTP responses. Document ALL exception responses in @ApiResponses:
+
+| Exception Type | HTTP Status | @ApiResponse Required |
+|---|---|---|
+| `*NotFoundException` | 404 | Yes - "{Resource} not found" |
+| `*AlreadyExistsException` | 400 | Yes - "{Resource} already exists" |
+| `ForbiddenOperationException` | 403 | Yes - "Can't perform this operation" |
+| `BadJwtException` | 400 | Yes - "Invalid JWT token" |
+| Spring Security (401/403) | 401/403 | Yes - empty @Content |
 
 ## Pagination Pattern
 

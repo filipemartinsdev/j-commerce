@@ -92,6 +92,103 @@ CREATE TABLE entity (
 - Never DELETE FROM table
 - UPDATE table SET is_active = false WHERE id = ?
 
+## API Documentation (Swagger OpenAPI)
+
+### Interface-Based Pattern
+
+Controllers MUST NOT contain Swagger annotations. Create a `*ControllerDocs` interface:
+
+```java
+package com.{module}.{submodule}.docs;
+
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.media.Content;
+import io.swagger.v3.oas.annotations.media.Schema;
+import io.swagger.v3.oas.annotations.responses.ApiResponse;
+import io.swagger.v3.oas.annotations.responses.ApiResponses;
+import io.swagger.v3.oas.annotations.security.SecurityRequirement;
+import io.swagger.v3.oas.annotations.tags.Tag;
+
+@Tag(name = "{Feature Name}")
+public interface {ControllerName}Docs {
+    @Operation(summary = "{Action description}")
+    @ApiResponses({
+            @ApiResponse(
+                    responseCode = "200",
+                    description = "{Action} successfully",
+                    content = @Content(
+                            mediaType = "application/json",
+                            schema = @Schema(implementation = StandardResponse.class)
+                    )
+            ),
+            @ApiResponse(
+                    responseCode = "404",
+                    description = "{Resource} not found",
+                    content = @Content
+            ),
+            @ApiResponse(
+                    responseCode = "401",
+                    description = "Client not authenticated",
+                    content = @Content
+            )
+    })
+    @SecurityRequirement(name = "bearerAuth")
+    ResponseEntity<StandardResponse<{ResponseDto}>> {methodName}({params});
+}
+```
+
+### Controller Implementation
+
+Controllers implementing docs interfaces do NOT use `@Override`:
+
+```java
+@RestController
+@RequestMapping("/api/v1/{resource}")
+public class {ControllerName}Controller implements {ControllerName}Docs {
+
+    @PostMapping
+    public ResponseEntity<StandardResponse<{ResponseDto}>> create(@Valid @RequestBody {RequestDto} request) {
+        // implementation
+    }
+}
+```
+
+### OpenAPIConfig Required
+
+```java
+@Configuration
+public class OpenAPIConfig {
+    @Bean
+    public OpenAPI customOpenAPI() {
+        return new OpenAPI()
+                .info(new Info().title("{Service Name}").version("1.0.0"))
+                .components(new Components()
+                        .addSecuritySchemes("bearerAuth",
+                                new SecurityScheme()
+                                        .type(SecurityScheme.Type.HTTP)
+                                        .scheme("bearer")
+                                        .bearerFormat("JWT")));
+    }
+}
+```
+
+### SecurityConfig - Permit Swagger Paths
+
+```java
+.requestMatchers("/v3/api-docs/**", "/swagger-ui/**").permitAll()
+```
+
+### Documentation Review Checklist
+
+- [ ] `*ControllerDocs` interface created in `docs/` package
+- [ ] Controller implements the docs interface
+- [ ] NO Swagger annotations on controller class
+- [ ] `@Tag` on docs interface, `@Operation` on every method
+- [ ] `@ApiResponses` covers ALL exceptions thrown by service
+- [ ] `@SecurityRequirement(name = "bearerAuth")` on protected endpoints only
+- [ ] GlobalExceptionHandler mappings match documented response codes
+- [ ] OpenAPIConfig exists with correct service title
+
 ## API Design
 
 ### URL Patterns

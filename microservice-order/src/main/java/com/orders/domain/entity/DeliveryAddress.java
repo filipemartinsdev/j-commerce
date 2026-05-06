@@ -6,6 +6,7 @@ import jakarta.validation.constraints.NotNull;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
+import lombok.ToString;
 import org.hibernate.annotations.CreationTimestamp;
 import org.hibernate.validator.constraints.Length;
 
@@ -13,7 +14,7 @@ import java.time.Instant;
 import java.util.UUID;
 
 @Entity @Table(name = "delivery_address")
-@Data @NoArgsConstructor @AllArgsConstructor
+@Data @NoArgsConstructor @AllArgsConstructor @ToString
 public class DeliveryAddress {
     @Id @GeneratedValue(strategy = GenerationType.UUID)
     private UUID id;

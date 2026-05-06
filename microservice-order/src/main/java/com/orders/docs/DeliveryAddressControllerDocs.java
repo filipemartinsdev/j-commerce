@@ -19,6 +19,7 @@ import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.security.oauth2.jwt.Jwt;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestParam;
 
 import java.util.UUID;
 
@@ -110,6 +111,7 @@ public interface DeliveryAddressControllerDocs {
     })
     ResponseEntity<StandardResponse<DeliveryAddressResponse>> createAddress(
             @Valid @RequestBody CreateDeliveryAddressRequest request,
+            @RequestParam Boolean byCoordinates,
             @AuthenticationPrincipal Jwt jwt
     );
 

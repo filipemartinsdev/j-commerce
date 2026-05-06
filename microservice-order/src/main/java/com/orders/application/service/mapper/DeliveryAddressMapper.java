@@ -1,5 +1,6 @@
 package com.orders.application.service.mapper;
 
+import com.orders.application.dto.AddressByCoordinatesResponse;
 import com.orders.application.dto.CreateDeliveryAddressRequest;
 import com.orders.application.dto.DeliveryAddressResponse;
 import com.orders.domain.entity.DeliveryAddress;
@@ -25,22 +26,34 @@ public class DeliveryAddressMapper {
 
     public DeliveryAddress toEntity(CreateDeliveryAddressRequest request) {
         var address = new DeliveryAddress();
-        address.setZipCode(request.zipCode());
-        address.setStreet(request.street());
-        address.setNumber(request.number());
+        address.setZipCode(request.zipCode().get());
+        address.setStreet(request.street().get());
+        address.setNumber(request.haveNumber() ? request.number().get() : "S/N");
 
         if (request.complement().isPresent())
             address.setComplement(request.complement().get());
 
-        address.setNeighborhood(request.neighborhood());
-        address.setCity(request.city());
-        address.setState(request.state());
+        address.setNeighborhood(request.neighborhood().get());
+        address.setCity(request.city().get());
+        address.setState(request.state().get());
 
-        if (request.latitude().isPresent())
-            address.setLatitude(request.latitude().get());
+        return address;
+    }
 
-        if (request.longitude().isPresent())
-            address.setLongitude(request.longitude().get());
+    public DeliveryAddress toEntity(AddressByCoordinatesResponse addressByCoordinatesResponse) {
+        var address = new DeliveryAddress();
+        address.setZipCode(addressByCoordinatesResponse.address().zipCode().replace("-", ""));
+        address.setStreet(addressByCoordinatesResponse.address().road());
+        address.setNumber("S/N");
+        address.setNeighborhood(addressByCoordinatesResponse.address().neighborhood());
+        address.setState(addressByCoordinatesResponse.address().countryStateCode().split("-")[1]);
+
+        if (addressByCoordinatesResponse.address().city() != null)
+            address.setCity(addressByCoordinatesResponse.address().city());
+        else if (addressByCoordinatesResponse.address().municipality() != null)
+            address.setCity(addressByCoordinatesResponse.address().municipality());
+        else if (addressByCoordinatesResponse.address().stateDistrict() != null)
+            address.setCity(addressByCoordinatesResponse.address().stateDistrict());
 
         return address;
     }

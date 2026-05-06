@@ -1,10 +1,10 @@
 package com.orders.application.service;
 
-import com.orders.application.dto.CreateDeliveryAddressRequest;
-import com.orders.application.dto.DeliveryAddressResponse;
-import com.orders.application.dto.PagedResponse;
-import com.orders.application.dto.UpdateDeliveryAddressRequest;
+import com.orders.application.dto.*;
+import com.orders.application.exception.AddressByCoordinatesClientBadGateway;
 import com.orders.application.exception.DeliveryAddressNotFoundException;
+import com.orders.application.exception.InvalidDeliveryAddressCoordinatesException;
+import com.orders.application.exception.InvalidDeliveryAddressException;
 import com.orders.application.service.mapper.DeliveryAddressMapper;
 import com.orders.domain.entity.DeliveryAddress;
 import com.orders.infra.persistence.DeliveryAddressRepository;
@@ -19,6 +19,7 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.PageRequest;
+import org.springframework.http.ResponseEntity;
 
 import java.time.Instant;
 import java.util.List;
@@ -37,6 +38,9 @@ public class DeliveryAddressServiceTests {
 
     @Mock
     private DeliveryAddressMapper deliveryAddressMapper;
+
+    @Mock
+    private AddressByCoordinatesClient addressByCoordinatesClient;
 
     @InjectMocks
     private DeliveryAddressService deliveryAddressService;
@@ -107,15 +111,17 @@ public class DeliveryAddressServiceTests {
         UUID userId = UUID.randomUUID();
 
         CreateDeliveryAddressRequest request = new CreateDeliveryAddressRequest(
-                "12345678",
-                "Test Street",
-                "123",
+                false,
+                true,
+                Optional.of("12345678"),
+                Optional.of("Test Street"),
+                Optional.of("123"),
                 Optional.of("Apt 1"),
-                "Test Neighborhood",
-                "Test City",
-                "TS",
-                Optional.of(-23.0),
-                Optional.of(-46.0)
+                Optional.of("Test Neighborhood"),
+                Optional.of("Test City"),
+                Optional.of("TS"),
+                Optional.empty(),
+                Optional.empty()
         );
 
         DeliveryAddress entity = new DeliveryAddress();
@@ -131,8 +137,8 @@ public class DeliveryAddressServiceTests {
                 "Test Neighborhood",
                 "Test City",
                 "TS",
-                -23.0,
-                -46.0,
+                null,
+                null,
                 Instant.now()
         );
 
@@ -148,6 +154,251 @@ public class DeliveryAddressServiceTests {
         assertNotNull(result);
         assertEquals("12345678", result.zipCode());
         verify(deliveryAddressRepository).save(any(DeliveryAddress.class));
+    }
+
+    @Test
+    @DisplayName("Should create new address by coordinates")
+    void createByUserIdTestCase2() {
+        UUID userId = UUID.randomUUID();
+
+        CreateDeliveryAddressRequest request = new CreateDeliveryAddressRequest(
+                true,
+                false,
+                Optional.empty(),
+                Optional.empty(),
+                Optional.empty(),
+                Optional.of("complement"),
+                Optional.empty(),
+                Optional.empty(),
+                Optional.empty(),
+                Optional.of(-23.0),
+                Optional.of(-23.0)
+        );
+
+        DeliveryAddress entity = new DeliveryAddress();
+        entity.setId(UUID.randomUUID());
+        entity.setUserId(userId);
+
+        AddressByCoordinatesResponse addressByCoordinatesResponse = new AddressByCoordinatesResponse(
+                new AddressByCoordinatesResponse.Address(
+                        "road",
+                        "neighborhood",
+                        "city",
+                        null,
+                        null,
+                        "uf",
+                        "zipCode",
+                        "br",
+                        "isoCode"
+                )
+        );
+
+        DeliveryAddressResponse response = new DeliveryAddressResponse(
+                entity.getId(),
+                addressByCoordinatesResponse.address().zipCode(),
+                addressByCoordinatesResponse.address().road(),
+                "S/N",
+                request.complement().get(),
+                addressByCoordinatesResponse.address().neighborhood(),
+                addressByCoordinatesResponse.address().city(),
+                addressByCoordinatesResponse.address().state(),
+                request.longitude().get(),
+                request.latitude().get(),
+                Instant.now()
+        );
+
+        when(deliveryAddressMapper.toEntity(addressByCoordinatesResponse))
+                .thenReturn(entity);
+        when(deliveryAddressRepository.save(any(DeliveryAddress.class)))
+                .thenReturn(entity);
+        when(deliveryAddressMapper.toResponse(entity))
+                .thenReturn(response);
+        when(addressByCoordinatesClient.getAddressByCoordinates(any(), any(), any()))
+                .thenReturn(ResponseEntity.ok().body(addressByCoordinatesResponse));
+
+        DeliveryAddressResponse result = deliveryAddressService.createByUserId(request, userId);
+
+        assertNotNull(result);
+        verify(addressByCoordinatesClient)
+                .getAddressByCoordinates(request.latitude().get(), request.longitude().get(), "json");
+        verify(deliveryAddressRepository)
+                .save(any(DeliveryAddress.class));
+    }
+
+    @Test
+    @DisplayName("Should throw InvalidDeliveryAddressCoordinatesException if byCoordinates is true and latitude/longitude is empty")
+    void createByUserIdTestCase3() {
+        UUID userId = UUID.randomUUID();
+
+        CreateDeliveryAddressRequest request = new CreateDeliveryAddressRequest(
+                true,
+                false,
+                Optional.empty(),
+                Optional.empty(),
+                Optional.empty(),
+                Optional.empty(),
+                Optional.empty(),
+                Optional.empty(),
+                Optional.empty(),
+                Optional.empty(),
+                Optional.empty()
+        );
+
+        assertThrows(InvalidDeliveryAddressCoordinatesException.class, () -> {
+            deliveryAddressService.createByUserId(request, userId);
+        });
+
+        verify(addressByCoordinatesClient, never()).getAddressByCoordinates(any(), any(), any());
+        verify(deliveryAddressRepository, never()).save(any());
+    }
+
+    @Test
+    @DisplayName("Should throw InvalidDeliveryAddressCoordinatesException if coordinates are not from Brazil")
+    void createByUserIdTestCase4() {
+        UUID userId = UUID.randomUUID();
+
+        CreateDeliveryAddressRequest request = new CreateDeliveryAddressRequest(
+                true,
+                false,
+                Optional.empty(),
+                Optional.empty(),
+                Optional.empty(),
+                Optional.empty(),
+                Optional.empty(),
+                Optional.empty(),
+                Optional.empty(),
+                Optional.of(-23.0),
+                Optional.of(-23.0)
+        );
+
+        DeliveryAddress entity = new DeliveryAddress();
+        entity.setId(UUID.randomUUID());
+        entity.setUserId(userId);
+
+        AddressByCoordinatesResponse addressByCoordinatesResponse = new AddressByCoordinatesResponse(
+                new AddressByCoordinatesResponse.Address(
+                        "road",
+                        "neighborhood",
+                        "city",
+                        null,
+                        null,
+                        "uf",
+                        "zipCode",
+                        "eua",
+                        "isoCode"
+                )
+        );
+
+        DeliveryAddressResponse response = new DeliveryAddressResponse(
+                entity.getId(),
+                addressByCoordinatesResponse.address().zipCode(),
+                addressByCoordinatesResponse.address().road(),
+                "S/N",
+                "",
+                addressByCoordinatesResponse.address().neighborhood(),
+                addressByCoordinatesResponse.address().city(),
+                addressByCoordinatesResponse.address().state(),
+                request.longitude().get(),
+                request.latitude().get(),
+                Instant.now()
+        );
+
+        when(addressByCoordinatesClient.getAddressByCoordinates(any(), any(), any()))
+                .thenReturn(ResponseEntity.ok().body(addressByCoordinatesResponse));
+
+        assertThrows(InvalidDeliveryAddressCoordinatesException.class, () -> {
+            deliveryAddressService.createByUserId(request, userId);
+        });
+
+        verify(addressByCoordinatesClient).getAddressByCoordinates(request.latitude().get(), request.longitude().get(), "json");
+        verify(deliveryAddressRepository, never()).save(any());
+    }
+
+    @Test
+    @DisplayName("Should throw InvalidDeliveryAddressCoordinatesException when addressByCoordinatesClient response status code is 4xx")
+    void createByUserIdTestCase5() {
+        UUID userId = UUID.randomUUID();
+
+        CreateDeliveryAddressRequest request = new CreateDeliveryAddressRequest(
+                true,
+                false,
+                Optional.empty(),
+                Optional.empty(),
+                Optional.empty(),
+                Optional.empty(),
+                Optional.empty(),
+                Optional.empty(),
+                Optional.empty(),
+                Optional.of(-23.0),
+                Optional.of(-23.0)
+        );
+
+        Mockito.when(addressByCoordinatesClient.getAddressByCoordinates(any(), any(), any()))
+                .thenReturn(ResponseEntity.badRequest().build());
+
+        assertThrows(InvalidDeliveryAddressCoordinatesException.class, () -> {
+            deliveryAddressService.createByUserId(request, userId);
+        });
+
+        verify(addressByCoordinatesClient).getAddressByCoordinates(request.latitude().get(), request.longitude().get(), "json");
+        verify(deliveryAddressRepository, never()).save(any());
+    }
+
+    @Test
+    @DisplayName("Should throw AddressByCoordinatesClientBadGateway when addressByCoordinatesClient response status code is 5xx")
+    void createByUserIdTestCase6() {
+        UUID userId = UUID.randomUUID();
+
+        CreateDeliveryAddressRequest request = new CreateDeliveryAddressRequest(
+                true,
+                false,
+                Optional.empty(),
+                Optional.empty(),
+                Optional.empty(),
+                Optional.empty(),
+                Optional.empty(),
+                Optional.empty(),
+                Optional.empty(),
+                Optional.of(-23.0),
+                Optional.of(-23.0)
+        );
+
+        Mockito.when(addressByCoordinatesClient.getAddressByCoordinates(any(), any(), any()))
+                .thenReturn(ResponseEntity.internalServerError().build());
+
+        assertThrows(AddressByCoordinatesClientBadGateway.class, () -> {
+            deliveryAddressService.createByUserId(request, userId);
+        });
+
+        verify(addressByCoordinatesClient).getAddressByCoordinates(request.latitude().get(), request.longitude().get(), "json");
+        verify(deliveryAddressRepository, never()).save(any());
+    }
+
+    @Test
+    @DisplayName("Should throw InvalidDeliveryAddressException when haveNumber is true and number is empty")
+    void createByUserIdTestCase7() {
+        UUID userId = UUID.randomUUID();
+
+        CreateDeliveryAddressRequest request = new CreateDeliveryAddressRequest(
+                false,
+                true,
+                Optional.empty(),
+                Optional.empty(),
+                Optional.empty(),
+                Optional.empty(),
+                Optional.empty(),
+                Optional.empty(),
+                Optional.empty(),
+                Optional.of(-23.0),
+                Optional.of(-23.0)
+        );
+
+        assertThrows(InvalidDeliveryAddressException.class, () -> {
+            deliveryAddressService.createByUserId(request, userId);
+        });
+
+        verify(addressByCoordinatesClient, never()).getAddressByCoordinates(any(), any(), any());
+        verify(deliveryAddressRepository, never()).save(any());
     }
 
     @Test

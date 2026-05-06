@@ -54,9 +54,16 @@ public class DeliveryAddressController implements DeliveryAddressControllerDocs 
     @PostMapping
     public ResponseEntity<StandardResponse<DeliveryAddressResponse>> createAddress(
             @Valid @RequestBody CreateDeliveryAddressRequest request,
+            @RequestParam(required = false, defaultValue = "false") Boolean byCoordinates,
             @AuthenticationPrincipal Jwt jwt
     ) {
         UUID authenticatedUserId = UUID.fromString(jwt.getSubject());
+
+        DeliveryAddressResponse response;
+        if (byCoordinates)
+            response = deliveryAddressService.createByUserId(request, authenticatedUserId);
+        else
+            response = deliveryAddressService.createByCoordinatesAndUserId(request, authenticatedUserId);
 
         return ResponseEntity
                 .status(HttpStatus.CREATED)

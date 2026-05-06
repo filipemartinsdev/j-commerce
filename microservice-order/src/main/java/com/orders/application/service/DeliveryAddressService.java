@@ -54,7 +54,7 @@ public class DeliveryAddressService {
         return deliveryAddressMapper.toResponse(deliveryAddressRepository.save(address));
     }
 
-    void validateRequestToCreateByUserId(CreateDeliveryAddressRequest request) {
+    private void validateRequestToCreateByUserId(CreateDeliveryAddressRequest request) {
         if (request.haveNumber() && request.number().isEmpty())
             throw new InvalidDeliveryAddressException("Address number is mandatory");
 

@@ -1,11 +1,7 @@
 package com.orders.application.handler;
 
 import com.orders.application.dto.StandardResponse;
-import com.orders.application.exception.CantCancelSalesOrderException;
-import com.orders.application.exception.CantCreateSalesOrderException;
-import com.orders.application.exception.DeliveryAddressNotFoundException;
-import com.orders.application.exception.ForbiddenOperationException;
-import com.orders.application.exception.SalesOrderNotFoundException;
+import com.orders.application.exception.*;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -56,6 +52,20 @@ public class GlobalExceptionHandler {
     public ResponseEntity<StandardResponse<Void>> handleForbiddenOperation(ForbiddenOperationException e) {
         return ResponseEntity
                 .status(HttpStatus.FORBIDDEN)
+                .body(StandardResponse.fail(e.getMessage()));
+    }
+
+    @ExceptionHandler(InvalidDeliveryAddressCoordinatesException.class)
+    public ResponseEntity<StandardResponse<Void>> handleInvalidDeliveryAddressCoordinates(InvalidDeliveryAddressCoordinatesException e) {
+        return ResponseEntity
+                .status(HttpStatus.BAD_REQUEST)
+                .body(StandardResponse.fail(e.getMessage()));
+    }
+
+    @ExceptionHandler(InvalidDeliveryAddressException.class)
+    public ResponseEntity<StandardResponse<Void>> handleInvalidDeliveryAddress(InvalidDeliveryAddressException e) {
+        return ResponseEntity
+                .status(HttpStatus.BAD_REQUEST)
                 .body(StandardResponse.fail(e.getMessage()));
     }
 }

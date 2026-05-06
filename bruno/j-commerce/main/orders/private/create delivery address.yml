@@ -8,15 +8,14 @@ http:
   url: https://localhost/order/api/v1/delivery-addresses
   body:
     type: json
-    data: |
+    data: |-
+      
       {
-        "zipCode": "12345678",
-        "street": "Rua 1",
-        "number": "1",
-        "neighborhood": "Setor Bueno",
-        "complement": "AAA",
-        "city": "Goiânia",
-        "state": "GO"  
+        "haveNumber": false,
+        "byCoordinates": true,
+        "latitude": -16.75541863050458, 
+        "longitude": -49.274334300706094,
+        "complement": "depois do posto ipiranga"
       }
   auth: inherit
 

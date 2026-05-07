@@ -1,6 +1,8 @@
 package com.identity.common.handler;
 
 import com.identity.common.dto.StandardResponse;
+import com.identity.common.exception.InvalidEntityMapperException;
+import com.identity.common.exception.NullResponsePageException;
 import com.identity.security.application.exception.ForbiddenOperationException;
 import com.identity.security.application.exception.UserAlreadyExistsException;
 import com.identity.security.application.exception.UserNotFoundException;
@@ -50,5 +52,21 @@ public class GlobalExceptionHandler {
         return ResponseEntity
                 .status(HttpStatus.FORBIDDEN)
                 .body(StandardResponse.fail(exception.getMessage()));
+    }
+
+    @ExceptionHandler(InvalidEntityMapperException.class)
+    public ResponseEntity<StandardResponse<Void>> handleInvalidEntityMapper(InvalidEntityMapperException exception){
+        log.error(exception.getMessage(), exception);
+        return ResponseEntity
+                .status(HttpStatus.INTERNAL_SERVER_ERROR)
+                .body(StandardResponse.error(exception.getMessage()));
+    }
+
+    @ExceptionHandler(NullResponsePageException.class)
+    public ResponseEntity<StandardResponse<Void>> handleNullResponsePage(NullResponsePageException exception){
+        log.error(exception.getMessage(), exception);
+        return ResponseEntity
+                .status(HttpStatus.INTERNAL_SERVER_ERROR)
+                .body(StandardResponse.error(exception.getMessage()));
     }
 }

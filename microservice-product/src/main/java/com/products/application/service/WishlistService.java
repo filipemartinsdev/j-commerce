@@ -1,16 +1,19 @@
 package com.products.application.service;
 
-import com.products.application.dto.catalogue.CreateWishlistItemRequest;
 import com.products.application.dto.PagedResponse;
+import com.products.application.dto.catalogue.CreateWishlistItemRequest;
 import com.products.application.dto.catalogue.WishlistItemResponse;
 import com.products.application.exception.ProductSKUNotFoundException;
 import com.products.application.exception.WishlistItemAlreadyExistsException;
 import com.products.application.exception.WishlistItemNotFoundException;
+import com.products.application.factory.PagedResponseFactory;
 import com.products.application.service.mapper.WishlistItemMapper;
-import com.products.domain.entity.*;
-import com.products.infra.persistence.*;
-import jakarta.validation.Valid;
-import org.springframework.cache.annotation.Cacheable;
+import com.products.domain.entity.ProductSKU;
+import com.products.domain.entity.WishlistItem;
+import com.products.domain.entity.WishlistItemProductSKUResume;
+import com.products.infra.persistence.ProductSKURepository;
+import com.products.infra.persistence.WishlistItemProductSKUResumeRepository;
+import com.products.infra.persistence.WishlistItemRepository;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
@@ -24,32 +27,24 @@ public class WishlistService {
     private final WishlistItemProductSKUResumeRepository wishlistItemProductSKUResumeRepository;
     private final WishlistItemMapper wishlistItemMapper;
     private final ProductDiscountCalculator productDiscountCalculator;
+    private final PagedResponseFactory<WishlistItemResponse> pagedResponseFactory;
 
-    public WishlistService(WishlistItemRepository wishlistItemRepository, ProductSKURepository productSKURepository, WishlistItemProductSKUResumeRepository wishlistItemProductSKUResumeRepository, WishlistItemMapper wishlistItemMapper, ProductDiscountCalculator productDiscountCalculator) {
+    public WishlistService(WishlistItemRepository wishlistItemRepository, ProductSKURepository productSKURepository, WishlistItemProductSKUResumeRepository wishlistItemProductSKUResumeRepository, WishlistItemMapper wishlistItemMapper, ProductDiscountCalculator productDiscountCalculator, PagedResponseFactory<WishlistItemResponse> pagedResponseFactory) {
         this.wishlistItemRepository = wishlistItemRepository;
         this.productSKURepository = productSKURepository;
         this.wishlistItemProductSKUResumeRepository = wishlistItemProductSKUResumeRepository;
         this.wishlistItemMapper = wishlistItemMapper;
         this.productDiscountCalculator = productDiscountCalculator;
+        this.pagedResponseFactory = pagedResponseFactory;
     }
 
     public PagedResponse<WishlistItemResponse> getAllItems(UUID authenticatedUser, Pageable pageable){
         Page<WishlistItemProductSKUResume> page = wishlistItemProductSKUResumeRepository.findAllByUserId(authenticatedUser, pageable);
 
-        return PagedResponse.<WishlistItemResponse>builder()
-                .page(page.getNumber())
-                .size(page.getSize())
-                .isLast(page.isLast())
-                .totalPages(page.getTotalPages())
-                .totalElements(page.getTotalElements())
-                .content(page.getContent().stream()
-                        .map(entity -> {
-                            int discount = productDiscountCalculator.getDiscountPercent(entity.getOriginalPrice(), entity.getCurrentPrice());
-                            return wishlistItemMapper.toResponse(entity);
-                        })
-                        .toList()
-                )
-                .build();
+        return pagedResponseFactory.fromPage(page, (entity) -> {
+                int discount = productDiscountCalculator.getDiscountPercent(entity.getOriginalPrice(), entity.getCurrentPrice());
+                return wishlistItemMapper.toResponse(entity);
+        });
     }
     public void createItem(CreateWishlistItemRequest request, UUID authenticatedUserId) {
         ProductSKU productSKU = productSKURepository.findById(request.productSKUId())

@@ -3,6 +3,7 @@ package com.products.application.service;
 import com.products.application.dto.PagedResponse;
 import com.products.application.dto.admin.*;
 import com.products.application.exception.*;
+import com.products.application.factory.PagedResponseFactory;
 import com.products.application.service.mapper.ProductAdminMapper;
 import com.products.domain.entity.Product;
 import com.products.domain.entity.ProductCategory;
@@ -22,11 +23,13 @@ public class ProductManagementService {
     private final ProductRepository productRepository;
     private final ProductCategoryRepository productCategoryRepository;
     private final ProductAdminMapper productAdminMapper;
+    private final PagedResponseFactory<ProductAdminResponse> pagedResponseFactory;
 
-    public ProductManagementService(ProductRepository productRepository, ProductCategoryRepository productCategoryRepository, ProductAdminMapper productAdminMapper) {
+    public ProductManagementService(ProductRepository productRepository, ProductCategoryRepository productCategoryRepository, ProductAdminMapper productAdminMapper, PagedResponseFactory<ProductAdminResponse> pagedResponseFactory) {
         this.productRepository = productRepository;
         this.productCategoryRepository = productCategoryRepository;
         this.productAdminMapper = productAdminMapper;
+        this.pagedResponseFactory = pagedResponseFactory;
     }
 
     public ProductAdminResponse createProduct(CreateProductRequest request){
@@ -67,33 +70,13 @@ public class ProductManagementService {
     public PagedResponse<ProductAdminResponse> getAllProducts(Pageable pageable){
         Page<Product> page = productRepository.findAll(pageable);
 
-        return PagedResponse.<ProductAdminResponse>builder()
-                .page(page.getNumber())
-                .size(page.getSize())
-                .isLast(page.isLast())
-                .totalPages(page.getTotalPages())
-                .totalElements(page.getTotalElements())
-                .content(page.getContent().stream()
-                        .map(productAdminMapper::toResponse)
-                        .toList()
-                )
-                .build();
+        return pagedResponseFactory.fromPage(page, productAdminMapper::toResponse);
     }
 
     public PagedResponse<ProductAdminResponse> getAllProductsByCategoryId(Integer categoryId, Pageable pageable){
         Page<Product> page = productRepository.findAllByCategoryId(categoryId, pageable);
 
-        return PagedResponse.<ProductAdminResponse>builder()
-                .page(page.getNumber())
-                .size(page.getSize())
-                .isLast(page.isLast())
-                .totalPages(page.getTotalPages())
-                .totalElements(page.getTotalElements())
-                .content(page.getContent().stream()
-                        .map(productAdminMapper::toResponse)
-                        .toList()
-                )
-                .build();
+        return pagedResponseFactory.fromPage(page, productAdminMapper::toResponse);
     }
 
     public ProductAdminResponse getProductById(UUID productId){

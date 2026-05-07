@@ -7,6 +7,7 @@ import com.products.application.dto.admin.StockMovementResponse;
 import com.products.application.exception.ProductOutOfStockException;
 import com.products.application.exception.ProductSKUNotFoundException;
 import com.products.application.exception.ProductStockNotFoundException;
+import com.products.application.factory.PagedResponseFactory;
 import com.products.application.message.RefundItemsMessage;
 import com.products.application.service.mapper.ProductStockMapper;
 import com.products.application.service.mapper.StockMovementMapper;
@@ -30,46 +31,30 @@ public class ProductStockManagementService {
     private final StockMovementRepository stockMovementRepository;
     private final StockMovementMapper stockMovementMapper;
     private final ProductSKURepository productSKURepository;
+    private final PagedResponseFactory<ProductStockResponse> pagedResponseFactoryProductStock;
+    private final PagedResponseFactory<StockMovementResponse> pagedResponseFactoryStockMovement;
 
-    public ProductStockManagementService(ProductStockRepository productStockRepository, ProductStockMapper productStockMapper, StockMovementTypeRepository stockMovementTypeRepository, StockMovementRepository stockMovementRepository, StockMovementMapper stockMovementMapper, ProductSKURepository productSKURepository) {
+    public ProductStockManagementService(ProductStockRepository productStockRepository, ProductStockMapper productStockMapper, StockMovementTypeRepository stockMovementTypeRepository, StockMovementRepository stockMovementRepository, StockMovementMapper stockMovementMapper, ProductSKURepository productSKURepository, PagedResponseFactory<ProductStockResponse> pagedResponseFactoryProductStock, PagedResponseFactory<StockMovementResponse> pagedResponseFactoryStockMovement) {
         this.productStockRepository = productStockRepository;
         this.productStockMapper = productStockMapper;
         this.stockMovementTypeRepository = stockMovementTypeRepository;
         this.stockMovementRepository = stockMovementRepository;
         this.stockMovementMapper = stockMovementMapper;
         this.productSKURepository = productSKURepository;
+        this.pagedResponseFactoryProductStock = pagedResponseFactoryProductStock;
+        this.pagedResponseFactoryStockMovement = pagedResponseFactoryStockMovement;
     }
 
     public PagedResponse<ProductStockResponse> getAll(Pageable pageable){
         Page<ProductStock> page = productStockRepository.findAllActive(pageable);
 
-        return PagedResponse.<ProductStockResponse>builder()
-                .page(page.getNumber())
-                .size(page.getSize())
-                .isLast(page.isLast())
-                .totalPages(page.getTotalPages())
-                .totalElements(page.getTotalElements())
-                .content(page.getContent().stream()
-                        .map(entity -> productStockMapper.toResponse(entity))
-                        .toList()
-                )
-                .build();
+        return pagedResponseFactoryProductStock.fromPage(page, productStockMapper::toResponse);
     }
 
     public PagedResponse<ProductStockResponse> getAllByProductId(UUID productId, Pageable pageable){
         Page<ProductStock> page = productStockRepository.findAllActiveByProductId(productId, pageable);
 
-        return PagedResponse.<ProductStockResponse>builder()
-                .page(page.getNumber())
-                .size(page.getSize())
-                .isLast(page.isLast())
-                .totalPages(page.getTotalPages())
-                .totalElements(page.getTotalElements())
-                .content(page.getContent().stream()
-                        .map(entity -> productStockMapper.toResponse(entity))
-                        .toList()
-                )
-                .build();
+        return pagedResponseFactoryProductStock.fromPage(page, productStockMapper::toResponse);
     }
 
     public ProductStockResponse getById(UUID id) {
@@ -108,33 +93,13 @@ public class ProductStockManagementService {
     public PagedResponse<StockMovementResponse> getAllMovements(Pageable pageable) {
         Page<StockMovement> page = stockMovementRepository.findAll(pageable);
 
-        return PagedResponse.<StockMovementResponse>builder()
-                .page(page.getNumber())
-                .size(page.getSize())
-                .isLast(page.isLast())
-                .totalPages(page.getTotalPages())
-                .totalElements(page.getTotalElements())
-                .content(page.getContent().stream()
-                        .map(entity -> stockMovementMapper.toResponse(entity))
-                        .toList()
-                )
-                .build();
+        return pagedResponseFactoryStockMovement.fromPage(page, stockMovementMapper::toResponse);
     }
 
     public PagedResponse<StockMovementResponse> getAllMovementsByProductSKUId(UUID productSKUId, Pageable pageable) {
         Page<StockMovement> page = stockMovementRepository.findAllByProductSKU_id(productSKUId, pageable);
 
-        return PagedResponse.<StockMovementResponse>builder()
-                .page(page.getNumber())
-                .size(page.getSize())
-                .isLast(page.isLast())
-                .totalPages(page.getTotalPages())
-                .totalElements(page.getTotalElements())
-                .content(page.getContent().stream()
-                        .map(entity -> stockMovementMapper.toResponse(entity))
-                        .toList()
-                )
-                .build();
+        return pagedResponseFactoryStockMovement.fromPage(page, stockMovementMapper::toResponse);
     }
 
     public void deleteByProductSKUId(UUID productSKUId) {

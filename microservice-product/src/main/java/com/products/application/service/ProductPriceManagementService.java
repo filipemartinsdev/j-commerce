@@ -7,6 +7,7 @@ import com.products.application.exception.InvalidProductPriceTypeException;
 import com.products.application.exception.ProductSKUNotFoundException;
 import com.products.application.exception.ProductSKUPriceNotFoundException;
 import com.products.application.exception.ProductSKUWithoutBasePriceException;
+import com.products.application.factory.PagedResponseFactory;
 import com.products.application.service.mapper.ProductSKUPriceMapper;
 import com.products.domain.entity.PriceType;
 import com.products.domain.entity.ProductSKU;
@@ -30,44 +31,26 @@ public class ProductPriceManagementService {
     private final ProductSKUPriceMapper productSKUPriceMapper;
     private final ProductSKURepository productSKURepository;
     private final PriceTypeRepository priceTypeRepository;
+    private final PagedResponseFactory<ProductSKUPriceResponse> pagedResponseFactory;
 
-    public ProductPriceManagementService(ProductSKUPriceRepository productSKUPriceRepository, ProductSKUPriceMapper productSKUPriceMapper, ProductSKURepository productSKURepository, PriceTypeRepository priceTypeRepository) {
+    public ProductPriceManagementService(ProductSKUPriceRepository productSKUPriceRepository, ProductSKUPriceMapper productSKUPriceMapper, ProductSKURepository productSKURepository, PriceTypeRepository priceTypeRepository, PagedResponseFactory<ProductSKUPriceResponse> pagedResponseFactory) {
         this.productSKUPriceRepository = productSKUPriceRepository;
         this.productSKUPriceMapper = productSKUPriceMapper;
         this.productSKURepository = productSKURepository;
         this.priceTypeRepository = priceTypeRepository;
+        this.pagedResponseFactory = pagedResponseFactory;
     }
 
     public PagedResponse<ProductSKUPriceResponse> getAllPrices(Pageable pageable) {
         Page<ProductSKUPrice> page = productSKUPriceRepository.findAllActive(pageable);
 
-        return PagedResponse.<ProductSKUPriceResponse>builder()
-                .page(page.getNumber())
-                .size(page.getSize())
-                .isLast(page.isLast())
-                .totalPages(page.getTotalPages())
-                .totalElements(page.getTotalElements())
-                .content(page.getContent().stream()
-                        .map(entity -> productSKUPriceMapper.toResponse(entity))
-                        .toList()
-                )
-                .build();
+        return pagedResponseFactory.fromPage(page, productSKUPriceMapper::toResponse);
     }
 
     public PagedResponse<ProductSKUPriceResponse> getAllPricesByProductSKUId(UUID productSKUId, Pageable pageable) {
         Page<ProductSKUPrice> page = productSKUPriceRepository.findAllActiveByProductSKUId(productSKUId, pageable);
 
-        return PagedResponse.<ProductSKUPriceResponse>builder()
-                .page(page.getNumber())
-                .size(page.getSize())
-                .isLast(page.isLast())
-                .totalPages(page.getTotalPages())
-                .totalElements(page.getTotalElements())
-                .content(page.getContent().stream()
-                        .map(entity -> productSKUPriceMapper.toResponse(entity))
-                        .toList()
-                )
-                .build();
+        return pagedResponseFactory.fromPage(page, productSKUPriceMapper::toResponse);
     }
 
     public ProductSKUPriceResponse create(CreateProductSKUPrice request) {

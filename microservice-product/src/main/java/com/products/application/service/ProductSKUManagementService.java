@@ -10,6 +10,7 @@ import com.products.application.exception.ProductNotActiveException;
 import com.products.application.exception.ProductNotFoundException;
 import com.products.application.exception.ProductSKUNotFoundException;
 import com.products.application.exception.SKUAlreadyInUseException;
+import com.products.application.factory.PagedResponseFactory;
 import com.products.application.service.mapper.ProductSKUAdminMapper;
 import com.products.domain.entity.Product;
 import com.products.domain.entity.ProductSKU;
@@ -29,12 +30,14 @@ public class ProductSKUManagementService {
     private final ProductSKURepository productSKURepository;
     private final ApplicationEventPublisher applicationEventPublisher;
     private final ProductSKUAdminMapper productSKUAdminMapper;
+    private final PagedResponseFactory<ProductSKUAdminResponse> pagedResponseFactory;
 
-    public ProductSKUManagementService(ProductRepository productRepository, ProductSKURepository productSKURepository, ApplicationEventPublisher applicationEventPublisher, ProductSKUAdminMapper productSKUAdminMapper) {
+    public ProductSKUManagementService(ProductRepository productRepository, ProductSKURepository productSKURepository, ApplicationEventPublisher applicationEventPublisher, ProductSKUAdminMapper productSKUAdminMapper, PagedResponseFactory<ProductSKUAdminResponse> pagedResponseFactory) {
         this.productRepository = productRepository;
         this.productSKURepository = productSKURepository;
         this.applicationEventPublisher = applicationEventPublisher;
         this.productSKUAdminMapper = productSKUAdminMapper;
+        this.pagedResponseFactory = pagedResponseFactory;
     }
 
     @Transactional
@@ -84,33 +87,13 @@ public class ProductSKUManagementService {
     public PagedResponse<ProductSKUAdminResponse> getAllProductSKUs(Pageable pageable) {
         Page<ProductSKU> page = productSKURepository.findAllActive(pageable);
 
-        return PagedResponse.<ProductSKUAdminResponse>builder()
-                .page(page.getNumber())
-                .size(page.getSize())
-                .isLast(page.isLast())
-                .totalPages(page.getTotalPages())
-                .totalElements(page.getTotalElements())
-                .content(page.getContent().stream()
-                        .map(entity -> productSKUAdminMapper.toResponse(entity))
-                        .toList()
-                )
-                .build();
+        return pagedResponseFactory.fromPage(page, productSKUAdminMapper::toResponse);
     }
 
     public PagedResponse<ProductSKUAdminResponse> getAllProductSKUsByProductId(UUID productId, Pageable pageable){
         Page<ProductSKU> page = productSKURepository.findAllActiveByProductId(productId, pageable);
 
-        return PagedResponse.<ProductSKUAdminResponse>builder()
-                .page(page.getNumber())
-                .size(page.getSize())
-                .isLast(page.isLast())
-                .totalPages(page.getTotalPages())
-                .totalElements(page.getTotalElements())
-                .content(page.getContent().stream()
-                        .map(entity -> productSKUAdminMapper.toResponse(entity))
-                        .toList()
-                )
-                .build();
+        return pagedResponseFactory.fromPage(page, productSKUAdminMapper::toResponse);
     }
 
     public ProductSKUAdminResponse getProductSKUById(UUID productSKUId){

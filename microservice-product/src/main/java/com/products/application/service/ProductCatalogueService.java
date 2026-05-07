@@ -7,6 +7,7 @@ import com.products.application.dto.catalogue.ProductCatalogueResponse;
 import com.products.application.exception.InvalidProductCategoryException;
 import com.products.application.exception.ProductCategoryNotFoundException;
 import com.products.application.exception.ProductNotFoundException;
+import com.products.application.factory.PagedResponseFactory;
 import com.products.application.service.mapper.ProductCategoryMapper;
 import com.products.application.service.mapper.ProductSKUCatalogueMapper;
 import com.products.domain.entity.Product;
@@ -32,8 +33,9 @@ public class ProductCatalogueService {
     private final ProductSKUSummaryCatalogueRepository productSKUSummaryCatalogueRepository;
     private final ProductSKUCatalogueMapper productSKUSummaryCatalogueMapper;
     private final ProductDiscountCalculator productDiscountCalculator;
+    private final PagedResponseFactory<ProductSummaryCatalogueResponse> pagedResponseFactory;
 
-    public ProductCatalogueService(ProductResumeCatalogueRepository productCatalogueResumeRepository, ProductCategoryRepository productCategoryRepository, ProductCategoryMapper productCategoryMapper, ProductRepository productRepository, ProductSKUSummaryCatalogueRepository productSKUSummaryCatalogueRepository, ProductSKUCatalogueMapper productSKUSummaryCatalogueMapper, ProductDiscountCalculator productDiscountCalculator) {
+    public ProductCatalogueService(ProductResumeCatalogueRepository productCatalogueResumeRepository, ProductCategoryRepository productCategoryRepository, ProductCategoryMapper productCategoryMapper, ProductRepository productRepository, ProductSKUSummaryCatalogueRepository productSKUSummaryCatalogueRepository, ProductSKUCatalogueMapper productSKUSummaryCatalogueMapper, ProductDiscountCalculator productDiscountCalculator, PagedResponseFactory<ProductSummaryCatalogueResponse> pagedResponseFactory) {
         this.productCatalogueResumeRepository = productCatalogueResumeRepository;
         this.productCategoryRepository = productCategoryRepository;
         this.productCategoryMapper = productCategoryMapper;
@@ -41,22 +43,13 @@ public class ProductCatalogueService {
         this.productSKUSummaryCatalogueRepository = productSKUSummaryCatalogueRepository;
         this.productSKUSummaryCatalogueMapper = productSKUSummaryCatalogueMapper;
         this.productDiscountCalculator = productDiscountCalculator;
+        this.pagedResponseFactory = pagedResponseFactory;
     }
 
     public PagedResponse<ProductSummaryCatalogueResponse> getAll(Pageable pageable) {
         Page<ProductResumeCatalogue> page = productCatalogueResumeRepository.findAll(pageable);
 
-        return PagedResponse.<ProductSummaryCatalogueResponse>builder()
-                .page(page.getNumber())
-                .size(page.getSize())
-                .totalPages(page.getTotalPages())
-                .totalElements(page.getTotalElements())
-                .isLast(page.isLast())
-                .content(page.getContent().stream()
-                        .map(entity -> createResumeCatalogueResponse(entity))
-                        .toList()
-                )
-                .build();
+        return pagedResponseFactory.fromPage(page, this::createResumeCatalogueResponse);
     }
 
     private ProductSummaryCatalogueResponse createResumeCatalogueResponse(ProductResumeCatalogue entity) {
@@ -86,17 +79,7 @@ public class ProductCatalogueService {
     public PagedResponse<ProductSummaryCatalogueResponse> getAllByCategoryId(Integer categoryId, Pageable pageable) {
         Page<ProductResumeCatalogue> page = productCatalogueResumeRepository.findAllByCategoryId(categoryId, pageable);
 
-        return PagedResponse.<ProductSummaryCatalogueResponse>builder()
-                .page(page.getNumber())
-                .size(page.getSize())
-                .totalPages(page.getTotalPages())
-                .totalElements(page.getTotalElements())
-                .isLast(page.isLast())
-                .content(page.getContent().stream()
-                        .map(entity -> createResumeCatalogueResponse(entity))
-                        .toList()
-                )
-                .build();
+        return pagedResponseFactory.fromPage(page, this::createResumeCatalogueResponse);
     }
 
     public ProductCatalogueResponse getProductSummaryByProductId(UUID productId) {

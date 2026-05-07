@@ -5,6 +5,7 @@ import com.products.application.dto.catalogue.ConfirmShoppingCartRequest;
 import com.products.application.dto.catalogue.CreateShoppingCartItemRequest;
 import com.products.application.dto.catalogue.ShoppingCartItemResponse;
 import com.products.application.exception.*;
+import com.products.application.factory.PagedResponseFactory;
 import com.products.application.message.CreateOrderMessage;
 import com.products.application.service.mapper.ShoppingCartItemMapper;
 import com.products.domain.entity.ProductSKU;
@@ -33,8 +34,9 @@ public class ShoppingCartService {
     private final StockMovementManagementService stockMovementService;
     private final SalesOrderClient salesOrderClient;
     private final ProductStockManagementService productStockManagementService;
+    private final PagedResponseFactory<ShoppingCartItemResponse> pagedResponseFactory;
 
-    public ShoppingCartService(ShoppingCartItemRepository shoppingCartItemRepository, ShoppingCartItemMapper shoppingCartItemProductSKUMapper, ShoppingCartItemProductSKUSummaryRepository shoppingCartItemProductSKUSummaryRepository, ProductSKURepository productSKURepository, ProductStockChecker productStockChecker, MessageBrokerProducer shoppingCartConfirmationProducer, StockMovementManagementService stockMovementService, SalesOrderClient salesOrderClient, ProductStockManagementService productStockManagementService) {
+    public ShoppingCartService(ShoppingCartItemRepository shoppingCartItemRepository, ShoppingCartItemMapper shoppingCartItemProductSKUMapper, ShoppingCartItemProductSKUSummaryRepository shoppingCartItemProductSKUSummaryRepository, ProductSKURepository productSKURepository, ProductStockChecker productStockChecker, MessageBrokerProducer shoppingCartConfirmationProducer, StockMovementManagementService stockMovementService, SalesOrderClient salesOrderClient, ProductStockManagementService productStockManagementService, PagedResponseFactory<ShoppingCartItemResponse> pagedResponseFactory) {
         this.shoppingCartItemRepository = shoppingCartItemRepository;
         this.shoppingCartItemProductSKUMapper = shoppingCartItemProductSKUMapper;
         this.shoppingCartItemProductSKUSummaryRepository = shoppingCartItemProductSKUSummaryRepository;
@@ -44,6 +46,7 @@ public class ShoppingCartService {
         this.stockMovementService = stockMovementService;
         this.salesOrderClient = salesOrderClient;
         this.productStockManagementService = productStockManagementService;
+        this.pagedResponseFactory = pagedResponseFactory;
     }
 
     public void createItemByUserId(CreateShoppingCartItemRequest request, UUID authenticatedUserId) {
@@ -67,17 +70,7 @@ public class ShoppingCartService {
     public PagedResponse<ShoppingCartItemResponse> getAllItems(UUID authenticatedUserId, Pageable pageable) {
         Page<ShoppingCartItemProductSKUSummary> page = shoppingCartItemProductSKUSummaryRepository.findAllByUserId(authenticatedUserId, pageable);
 
-        return PagedResponse.<ShoppingCartItemResponse>builder()
-                .page(page.getNumber())
-                .size(page.getSize())
-                .isLast(page.isLast())
-                .totalPages(page.getTotalPages())
-                .totalElements(page.getTotalElements())
-                .content(page.getContent().stream()
-                        .map(entity -> shoppingCartItemProductSKUMapper.toResponse(entity))
-                        .toList()
-                )
-                .build();
+        return pagedResponseFactory.fromPage(page, shoppingCartItemProductSKUMapper::toResponse);
     }
 
     public void deleteItemById(UUID id, UUID authenticatedUserId) {

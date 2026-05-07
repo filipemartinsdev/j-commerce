@@ -3,6 +3,7 @@ package com.identity.security.application.service;
 import com.identity.common.dto.PagedResponse;
 import com.identity.common.dto.UserCredentialsCreated;
 import com.identity.common.event.UserCredentialsCreatedEvent;
+import com.identity.common.factory.PagedResponseFactory;
 import com.identity.security.application.dto.*;
 import com.identity.security.application.exception.ForbiddenOperationException;
 import com.identity.security.application.exception.UserAlreadyExistsException;
@@ -47,11 +48,12 @@ public class AuthService {
     private final ApplicationEventPublisher applicationEventPublisher;
     private final UserCredentialsMapper userCredentialsMapper;
     private final RoleRepository roleRepository;
+    private final PagedResponseFactory<UserCredentialsResponse> pagedResponseFactory;
 
     @Value("${jwt.public-key}")
     private RSAPublicKey publicKey;
 
-    public AuthService(UserCredentialsRepository userCredentialsRepository, PasswordEncoder passwordEncoder, JwtEncoder jwtEncoder, JwtDecoder jwtDecoder, RefreshTokenRepository refreshTokenRepository, ApplicationEventPublisher applicationEventPublisher, UserCredentialsMapper userCredentialsMapper, RoleRepository roleRepository) {
+    public AuthService(UserCredentialsRepository userCredentialsRepository, PasswordEncoder passwordEncoder, JwtEncoder jwtEncoder, JwtDecoder jwtDecoder, RefreshTokenRepository refreshTokenRepository, ApplicationEventPublisher applicationEventPublisher, UserCredentialsMapper userCredentialsMapper, RoleRepository roleRepository, PagedResponseFactory pagedResponseFactory) {
         this.userCredentialsRepository = userCredentialsRepository;
         this.passwordEncoder = passwordEncoder;
         this.jwtEncoder = jwtEncoder;
@@ -60,6 +62,7 @@ public class AuthService {
         this.applicationEventPublisher = applicationEventPublisher;
         this.userCredentialsMapper = userCredentialsMapper;
         this.roleRepository = roleRepository;
+        this.pagedResponseFactory = pagedResponseFactory;
     }
 
     @Transactional
@@ -259,17 +262,7 @@ public class AuthService {
     public PagedResponse<UserCredentialsResponse> getAllUsers(Pageable pageable) {
         Page<UserCredentials> page = userCredentialsRepository.findAll(pageable);
 
-        return PagedResponse.<UserCredentialsResponse>builder()
-                .page(page.getNumber())
-                .size(page.getSize())
-                .isLast(page.isLast())
-                .totalPages(page.getTotalPages())
-                .totalElements(page.getTotalElements())
-                .content(page.getContent().stream()
-                        .map(userCredentialsMapper::toResponse)
-                        .toList()
-                )
-                .build();
+        return pagedResponseFactory.fromPage(page, userCredentialsMapper::toResponse);
     }
 
     public UserCredentialsResponse getUserById(UUID id) {

@@ -4,6 +4,7 @@ import com.products.application.dto.PagedResponse;
 import com.products.application.dto.ProductCategoryResponse;
 import com.products.application.dto.admin.*;
 import com.products.application.exception.*;
+import com.products.application.factory.PagedResponseFactory;
 import com.products.application.service.mapper.ProductAdminMapper;
 import com.products.application.service.mapper.ProductSKUAdminMapper;
 import com.products.domain.entity.Product;
@@ -51,6 +52,9 @@ public class ProductManagementServiceTests {
     @Mock
     private ApplicationEventPublisher applicationEventPublisher;
 
+    @Mock
+    private PagedResponseFactory<ProductAdminResponse> pagedResponseFactory;
+
     @InjectMocks
     private ProductManagementService productManagementService;
 
@@ -97,25 +101,28 @@ public class ProductManagementServiceTests {
                 Instant.now()
         );
 
+        PagedResponse<ProductAdminResponse> expectedResponse = PagedResponse.<ProductAdminResponse>builder()
+                .page(0)
+                .size(2)
+                .isLast(true)
+                .totalElements(2L)
+                .totalPages(1)
+                .content(List.of(response1, response2))
+                .build();
+
         when(productRepository.findAllByCategoryId(categoryId, pageable))
                 .thenReturn(page);
-        when(productAdminMapper.toResponse(product1))
-                .thenReturn(response1);
-        when(productAdminMapper.toResponse(product2))
-                .thenReturn(response2);
+        when(pagedResponseFactory.fromPage(any(), any()))
+                .thenReturn(expectedResponse);
 
         // When
         PagedResponse<ProductAdminResponse> result = productManagementService.getAllProductsByCategoryId(categoryId, pageable);
 
         // Then
-        assertNotNull(result);
-        assertEquals(0, result.page());
-        assertEquals(10, result.size());
-        assertEquals(2, result.totalElements());
-        assertEquals(1, result.totalPages());
-        assertTrue(result.isLast());
-        assertEquals(2, result.content().size());
+
+        assertEquals(expectedResponse, result);
         verify(productRepository).findAllByCategoryId(categoryId, pageable);
+        verify(pagedResponseFactory).fromPage(any(), any());
     }
 
     @Test @DisplayName("Should retrieve empty PagedResponse if not exists products by category ID")
@@ -123,7 +130,7 @@ public class ProductManagementServiceTests {
         //        Given
         Integer categoryId = 1;
 
-        var expectedResponse = PagedResponse.builder()
+        PagedResponse<ProductAdminResponse> expectedResponse = PagedResponse.<ProductAdminResponse>builder()
                 .content(new ArrayList<>())
                 .size(0)
                 .page(0)
@@ -133,12 +140,15 @@ public class ProductManagementServiceTests {
                 .build();
 
         Mockito.when(productRepository.findAllByCategoryId(any(), any())).thenReturn(Page.empty());
+        Mockito.when(pagedResponseFactory.fromPage(any(), any()))
+                .thenReturn(expectedResponse);
 
 //        When
         PagedResponse<ProductAdminResponse> response = productManagementService.getAllProductsByCategoryId(categoryId, Pageable.unpaged());
 
 //        Then
         assertEquals(expectedResponse, response);
+        verify(pagedResponseFactory).fromPage(any(), any());
     }
 
     @Test @DisplayName("Should create new product and retrieve it DTO successfully if everything is OK")
@@ -315,25 +325,28 @@ public class ProductManagementServiceTests {
                 Instant.now()
         );
 
+        PagedResponse<ProductAdminResponse> expectedResponse = PagedResponse.<ProductAdminResponse>builder()
+                .page(0)
+                .size(2)
+                .isLast(true)
+                .totalElements(2L)
+                .totalPages(1)
+                .content(List.of(response1, response2))
+                .build();
+
         when(productRepository.findAll(pageable))
                 .thenReturn(page);
-        when(productAdminMapper.toResponse(product1))
-                .thenReturn(response1);
-        when(productAdminMapper.toResponse(product2))
-                .thenReturn(response2);
+        when(pagedResponseFactory.fromPage(any(), any()))
+                .thenReturn(expectedResponse);
 
         // When
         PagedResponse<ProductAdminResponse> result = productManagementService.getAllProducts(pageable);
 
         // Then
-        assertNotNull(result);
-        assertEquals(0, result.page());
-        assertEquals(10, result.size());
-        assertEquals(2, result.totalElements());
-        assertEquals(1, result.totalPages());
-        assertTrue(result.isLast());
-        assertEquals(2, result.content().size());
+        assertEquals(expectedResponse, result);
         verify(productRepository).findAll(pageable);
+        verify(pagedResponseFactory).fromPage(any(), any());
+
     }
 
     @Test @DisplayName("Should retrieve empty PagedResponse if not exists any active product")
@@ -342,17 +355,27 @@ public class ProductManagementServiceTests {
         Pageable pageable = PageRequest.of(0, 10);
         Page<Product> emptyPage = new PageImpl<>(Collections.emptyList(), pageable, 0);
 
+        PagedResponse<ProductAdminResponse> expectedResponse = PagedResponse.<ProductAdminResponse>builder()
+                .content(new ArrayList<>())
+                .size(0)
+                .page(0)
+                .isLast(true)
+                .totalPages(1)
+                .totalElements(0L)
+                .build();
+
         when(productRepository.findAll(pageable))
                 .thenReturn(emptyPage);
+        when(pagedResponseFactory.fromPage(any(), any()))
+                .thenReturn(expectedResponse);
 
         // When
         PagedResponse<ProductAdminResponse> result = productManagementService.getAllProducts(pageable);
 
         // Then
-        assertNotNull(result);
-        assertEquals(0, result.totalElements());
-        assertTrue(result.content().isEmpty());
+        assertEquals(expectedResponse, result);
         verify(productRepository).findAll(pageable);
+        verify(pagedResponseFactory).fromPage(any(), any());
     }
 
     @Test @DisplayName("Should retrieve product DTO successfully")

@@ -137,4 +137,20 @@ public class GlobalExceptionHandler {
                 .status(HttpStatus.NOT_FOUND)
                 .body(StandardResponse.fail(e.getMessage()));
     }
+
+    @ExceptionHandler(InvalidEntityMapperException.class)
+    public ResponseEntity<StandardResponse<Void>> handleInvalidEntityMapper(InvalidEntityMapperException exception){
+        log.error(exception.getMessage(), exception);
+        return ResponseEntity
+                .status(HttpStatus.INTERNAL_SERVER_ERROR)
+                .body(StandardResponse.error(exception.getMessage()));
+    }
+
+    @ExceptionHandler(NullResponsePageException.class)
+    public ResponseEntity<StandardResponse<Void>> handleNullResponsePage(NullResponsePageException exception){
+        log.error(exception.getMessage(), exception);
+        return ResponseEntity
+                .status(HttpStatus.INTERNAL_SERVER_ERROR)
+                .body(StandardResponse.error(exception.getMessage()));
+    }
 }

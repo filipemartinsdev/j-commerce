@@ -1,8 +1,217 @@
 # Testing Pattern
 
-## Strict Pattern for Unit Tests
+## Strict Pattern for Integration Tests (Web MVC)
 
-All unit tests MUST follow this exact structure. No deviations allowed.
+Integration tests for web controllers MUST follow this exact structure. No deviations allowed.
+
+> **Note**: The package path `com.{module}.security.infra.web` and references to `AuthService` in this document are specific to the authentication microservice context. For other modules, adjust the package and service accordingly to match your domain.
+
+### Test Class Template
+
+```java
+package com.{module}.{domain}.infra.web;
+
+import com.identity.config.SecurityConfig;
+import com.{module}.{domain}.application.dto.{DtoImport};
+import com.{module}.{domain}.application.exception.{ExceptionImport};
+import com.{module}.{domain}.application.service.{ServiceName}Service;
+import org.junit.jupiter.api.DisplayName;
+import org.junit.jupiter.api.Test;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.webmvc.test.autoconfigure.WebMvcTest;
+import org.springframework.context.annotation.Import;
+import org.springframework.http.MediaType;
+import org.springframework.security.test.context.support.WithMockUser;
+import org.springframework.test.context.bean.override.mockito.MockitoBean;
+import org.springframework.test.web.servlet.MockMvc;
+
+import java.util.List;
+
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.*;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
+
+@WebMvcTest({Controller}.class)
+@Import(SecurityConfig.class)
+public class {Controller}Tests {
+    @Autowired private MockMvc mockMvc;
+
+    @MockitoBean private {ServiceName}Service {serviceName}Service;
+}
+```
+
+### Annotations Reference
+
+| Annotation | Purpose |
+|------------|---------|
+| `@WebMvcTest(Controller.class)` | Tests only the web layer |
+| `@Import(SecurityConfig.class)` | Import security configuration |
+| `@MockitoBean` | Mock the service dependency |
+| `@WithMockUser(authorities = "SCOPE_ADMIN")` | Simulate authenticated admin user |
+| `@ActiveProfiles("test")` | Use test profile when needed |
+
+### Case 1: Success Case (Authenticated User with Proper Role)
+
+```java
+@Test @DisplayName("Should {behavior description}")
+@WithMockUser(authorities = "SCOPE_ADMIN")
+void {methodName}TestCase1() throws Exception {
+    String requestBody = """
+        {
+            "field": "value"
+        }
+    """;
+
+    doNothing().when({serviceName}Service).{method}(any());
+
+    mockMvc.perform({httpMethod}("/api/v1/{endpoint}")
+            .content(requestBody)
+            .contentType(MediaType.APPLICATION_JSON)
+    ).andExpect(status().isOk());
+}
+```
+
+### Case 2: Exception Case (Business Logic Error)
+
+```java
+@Test @DisplayName("Should return status code {code} if {condition}")
+@WithMockUser(authorities = "SCOPE_ADMIN")
+void {methodName}TestCase2() throws Exception {
+    String requestBody = """
+        {
+            "field": "value"
+        }
+    """;
+
+    doThrow({ExceptionName}.class).when({serviceName}Service).{method}(any());
+
+    mockMvc.perform({httpMethod}("/api/v1/{endpoint}")
+            .content(requestBody)
+            .contentType(MediaType.APPLICATION_JSON)
+    ).andExpect(status().is{StatusCode}());
+}
+```
+
+### Case 3: Not Authenticated (401 Unauthorized)
+
+```java
+@Test @DisplayName("Should return response code 401 if client is not authenticated")
+void {methodName}TestCase{N}() throws Exception {
+    mockMvc.perform({httpMethod}("/api/v1/{endpoint}")
+    ).andExpect(status().isUnauthorized());
+}
+```
+
+### Case 4: Forbidden (403 - Wrong Role)
+
+```java
+@Test @DisplayName("Should return response code 403 if client hasn't ADMIN authorities")
+@WithMockUser(authorities = "SCOPE_USER")
+void {methodName}TestCase{N}() throws Exception {
+    mockMvc.perform({httpMethod}("/api/v1/{endpoint}")
+    ).andExpect(status().isForbidden());
+}
+```
+
+### Case 5: Success Response with JSON Body
+
+```java
+@Test @DisplayName("Should {behavior description}")
+@WithMockUser(authorities = "SCOPE_ADMIN")
+void {methodName}TestCase1() throws Exception {
+    String requestBody = """
+        {
+            "field": "value"
+        }
+    """;
+
+    {Response} response = new {Response}({params});
+
+    String expectedJSON = """
+        {
+            "status": "success",
+            "data": {
+                "field": "%s"
+            }
+        }
+    """.formatted(response.field());
+
+    when({serviceName}Service.{method}(any()))
+            .thenReturn(response);
+
+    mockMvc.perform({httpMethod}("/api/v1/{endpoint}")
+            .content(requestBody)
+            .contentType(MediaType.APPLICATION_JSON)
+    ).andExpect(status().isOk())
+    .andExpect(content().json(expectedJSON));
+}
+```
+
+### Case 6: Paged Response
+
+```java
+@Test @DisplayName("Should retrieve all {entity} and return status code 200")
+@WithMockUser(authorities = "SCOPE_ADMIN")
+void getAllTestCase1() throws Exception {
+    UUID entityId = UUID.randomUUID();
+
+    PagedResponse<{Response}> serviceResponse = PagedResponse.<{Response}>builder()
+            .page(0)
+            .size(20)
+            .totalPages(1)
+            .totalElements(1L)
+            .isLast(true)
+            .content(List.of(new {Response}(entityId, "value")))
+            .build();
+
+    String expectedResponse = """
+        {
+            "status": "success",
+            "data": {
+                "page": 0,
+                "size": 20,
+                "totalPages": 1,
+                "totalElements": 1,
+                "isLast": true,
+                "content": [
+                    {
+                        "field": "%s"
+                    }
+                ]
+            }
+        }
+    """.formatted(entityId.toString());
+
+    when({serviceName}Service.getAll(any()))
+            .thenReturn(serviceResponse);
+
+    mockMvc.perform(get("/api/v1/{endpoint}"))
+            .andExpect(status().isOk())
+            .andExpect(content().json(expectedResponse));
+}
+```
+
+### Test Naming Convention
+
+- `{methodName}TestCase1` = Success case
+- `{methodName}TestCase2` = Exception case
+- Continue with TestCase3, TestCase4, etc.
+
+### Authentication Test Cases Summary
+
+| Test Case | Annotation | Expected Status |
+|-----------|------------|-----------------|
+| Success (valid user + role) | `@WithMockUser(authorities = "SCOPE_ADMIN")` | 2xx |
+| Not authenticated | None | 401 Unauthorized |
+| Wrong role | `@WithMockUser(authorities = "SCOPE_USER")` | 403 Forbidden |
+| Business exception | `@WithMockUser(authorities = "SCOPE_ADMIN")` | 4xx |
+
+---
+
+## Strict Pattern for Unit Tests (Services)
+
+Unit tests for application services MUST follow this exact structure. No deviations allowed.
 
 ## Test Class Template
 
@@ -323,7 +532,7 @@ when(mock.method(any()))
 
 ## No Comments in Test Code
 
-Tests MUST NOT contain any comments explaining the code. The test name via @DisplayName conveys the intent.
+All tests (unit and integration) MUST NOT contain any comments explaining the code. The test name via @DisplayName conveys the intent.
 
 ## One Test Per Behavior
 

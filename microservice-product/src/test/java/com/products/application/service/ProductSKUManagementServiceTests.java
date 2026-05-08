@@ -10,6 +10,7 @@ import com.products.application.exception.ProductNotFoundException;
 import com.products.application.exception.ProductNotActiveException;
 import com.products.application.exception.ProductSKUNotFoundException;
 import com.products.application.exception.SKUAlreadyInUseException;
+import com.products.application.factory.PagedResponseFactory;
 import com.products.application.service.mapper.ProductSKUAdminMapper;
 import com.products.domain.entity.Product;
 import com.products.domain.entity.ProductCategory;
@@ -48,6 +49,7 @@ public class ProductSKUManagementServiceTests {
     @Mock private ProductSKURepository productSKURepository;
     @Mock private ApplicationEventPublisher applicationEventPublisher;
     @Mock private ProductSKUAdminMapper productSKUAdminMapper;
+    @Mock private PagedResponseFactory<ProductSKUAdminResponse> pagedResponseFactory;
 
     @InjectMocks
     private ProductSKUManagementService productSKUManagementService;
@@ -313,12 +315,19 @@ public class ProductSKUManagementServiceTests {
                 sku2.getId(), UUID.randomUUID(), "SKU-002", "SKU 2", Instant.now(), Instant.now(), true
         );
 
+        PagedResponse<ProductSKUAdminResponse> expectedResponse = PagedResponse.<ProductSKUAdminResponse>builder()
+                .page(0)
+                .size(10)
+                .isLast(true)
+                .totalElements(2L)
+                .totalPages(1)
+                .content(List.of(response1, response2))
+                .build();
+
         when(productSKURepository.findAllActive(pageable))
                 .thenReturn(page);
-        when(productSKUAdminMapper.toResponse(sku1))
-                .thenReturn(response1);
-        when(productSKUAdminMapper.toResponse(sku2))
-                .thenReturn(response2);
+        when(pagedResponseFactory.fromPage(any(), any()))
+                .thenReturn(expectedResponse);
 
         // When
         PagedResponse<ProductSKUAdminResponse> result = productSKUManagementService.getAllProductSKUs(pageable);
@@ -332,6 +341,7 @@ public class ProductSKUManagementServiceTests {
         assertTrue(result.isLast());
         assertEquals(2, result.content().size());
         verify(productSKURepository).findAllActive(pageable);
+        verify(pagedResponseFactory).fromPage(any(), any());
     }
 
     @Test @DisplayName("Should retrieve empty PagedResponse if not exists any active product")
@@ -340,8 +350,19 @@ public class ProductSKUManagementServiceTests {
         Pageable pageable = PageRequest.of(0, 10);
         Page<ProductSKU> emptyPage = new PageImpl<>(Collections.emptyList(), pageable, 0);
 
+        PagedResponse<ProductSKUAdminResponse> expectedResponse = PagedResponse.<ProductSKUAdminResponse>builder()
+                .content(new java.util.ArrayList<>())
+                .size(10)
+                .page(0)
+                .isLast(true)
+                .totalPages(0)
+                .totalElements(0L)
+                .build();
+
         when(productSKURepository.findAllActive(pageable))
                 .thenReturn(emptyPage);
+        when(pagedResponseFactory.fromPage(any(), any()))
+                .thenReturn(expectedResponse);
 
         // When
         PagedResponse<ProductSKUAdminResponse> result = productSKUManagementService.getAllProductSKUs(pageable);
@@ -351,6 +372,7 @@ public class ProductSKUManagementServiceTests {
         assertEquals(0, result.totalElements());
         assertTrue(result.content().isEmpty());
         verify(productSKURepository).findAllActive(pageable);
+        verify(pagedResponseFactory).fromPage(any(), any());
     }
 
     @Test @DisplayName("Should retrieve all active ProductSKU of an product successfully")
@@ -380,12 +402,19 @@ public class ProductSKUManagementServiceTests {
                 sku2.getId(), productId, "SKU-002", "SKU 2", Instant.now(), Instant.now(), true
         );
 
+        PagedResponse<ProductSKUAdminResponse> expectedResponse = PagedResponse.<ProductSKUAdminResponse>builder()
+                .page(0)
+                .size(10)
+                .isLast(true)
+                .totalElements(2L)
+                .totalPages(1)
+                .content(List.of(response1, response2))
+                .build();
+
         when(productSKURepository.findAllActiveByProductId(productId, pageable))
                 .thenReturn(page);
-        when(productSKUAdminMapper.toResponse(sku1))
-                .thenReturn(response1);
-        when(productSKUAdminMapper.toResponse(sku2))
-                .thenReturn(response2);
+        when(pagedResponseFactory.fromPage(any(), any()))
+                .thenReturn(expectedResponse);
 
         // When
         PagedResponse<ProductSKUAdminResponse> result = productSKUManagementService.getAllProductSKUsByProductId(productId, pageable);
@@ -399,6 +428,7 @@ public class ProductSKUManagementServiceTests {
         assertTrue(result.isLast());
         assertEquals(2, result.content().size());
         verify(productSKURepository).findAllActiveByProductId(productId, pageable);
+        verify(pagedResponseFactory).fromPage(any(), any());
     }
 
     @Test @DisplayName("Should throw ProductNotFoundException if product not exists")
@@ -408,8 +438,20 @@ public class ProductSKUManagementServiceTests {
         Pageable pageable = PageRequest.of(0, 10);
 
         Page<ProductSKU> emptyPage = new PageImpl<>(Collections.emptyList(), pageable, 0);
+
+        PagedResponse<ProductSKUAdminResponse> expectedResponse = PagedResponse.<ProductSKUAdminResponse>builder()
+                .content(new java.util.ArrayList<>())
+                .size(10)
+                .page(0)
+                .isLast(true)
+                .totalPages(0)
+                .totalElements(0L)
+                .build();
+
         when(productSKURepository.findAllActiveByProductId(productId, pageable))
                 .thenReturn(emptyPage);
+        when(pagedResponseFactory.fromPage(any(), any()))
+                .thenReturn(expectedResponse);
 
         // When
         PagedResponse<ProductSKUAdminResponse> result = productSKUManagementService.getAllProductSKUsByProductId(productId, pageable);
@@ -419,6 +461,7 @@ public class ProductSKUManagementServiceTests {
         assertNotNull(result);
         assertTrue(result.content().isEmpty());
         verify(productSKURepository).findAllActiveByProductId(productId, pageable);
+        verify(pagedResponseFactory).fromPage(any(), any());
     }
 
     @Test @DisplayName("Should retrieve empty PagedResponse if not exists any active ProductSKU by productSKUId")
@@ -428,8 +471,19 @@ public class ProductSKUManagementServiceTests {
         Pageable pageable = PageRequest.of(0, 10);
         Page<ProductSKU> emptyPage = new PageImpl<>(Collections.emptyList(), pageable, 0);
 
+        PagedResponse<ProductSKUAdminResponse> expectedResponse = PagedResponse.<ProductSKUAdminResponse>builder()
+                .content(new java.util.ArrayList<>())
+                .size(10)
+                .page(0)
+                .isLast(true)
+                .totalPages(0)
+                .totalElements(0L)
+                .build();
+
         when(productSKURepository.findAllActiveByProductId(productId, pageable))
                 .thenReturn(emptyPage);
+        when(pagedResponseFactory.fromPage(any(), any()))
+                .thenReturn(expectedResponse);
 
         // When
         PagedResponse<ProductSKUAdminResponse> result = productSKUManagementService.getAllProductSKUsByProductId(productId, pageable);
@@ -439,6 +493,7 @@ public class ProductSKUManagementServiceTests {
         assertEquals(0, result.totalElements());
         assertTrue(result.content().isEmpty());
         verify(productSKURepository).findAllActiveByProductId(productId, pageable);
+        verify(pagedResponseFactory).fromPage(any(), any());
     }
 
     @Test @DisplayName("Should retrieve ProductSKU successfully")

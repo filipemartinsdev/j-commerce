@@ -6,7 +6,7 @@ import com.products.application.dto.catalogue.WishlistItemResponse;
 import com.products.application.exception.ProductSKUNotFoundException;
 import com.products.application.exception.WishlistItemAlreadyExistsException;
 import com.products.application.exception.WishlistItemNotFoundException;
-import com.products.application.service.mapper.WishlistItemMapper;
+import com.products.application.factory.PagedResponseFactory;
 import com.products.domain.entity.ProductSKU;
 import com.products.domain.entity.WishlistItem;
 import com.products.domain.entity.WishlistItemProductSKUResume;
@@ -46,10 +46,10 @@ public class WishlistServiceTests {
     private WishlistItemProductSKUResumeRepository wishlistItemProductSKUResumeRepository;
 
     @Mock
-    private WishlistItemMapper wishlistItemMapper;
+    private ProductDiscountCalculator productDiscountCalculator;
 
     @Mock
-    private ProductDiscountCalculator productDiscountCalculator;
+    private PagedResponseFactory<WishlistItemResponse> pagedResponseFactory;
 
     @InjectMocks
     private WishlistService wishlistService;
@@ -77,12 +77,19 @@ public class WishlistServiceTests {
                 null
         );
 
+        PagedResponse<WishlistItemResponse> expectedResponse = PagedResponse.<WishlistItemResponse>builder()
+                .page(0)
+                .size(10)
+                .isLast(true)
+                .totalElements(1L)
+                .totalPages(1)
+                .content(List.of(response))
+                .build();
+
         when(wishlistItemProductSKUResumeRepository.findAllByUserId(userId, pageable))
                 .thenReturn(page);
-        when(productDiscountCalculator.getDiscountPercent(entity.getOriginalPrice(), entity.getCurrentPrice()))
-                .thenReturn(20);
-        when(wishlistItemMapper.toResponse(entity))
-                .thenReturn(response);
+        when(pagedResponseFactory.fromPage(any(), any()))
+                .thenReturn(expectedResponse);
 
         PagedResponse<WishlistItemResponse> result = wishlistService.getAllItems(userId, pageable);
 
@@ -95,8 +102,7 @@ public class WishlistServiceTests {
         assertEquals(1, result.content().size());
 
         verify(wishlistItemProductSKUResumeRepository).findAllByUserId(userId, pageable);
-        verify(productDiscountCalculator).getDiscountPercent(entity.getOriginalPrice(), entity.getCurrentPrice());
-        verify(wishlistItemMapper).toResponse(entity);
+        verify(pagedResponseFactory).fromPage(any(), any());
     }
 
     @Test
@@ -107,8 +113,19 @@ public class WishlistServiceTests {
 
         Page<WishlistItemProductSKUResume> emptyPage = new PageImpl<>(List.of(), pageable, 0);
 
+        PagedResponse<WishlistItemResponse> expectedResponse = PagedResponse.<WishlistItemResponse>builder()
+                .content(new java.util.ArrayList<>())
+                .size(10)
+                .page(0)
+                .isLast(true)
+                .totalPages(0)
+                .totalElements(0L)
+                .build();
+
         when(wishlistItemProductSKUResumeRepository.findAllByUserId(userId, pageable))
                 .thenReturn(emptyPage);
+        when(pagedResponseFactory.fromPage(any(), any()))
+                .thenReturn(expectedResponse);
 
         PagedResponse<WishlistItemResponse> result = wishlistService.getAllItems(userId, pageable);
 
@@ -121,8 +138,7 @@ public class WishlistServiceTests {
         assertTrue(result.content().isEmpty());
 
         verify(wishlistItemProductSKUResumeRepository).findAllByUserId(userId, pageable);
-        verify(productDiscountCalculator, never()).getDiscountPercent(any(), any());
-        verify(wishlistItemMapper, never()).toResponse(any());
+        verify(pagedResponseFactory).fromPage(any(), any());
     }
 
     @Test

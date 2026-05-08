@@ -10,6 +10,7 @@ import com.products.application.exception.ProductOutOfStockException;
 import com.products.application.exception.ProductSKUNotFoundException;
 import com.products.application.exception.ShoppingCartItemAlreadyExistsException;
 import com.products.application.exception.ShoppingCartItemNotFoundException;
+import com.products.application.factory.PagedResponseFactory;
 import com.products.application.message.CreateOrderMessage;
 import com.products.application.service.mapper.ShoppingCartItemMapper;
 import com.products.domain.entity.ProductSKU;
@@ -69,6 +70,9 @@ class ShoppingCartServiceTests {
 
     @Mock
     private SalesOrderClient salesOrderClient;
+
+    @Mock
+    private PagedResponseFactory<ShoppingCartItemResponse> pagedResponseFactory;
 
     @InjectMocks
     private ShoppingCartService shoppingCartService;
@@ -168,13 +172,23 @@ class ShoppingCartServiceTests {
                 entity.getUnits(), entity.getOriginalPrice(), entity.getCurrentPrice(), 20
         );
 
+        PagedResponse<ShoppingCartItemResponse> expectedResponse = PagedResponse.<ShoppingCartItemResponse>builder()
+                .page(0)
+                .size(10)
+                .isLast(true)
+                .totalElements(1L)
+                .totalPages(1)
+                .content(List.of(response))
+                .build();
+
         when(shoppingCartItemProductSKUSummaryRepository.findAllByUserId(userId, pageable)).thenReturn(page);
-        when(shoppingCartItemProductSKUMapper.toResponse(entity)).thenReturn(response);
+        when(pagedResponseFactory.fromPage(any(), any())).thenReturn(expectedResponse);
 
         PagedResponse<ShoppingCartItemResponse> result = shoppingCartService.getAllItems(userId, pageable);
 
         assertNotNull(result);
         assertEquals(1, result.content().size());
+        verify(pagedResponseFactory).fromPage(any(), any());
     }
 
     @Test
@@ -184,13 +198,24 @@ class ShoppingCartServiceTests {
         Pageable pageable = PageRequest.of(0, 10);
         Page<ShoppingCartItemProductSKUSummary> emptyPage = new PageImpl<>(List.of(), pageable, 0);
 
+        PagedResponse<ShoppingCartItemResponse> expectedResponse = PagedResponse.<ShoppingCartItemResponse>builder()
+                .content(new java.util.ArrayList<>())
+                .size(10)
+                .page(0)
+                .isLast(true)
+                .totalPages(0)
+                .totalElements(0L)
+                .build();
+
         when(shoppingCartItemProductSKUSummaryRepository.findAllByUserId(userId, pageable)).thenReturn(emptyPage);
+        when(pagedResponseFactory.fromPage(any(), any())).thenReturn(expectedResponse);
 
         PagedResponse<ShoppingCartItemResponse> result = shoppingCartService.getAllItems(userId, pageable);
 
         assertNotNull(result);
         assertTrue(result.content().isEmpty());
         assertEquals(0, result.totalElements());
+        verify(pagedResponseFactory).fromPage(any(), any());
     }
 
     @Test

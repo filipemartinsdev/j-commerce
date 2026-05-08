@@ -9,6 +9,7 @@ import com.products.application.dto.catalogue.ProductSKUCatalogueResponse;
 import com.products.application.dto.catalogue.ProductCatalogueResponse;
 import com.products.application.exception.InvalidProductCategoryException;
 import com.products.application.exception.ProductNotFoundException;
+import com.products.application.factory.PagedResponseFactory;
 import com.products.application.service.mapper.ProductCategoryMapper;
 import com.products.application.service.mapper.ProductSKUCatalogueMapper;
 import com.products.domain.entity.*;
@@ -42,6 +43,7 @@ public class ProductCatalogueServiceTests {
     @Mock private ProductSKUSummaryCatalogueRepository productSKUSummaryCatalogueRepository;
     @Mock private ProductSKUCatalogueMapper productSKUSummaryCatalogueMapper;
     @Mock private ProductDiscountCalculator productDiscountCalculator;
+    @Mock private PagedResponseFactory<ProductSummaryCatalogueResponse> pagedResponseFactory;
 
     @InjectMocks
     private ProductCatalogueService productCatalogueService;
@@ -73,8 +75,31 @@ public class ProductCatalogueServiceTests {
 
         Page<ProductResumeCatalogue> page = new PageImpl<>(List.of(product1, product2), pageable, 2);
 
+        ProductPriceCatalogueResponse price1 = new ProductPriceCatalogueResponse(
+                new BigDecimal("100.00"), new BigDecimal("50.00"), 50, "Sale"
+        );
+        ProductPriceCatalogueResponse price2 = new ProductPriceCatalogueResponse(
+                new BigDecimal("50.00"), new BigDecimal("25.00"), 50, "Discount"
+        );
+
+        ProductSummaryCatalogueResponse response1 = new ProductSummaryCatalogueResponse(
+                product1.getProductId(), "Product 1", new ProductCategoryResponse(1, "Electronics"), price1
+        );
+        ProductSummaryCatalogueResponse response2 = new ProductSummaryCatalogueResponse(
+                product2.getProductId(), "Product 2", new ProductCategoryResponse(2, "Clothing"), price2
+        );
+
+        PagedResponse<ProductSummaryCatalogueResponse> expectedResponse = PagedResponse.<ProductSummaryCatalogueResponse>builder()
+                .page(0)
+                .size(10)
+                .isLast(true)
+                .totalElements(2L)
+                .totalPages(1)
+                .content(List.of(response1, response2))
+                .build();
+
         when(productCatalogueResumeRepository.findAll(pageable)).thenReturn(page);
-        when(productDiscountCalculator.getDiscountPercent(any(), any())).thenReturn(50);
+        when(pagedResponseFactory.fromPage(any(), any())).thenReturn(expectedResponse);
 
         // When
         PagedResponse<ProductSummaryCatalogueResponse> result = productCatalogueService.getAll(pageable);
@@ -88,6 +113,7 @@ public class ProductCatalogueServiceTests {
         assertTrue(result.isLast());
         assertEquals(2, result.content().size());
         verify(productCatalogueResumeRepository).findAll(pageable);
+        verify(pagedResponseFactory).fromPage(any(), any());
     }
 
     @Test @DisplayName("Should retrieve empty PagedResponse if not exists any ProductResumeCatalogue")
@@ -96,7 +122,17 @@ public class ProductCatalogueServiceTests {
         Pageable pageable = PageRequest.of(0, 10);
         Page<ProductResumeCatalogue> emptyPage = new PageImpl<>(Collections.emptyList(), pageable, 0);
 
+        PagedResponse<ProductSummaryCatalogueResponse> expectedResponse = PagedResponse.<ProductSummaryCatalogueResponse>builder()
+                .content(new java.util.ArrayList<>())
+                .size(10)
+                .page(0)
+                .isLast(true)
+                .totalPages(0)
+                .totalElements(0L)
+                .build();
+
         when(productCatalogueResumeRepository.findAll(pageable)).thenReturn(emptyPage);
+        when(pagedResponseFactory.fromPage(any(), any())).thenReturn(expectedResponse);
 
         // When
         PagedResponse<ProductSummaryCatalogueResponse> result = productCatalogueService.getAll(pageable);
@@ -106,6 +142,7 @@ public class ProductCatalogueServiceTests {
         assertEquals(0, result.totalElements());
         assertTrue(result.content().isEmpty());
         verify(productCatalogueResumeRepository).findAll(pageable);
+        verify(pagedResponseFactory).fromPage(any(), any());
     }
 
     @Test @DisplayName("Should retrieve all active ProductResumeCatalogue by categoryId")
@@ -125,8 +162,25 @@ public class ProductCatalogueServiceTests {
 
         Page<ProductResumeCatalogue> page = new PageImpl<>(List.of(product1), pageable, 1);
 
+        ProductPriceCatalogueResponse price1 = new ProductPriceCatalogueResponse(
+                new BigDecimal("100.00"), new BigDecimal("100.00"), 0, "Offer"
+        );
+
+        ProductSummaryCatalogueResponse response1 = new ProductSummaryCatalogueResponse(
+                product1.getProductId(), "Product 1", new ProductCategoryResponse(1, "Electronics"), price1
+        );
+
+        PagedResponse<ProductSummaryCatalogueResponse> expectedResponse = PagedResponse.<ProductSummaryCatalogueResponse>builder()
+                .page(0)
+                .size(10)
+                .isLast(true)
+                .totalElements(1L)
+                .totalPages(1)
+                .content(List.of(response1))
+                .build();
+
         when(productCatalogueResumeRepository.findAllByCategoryId(categoryId, pageable)).thenReturn(page);
-        when(productDiscountCalculator.getDiscountPercent(any(), any())).thenReturn(0);
+        when(pagedResponseFactory.fromPage(any(), any())).thenReturn(expectedResponse);
 
         // When
         PagedResponse<ProductSummaryCatalogueResponse> result = productCatalogueService.getAllByCategoryId(categoryId, pageable);
@@ -136,6 +190,7 @@ public class ProductCatalogueServiceTests {
         assertEquals(1, result.totalElements());
         assertEquals(1, result.content().size());
         verify(productCatalogueResumeRepository).findAllByCategoryId(categoryId, pageable);
+        verify(pagedResponseFactory).fromPage(any(), any());
     }
 
     @Test @DisplayName("Should retrieve empty PagedResponse if not exists any ProductResumeCatalogue by categoryId")
@@ -145,7 +200,17 @@ public class ProductCatalogueServiceTests {
         Pageable pageable = PageRequest.of(0, 10);
         Page<ProductResumeCatalogue> emptyPage = new PageImpl<>(Collections.emptyList(), pageable, 0);
 
+        PagedResponse<ProductSummaryCatalogueResponse> expectedResponse = PagedResponse.<ProductSummaryCatalogueResponse>builder()
+                .content(new java.util.ArrayList<>())
+                .size(10)
+                .page(0)
+                .isLast(true)
+                .totalPages(0)
+                .totalElements(0L)
+                .build();
+
         when(productCatalogueResumeRepository.findAllByCategoryId(categoryId, pageable)).thenReturn(emptyPage);
+        when(pagedResponseFactory.fromPage(any(), any())).thenReturn(expectedResponse);
 
         // When
         PagedResponse<ProductSummaryCatalogueResponse> result = productCatalogueService.getAllByCategoryId(categoryId, pageable);
@@ -155,6 +220,7 @@ public class ProductCatalogueServiceTests {
         assertEquals(0, result.totalElements());
         assertTrue(result.content().isEmpty());
         verify(productCatalogueResumeRepository).findAllByCategoryId(categoryId, pageable);
+        verify(pagedResponseFactory).fromPage(any(), any());
     }
 
     @Test @DisplayName("Should retrieve ProductSummary by productSKUId successfully")

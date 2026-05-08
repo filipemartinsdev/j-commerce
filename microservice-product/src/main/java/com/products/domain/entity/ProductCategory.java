@@ -8,7 +8,6 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 import org.hibernate.validator.constraints.Length;
 
-// TODO: implement caffeine
 @Entity @Table(name = "product_category")
 @Data @NoArgsConstructor @AllArgsConstructor
 public class ProductCategory {

@@ -6,7 +6,7 @@ import org.springframework.cache.annotation.EnableCaching;
 import org.springframework.scheduling.annotation.EnableAsync;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 
-@EnableAsync @EnableCaching
+@EnableAsync
 @SpringBootApplication
 public class MicroserviceIdentityApplication {
 

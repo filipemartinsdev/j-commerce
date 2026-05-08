@@ -171,13 +171,14 @@ services:
       notification_db:
         condition: service_started
     environment:
-      PG_PRODUCT_DATABASE:
-      PG_PRODUCT_USER:
-      PG_PRODUCT_PASSWORD:
-      SPRING_RABBITMQ_ADDRESSES: amqp://admin:admin@rabbitmq:5672/
+      PG_NOTIFICATION_DATABASE:
+      PG_NOTIFICATION_USER:
+      PG_NOTIFICATION_PASSWORD:
       SPRING_DATASOURCE_URL: jdbc:postgresql://notification_db:5432/${PG_NOTIFICATION_DATABASE}
       SPRING_DATASOURCE_USERNAME: ${PG_NOTIFICATION_USER}
       SPRING_DATASOURCE_PASSWORD: ${PG_NOTIFICATION_PASSWORD}
+      SPRING_RABBITMQ_ADDRESSES: amqp://admin:admin@rabbitmq:5672/
+
       SPRING_DATA_REDIS_URL: redis://cache:6379
       ACTIVE_PROFILE: dev
 

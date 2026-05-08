@@ -69,7 +69,6 @@ public class DeliveryAddressService {
         }
     }
 
-//    TODO: FIX UNIT TESTS FOR THIS NEW METHOD
     public DeliveryAddressResponse createByCoordinatesAndUserId(CreateDeliveryAddressRequest request, UUID userId) {
         if (request.latitude().isEmpty() || request.longitude().isEmpty())
             throw new InvalidDeliveryAddressCoordinatesException("Latitude and Longitude is mandatory");

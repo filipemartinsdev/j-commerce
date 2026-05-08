@@ -19,11 +19,9 @@ import java.util.UUID;
 @RequestMapping("/admin/api/v1")
 public class AdminController implements AdminControllerDocs {
     private final AuthService authService;
-    private final UserCredentialsMapper userCredentialsMapper;
 
-    public AdminController(AuthService authService, UserCredentialsMapper userCredentialsMapper) {
+    public AdminController(AuthService authService) {
         this.authService = authService;
-        this.userCredentialsMapper = userCredentialsMapper;
     }
 
     @PatchMapping("/users/{userId}")
@@ -31,7 +29,7 @@ public class AdminController implements AdminControllerDocs {
         authService.updateUserRole(userId, request.roles());
 
         return ResponseEntity
-                .status(HttpStatus.CREATED)
+                .status(HttpStatus.OK)
                 .build();
     }
 

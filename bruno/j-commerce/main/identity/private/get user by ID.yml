@@ -5,7 +5,7 @@ info:
 
 http:
   method: GET
-  url: "{{base_url}}/identity/admin/api/v1/users"
+  url: "{{base_url}}/identity/admin/api/v1/users/17fc4922-4898-4d17-bb26-2128be62fcf5"
   auth: inherit
 
 settings:

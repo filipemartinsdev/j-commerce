@@ -3,6 +3,7 @@ package com.identity.common.handler;
 import com.identity.common.dto.StandardResponse;
 import com.identity.common.exception.InvalidEntityMapperException;
 import com.identity.common.exception.NullResponsePageException;
+import com.identity.profile.application.exception.UserProfileNotFoundException;
 import com.identity.security.application.exception.ForbiddenOperationException;
 import com.identity.security.application.exception.UserAlreadyExistsException;
 import com.identity.security.application.exception.UserNotFoundException;
@@ -44,6 +45,13 @@ public class GlobalExceptionHandler {
     public ResponseEntity<StandardResponse<Void>> handleUserAlreadyExists(UserAlreadyExistsException exception){
         return ResponseEntity
                 .status(HttpStatus.BAD_REQUEST)
+                .body(StandardResponse.fail(exception.getMessage()));
+    }
+
+    @ExceptionHandler(UserProfileNotFoundException.class)
+    public ResponseEntity<StandardResponse<Void>> handleUserProfileNotFound(UserProfileNotFoundException exception){
+        return ResponseEntity
+                .status(HttpStatus.NOT_FOUND)
                 .body(StandardResponse.fail(exception.getMessage()));
     }
 

@@ -112,7 +112,6 @@ public class DeliveryAddressServiceTests {
 
         CreateDeliveryAddressRequest request = new CreateDeliveryAddressRequest(
                 false,
-                true,
                 Optional.of("12345678"),
                 Optional.of("Test Street"),
                 Optional.of("123"),
@@ -164,7 +163,6 @@ public class DeliveryAddressServiceTests {
 
         CreateDeliveryAddressRequest request = new CreateDeliveryAddressRequest(
                 false,
-                true,
                 Optional.empty(),
                 Optional.empty(),
                 Optional.empty(),
@@ -193,7 +191,6 @@ public class DeliveryAddressServiceTests {
 
         CreateDeliveryAddressRequest request = new CreateDeliveryAddressRequest(
                 true,
-                false,
                 Optional.empty(),
                 Optional.empty(),
                 Optional.empty(),
@@ -262,7 +259,6 @@ public class DeliveryAddressServiceTests {
 
         CreateDeliveryAddressRequest request = new CreateDeliveryAddressRequest(
                 true,
-                false,
                 Optional.empty(),
                 Optional.empty(),
                 Optional.empty(),
@@ -289,7 +285,6 @@ public class DeliveryAddressServiceTests {
 
         CreateDeliveryAddressRequest request = new CreateDeliveryAddressRequest(
                 true,
-                false,
                 Optional.empty(),
                 Optional.empty(),
                 Optional.empty(),
@@ -351,7 +346,6 @@ public class DeliveryAddressServiceTests {
 
         CreateDeliveryAddressRequest request = new CreateDeliveryAddressRequest(
                 true,
-                false,
                 Optional.empty(),
                 Optional.empty(),
                 Optional.empty(),
@@ -381,7 +375,6 @@ public class DeliveryAddressServiceTests {
 
         CreateDeliveryAddressRequest request = new CreateDeliveryAddressRequest(
                 true,
-                false,
                 Optional.empty(),
                 Optional.empty(),
                 Optional.empty(),

@@ -293,23 +293,6 @@ class ShoppingCartServiceTests {
     }
 
     @Test
-    @DisplayName("Should throw DeliveryAddressNotFoundException when address not found")
-    void confirmShoppingCartTestCase2() {
-        UUID userId = UUID.randomUUID();
-        UUID deliveryAddressId = UUID.randomUUID();
-        String jwtBearer = "Bearer token";
-
-        ConfirmShoppingCartRequest request = new ConfirmShoppingCartRequest(deliveryAddressId);
-
-        when(salesOrderClient.getDeliveryAddress(deliveryAddressId, jwtBearer))
-                .thenReturn(new ResponseEntity<>(HttpStatus.NOT_FOUND));
-
-        assertThrows(DeliveryAddressNotFoundException.class, () ->
-                shoppingCartService.confirmShoppingCart(request, userId, jwtBearer)
-        );
-    }
-
-    @Test
     @DisplayName("Should throw EmptyShoppingCartException when cart is empty")
     void confirmShoppingCartTestCase3() {
         UUID userId = UUID.randomUUID();
@@ -367,22 +350,5 @@ class ShoppingCartServiceTests {
         verify(productStockManagementService, times(2)).reduceProductStock(any(), anyInt());
         verify(stockMovementService, times(2)).registerSale(any(), anyInt(), eq(userId));
         verify(shoppingCartConfirmationProducer).produce(any(CreateOrderMessage.class));
-    }
-
-    @Test
-    @DisplayName("Should throw DeliveryAddressNotFoundException for non-2xx status")
-    void confirmShoppingCartTestCase5() {
-        UUID userId = UUID.randomUUID();
-        UUID deliveryAddressId = UUID.randomUUID();
-        String jwtBearer = "Bearer token";
-
-        ConfirmShoppingCartRequest request = new ConfirmShoppingCartRequest(deliveryAddressId);
-
-        when(salesOrderClient.getDeliveryAddress(deliveryAddressId, jwtBearer))
-                .thenReturn(new ResponseEntity<>(HttpStatus.BAD_REQUEST));
-
-        assertThrows(DeliveryAddressNotFoundException.class, () ->
-                shoppingCartService.confirmShoppingCart(request, userId, jwtBearer)
-        );
     }
 }

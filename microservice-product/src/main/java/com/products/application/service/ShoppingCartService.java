@@ -15,6 +15,7 @@ import com.products.infra.persistence.ProductSKURepository;
 import com.products.infra.persistence.ShoppingCartItemProductSKUSummaryRepository;
 import com.products.infra.persistence.ShoppingCartItemRepository;
 import jakarta.transaction.Transactional;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.ResponseEntity;
@@ -23,6 +24,7 @@ import org.springframework.stereotype.Service;
 import java.util.List;
 import java.util.UUID;
 
+@Slf4j
 @Service
 public class ShoppingCartService {
     private final ShoppingCartItemRepository shoppingCartItemRepository;
@@ -105,10 +107,17 @@ public class ShoppingCartService {
         clearShoppingCart(userId);
     }
     private void verifyDeliveryAddress(UUID deliveryAddressId, String JWTBearer) {
-        ResponseEntity<?> deliveryAddressResponse = salesOrderClient.getDeliveryAddress(deliveryAddressId, JWTBearer);
+        salesOrderClient.getDeliveryAddress(deliveryAddressId, JWTBearer);
 
-        if (!deliveryAddressResponse.getStatusCode().is2xxSuccessful())
-            throw new DeliveryAddressNotFoundException("Delivery address not found with ID: "+deliveryAddressId);
+//        ResponseEntity<?> deliveryAddressResponse = salesOrderClient.getDeliveryAddress(deliveryAddressId, JWTBearer);
+
+//        if (deliveryAddressResponse.getStatusCode().is4xxClientError())
+//            throw new DeliveryAddressNotFoundException("Delivery address not found with ID: "+deliveryAddressId);
+//
+//        else if (!deliveryAddressResponse.getStatusCode().is2xxSuccessful()) {
+//            log.error("Bad gateway on Order Microservice, with status {}: {}", deliveryAddressResponse.getStatusCode(), deliveryAddressResponse.getBody());
+//            throw new BadGatewayException("External service not responding");
+//        }
     }
 
     private void updateStock(List<CreateOrderMessage.OrderItem> items, UUID userId) {

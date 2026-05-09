@@ -153,4 +153,11 @@ public class GlobalExceptionHandler {
                 .status(HttpStatus.INTERNAL_SERVER_ERROR)
                 .body(StandardResponse.error(exception.getMessage()));
     }
+
+    @ExceptionHandler(BadGatewayException.class)
+    public ResponseEntity<StandardResponse<Void>> handleBadGateway(BadGatewayException exception){
+        return ResponseEntity
+                .status(HttpStatus.BAD_GATEWAY)
+                .body(StandardResponse.error(exception.getMessage()));
+    }
 }

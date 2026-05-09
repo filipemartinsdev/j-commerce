@@ -7,7 +7,6 @@ import org.hibernate.validator.constraints.Length;
 import java.util.Optional;
 
 public record CreateDeliveryAddressRequest(
-        @NotNull Boolean byCoordinates,
         @NotNull Boolean haveNumber,
         Optional<String> zipCode,
         Optional<String> street,

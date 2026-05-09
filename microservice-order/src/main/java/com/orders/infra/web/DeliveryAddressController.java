@@ -61,15 +61,13 @@ public class DeliveryAddressController implements DeliveryAddressControllerDocs 
 
         DeliveryAddressResponse response;
         if (byCoordinates)
-            response = deliveryAddressService.createByUserId(request, authenticatedUserId);
-        else
             response = deliveryAddressService.createByCoordinatesAndUserId(request, authenticatedUserId);
+        else
+            response = deliveryAddressService.createByUserId(request, authenticatedUserId);
 
         return ResponseEntity
                 .status(HttpStatus.CREATED)
-                .body(StandardResponse.success(
-                        deliveryAddressService.createByUserId(request, authenticatedUserId)
-                ));
+                .body(StandardResponse.success(response));
     }
 
     @DeleteMapping("/{id}")

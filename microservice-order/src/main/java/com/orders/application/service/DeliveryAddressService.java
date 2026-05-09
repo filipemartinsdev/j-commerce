@@ -10,6 +10,7 @@ import com.orders.domain.entity.DeliveryAddress;
 import com.orders.infra.persistence.DeliveryAddressRepository;
 import jakarta.validation.ConstraintViolationException;
 import jakarta.validation.Valid;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.ResponseEntity;
@@ -17,6 +18,7 @@ import org.springframework.stereotype.Service;
 
 import java.util.UUID;
 
+@Slf4j
 @Service
 public class DeliveryAddressService {
     private final DeliveryAddressRepository deliveryAddressRepository;
@@ -91,14 +93,18 @@ public class DeliveryAddressService {
                 lat, lon, "json"
         );
 
-        if (response.getStatusCode().is4xxClientError())
+        if (response.getStatusCode().is4xxClientError()) {
+            log.error("Invalid coordinates API response: {}", response.getBody());
             throw new InvalidDeliveryAddressCoordinatesException("Invalid address coordinates");
+        }
 
-        if (response.getStatusCode().is2xxSuccessful())
+        else if (response.getStatusCode().is2xxSuccessful())
             return response.getBody();
 
-        else
+        else {
+            log.error("Coordinates API error: {}", response.getBody());
             throw new AddressByCoordinatesClientBadGateway("Coordinates service is unavailable");
+        }
     }
 
     private boolean isAddressFromBrazil(AddressByCoordinatesResponse response) {

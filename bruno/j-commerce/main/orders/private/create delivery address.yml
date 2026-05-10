@@ -5,16 +5,19 @@ info:
 
 http:
   method: POST
-  url: https://localhost/order/api/v1/delivery-addresses
+  url: https://localhost/order/api/v1/delivery-addresses?byCoordinates=true
+  params:
+    - name: byCoordinates
+      value: "true"
+      type: query
   body:
     type: json
     data: |-
       
       {
         "haveNumber": false,
-        "byCoordinates": true,
-        "latitude": -16.75541863050458, 
-        "longitude": -49.274334300706094,
+        "latitude": -16.76172706126886, 
+        "longitude": -49.27842031602914,
         "complement": "depois do posto ipiranga"
       }
   auth: inherit

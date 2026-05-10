@@ -54,6 +54,13 @@ public class GlobalExceptionHandler {
                 .body(StandardResponse.fail(e.getMessage()));
     }
 
+    @ExceptionHandler(SKUAlreadyInUseException.class)
+    public ResponseEntity<StandardResponse<Void>> handleSKUAlreadyInUse(SKUAlreadyInUseException e) {
+        return ResponseEntity
+                .status(HttpStatus.BAD_REQUEST)
+                .body(StandardResponse.fail(e.getMessage()));
+    }
+
     @ExceptionHandler(InvalidProductPriceTypeException.class)
     public ResponseEntity<StandardResponse<Void>> handleInvalidProductPriceType(ProductNotActiveException e) {
         return ResponseEntity

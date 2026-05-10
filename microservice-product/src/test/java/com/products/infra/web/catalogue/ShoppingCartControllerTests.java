@@ -16,9 +16,11 @@ import org.springframework.http.MediaType;
 import org.springframework.security.test.context.support.WithMockUser;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.MockMvc;
+import tools.jackson.databind.ObjectMapper;
 
 import java.math.BigDecimal;
 import java.util.List;
+import java.util.Map;
 import java.util.UUID;
 
 import static org.mockito.ArgumentMatchers.any;
@@ -33,6 +35,7 @@ public class ShoppingCartControllerTests {
     @MockitoBean private ShoppingCartService shoppingCartService;
 
     @Autowired private MockMvc mockMvc;
+    @Autowired private ObjectMapper objectMapper;
 
     @WithMockUser(authorities = "SCOPE_USER")
     @Test @DisplayName("Should retrieve shopping cart items and return status code 200")
@@ -47,46 +50,25 @@ public class ShoppingCartControllerTests {
                 0
         );
 
-        String expectedJSON = """
-            {
-                "data": {
-                    "page": 0,
-                    "size": 20,
-                    "totalPages": 1,
-                    "totalElements": 1,
-                    "isLast": true,
-                    "content": [
-                        {
-                            "id": "%s",
-                            "productSKUId": "%s",
-                            "productSKUName": "testing",
-                            "units": 1,
-                            "originalPrice": 1,
-                            "currentPrice": 1,
-                            "discountPercent": 0
-                        }
-                    ]
-                },
-                "status": "success"
-            }
-        """.formatted(itemResponse.id(), itemResponse.productSKUId());
+        var expectedResponse = PagedResponse.<ShoppingCartItemResponse>builder()
+                .page(0)
+                .size(20)
+                .totalElements(1L)
+                .totalPages(1)
+                .isLast(true)
+                .content(List.of(itemResponse))
+                .build();
 
         when(shoppingCartService.getAllItems(any(), any()))
-                .thenReturn(
-                        PagedResponse.<ShoppingCartItemResponse>builder()
-                                .page(0)
-                                .size(20)
-                                .totalElements(1L)
-                                .totalPages(1)
-                                .isLast(true)
-                                .content(List.of(itemResponse))
-                                .build()
-                );
+                .thenReturn(expectedResponse);
 
-        mockMvc.perform(
-                get("/api/v1/shopping-cart")
-                        .with(jwt().jwt(jwt -> jwt.subject(UUID.randomUUID().toString())))
-                )
+        String expectedJSON = objectMapper.writeValueAsString(Map.of(
+                "status", "success",
+                "data", expectedResponse
+        ));
+
+        mockMvc.perform(get("/api/v1/shopping-cart")
+                        .with(jwt().jwt(jwt -> jwt.subject(UUID.randomUUID().toString()))))
                 .andExpect(status().isOk())
                 .andExpect(content().json(expectedJSON));
     }
@@ -97,17 +79,15 @@ public class ShoppingCartControllerTests {
                 .andExpect(status().isUnauthorized());
     }
 
-
     @WithMockUser(authorities = "SCOPE_USER")
     @Test @DisplayName("Should create new shopping cart item and return status code 201")
     void createTestCase1() throws Exception {
-        UUID productSKUId = UUID.randomUUID();
         String requestBody = """
             {
                 "productSKUId": "%s",
                 "units": 2
             }
-        """.formatted(productSKUId);
+        """.formatted(UUID.randomUUID());
 
         doNothing().when(shoppingCartService).createItemByUserId(any(), any());
 
@@ -138,13 +118,12 @@ public class ShoppingCartControllerTests {
     @WithMockUser(authorities = "SCOPE_USER")
     @Test @DisplayName("Should return status code 404 if product not exists")
     void createTestCase3() throws Exception {
-        UUID productSKUId = UUID.randomUUID();
         String requestBody = """
             {
                 "productSKUId": "%s",
                 "units": 2
             }
-        """.formatted(productSKUId);
+        """.formatted(UUID.randomUUID());
 
         doThrow(ProductSKUNotFoundException.class)
                 .when(shoppingCartService).createItemByUserId(any(), any());
@@ -159,50 +138,50 @@ public class ShoppingCartControllerTests {
     @WithMockUser(authorities = "SCOPE_USER")
     @Test @DisplayName("Should return status code 422 if product haven't stock enough")
     void createTestCase4() throws Exception {
-        UUID productSKUId = UUID.randomUUID();
         String requestBody = """
             {
                 "productSKUId": "%s",
                 "units": 9999
             }
-        """.formatted(productSKUId);
+        """.formatted(UUID.randomUUID());
 
         doThrow(ProductOutOfStockException.class)
                 .when(shoppingCartService).createItemByUserId(any(), any());
 
-        mockMvc.perform(post("/api/v1/shopping-cart").with(jwt().jwt(jwt -> jwt.subject(UUID.randomUUID().toString())))
+        mockMvc.perform(post("/api/v1/shopping-cart")
                 .content(requestBody)
                 .contentType(MediaType.APPLICATION_JSON)
+                .with(jwt().jwt(jwt -> jwt.subject(UUID.randomUUID().toString())))
         ).andExpect(status().isUnprocessableContent());
     }
 
     @WithMockUser(authorities = "SCOPE_USER")
     @Test @DisplayName("Should return status code 400 if product is already on shopping cart")
     void createTestCase5() throws Exception {
-        UUID productSKUId = UUID.randomUUID();
         String requestBody = """
             {
                 "productSKUId": "%s",
                 "units": 2
             }
-        """.formatted(productSKUId);
+        """.formatted(UUID.randomUUID());
 
         doThrow(ShoppingCartItemAlreadyExistsException.class)
                 .when(shoppingCartService).createItemByUserId(any(), any());
 
-        mockMvc.perform(post("/api/v1/shopping-cart").with(jwt().jwt(jwt -> jwt.subject(UUID.randomUUID().toString())))
+        mockMvc.perform(post("/api/v1/shopping-cart")
                 .content(requestBody)
                 .contentType(MediaType.APPLICATION_JSON)
+                .with(jwt().jwt(jwt -> jwt.subject(UUID.randomUUID().toString())))
         ).andExpect(status().isBadRequest());
     }
-
 
     @WithMockUser(authorities = "SCOPE_USER")
     @Test @DisplayName("Should clean shopping cart and return status code 200")
     void deleteAllItemsTestCase1() throws Exception {
         doNothing().when(shoppingCartService).deleteAllItemsByUserId(any());
 
-        mockMvc.perform(delete("/api/v1/shopping-cart").with(jwt().jwt(jwt -> jwt.subject(UUID.randomUUID().toString()))))
+        mockMvc.perform(delete("/api/v1/shopping-cart")
+                        .with(jwt().jwt(jwt -> jwt.subject(UUID.randomUUID().toString()))))
                 .andExpect(status().isOk());
 
         verify(shoppingCartService).deleteAllItemsByUserId(any());
@@ -217,11 +196,10 @@ public class ShoppingCartControllerTests {
     @WithMockUser(authorities = "SCOPE_USER")
     @Test @DisplayName("Should remove item from shopping cart and return status code 200")
     void deleteByIdTestCase1() throws Exception {
-        UUID itemId = UUID.randomUUID();
-
         doNothing().when(shoppingCartService).deleteItemById(any(), any());
 
-        mockMvc.perform(delete("/api/v1/shopping-cart/" + itemId).with(jwt().jwt(jwt -> jwt.subject(UUID.randomUUID().toString()))))
+        mockMvc.perform(delete("/api/v1/shopping-cart/" + UUID.randomUUID())
+                        .with(jwt().jwt(jwt -> jwt.subject(UUID.randomUUID().toString()))))
                 .andExpect(status().isOk());
 
         verify(shoppingCartService).deleteItemById(any(), any());
@@ -230,12 +208,11 @@ public class ShoppingCartControllerTests {
     @WithMockUser(authorities = "SCOPE_USER")
     @Test @DisplayName("Should return status code 404 if item not exists")
     void deleteByIdTestCase2() throws Exception {
-        UUID itemId = UUID.randomUUID();
-
         doThrow(ShoppingCartItemNotFoundException.class)
                 .when(shoppingCartService).deleteItemById(any(), any());
 
-        mockMvc.perform(delete("/api/v1/shopping-cart/" + itemId).with(jwt().jwt(jwt -> jwt.subject(UUID.randomUUID().toString()))))
+        mockMvc.perform(delete("/api/v1/shopping-cart/" + UUID.randomUUID())
+                        .with(jwt().jwt(jwt -> jwt.subject(UUID.randomUUID().toString()))))
                 .andExpect(status().isNotFound());
     }
 
@@ -248,12 +225,11 @@ public class ShoppingCartControllerTests {
     @WithMockUser(authorities = "SCOPE_USER")
     @Test @DisplayName("Should confirm shopping cart and return status code 201")
     void confirmTestCase1() throws Exception {
-        UUID deliveryAddressId = UUID.randomUUID();
         String requestBody = """
             {
                 "deliveryAddressId": "%s"
             }
-        """.formatted(deliveryAddressId);
+        """.formatted(UUID.randomUUID());
 
         doNothing().when(shoppingCartService).confirmShoppingCart(any(), any(), any());
 
@@ -269,12 +245,11 @@ public class ShoppingCartControllerTests {
     @WithMockUser(authorities = "SCOPE_USER")
     @Test @DisplayName("Should return status code 404 if delivery address not exists")
     void confirmTestCase2() throws Exception {
-        UUID deliveryAddressId = UUID.randomUUID();
         String requestBody = """
             {
                 "deliveryAddressId": "%s"
             }
-        """.formatted(deliveryAddressId);
+        """.formatted(UUID.randomUUID());
 
         doThrow(DeliveryAddressNotFoundException.class)
                 .when(shoppingCartService).confirmShoppingCart(any(), any(), any());

@@ -60,14 +60,14 @@ public class {Controller}Tests {
 ### Two Authentication Patterns for Controller Tests
 
 Controllers can require authentication in two ways:
-1. **SCOPE-only endpoints**: Only checks if the user has the required authority (SCOPE_ADMIN, SCOPE_USER, etc.)
-2. **JWT-dependent endpoints**: Requires the JWT to extract user information (e.g., `@AuthenticationPrincipal Jwt jwt`)
+1. **SCOPE-only endpoints**: Only checks if the user has the required authority (SCOPE_ADMIN, SCOPE_USER, etc.) - does NOT need userId from JWT
+2. **JWT-dependent endpoints**: Requires the JWT to extract user information (e.g., `@AuthenticationPrincipal Jwt jwt`) - needs userId present in JWT
 
 Understanding which pattern to use is critical for correct test implementation.
 
-### Pattern 1: SCOPE-Only Endpoints (No JWT Required)
+### Pattern 1: SCOPE-Only Endpoints (No userId Required)
 
-When the controller does **NOT** use `@AuthenticationPrincipal Jwt jwt`, use ONLY `@WithMockUser`:
+When the controller does **NOT** use `@AuthenticationPrincipal Jwt jwt` to get userId, use ONLY `@WithMockUser`:
 
 ```java
 import tools.jackson.databind.ObjectMapper;
@@ -107,11 +107,9 @@ void getAllStockTestCase1() throws Exception {
 
 **Key Point**: Do NOT use `.with(jwt()...)` for SCOPE-only endpoints.
 
-### Pattern 2: JWT-Dependent Endpoints (JWT Required)
+### Pattern 2: JWT-Dependent Endpoints (userId Required)
 
-When the controller uses `@AuthenticationPrincipal Jwt jwt` to extract user identity, you MUST use BOTH:
-- `@WithMockUser` to pass authorization
-- `.with(jwt()...)` to provide the JWT token with subject and authorities
+When the controller uses `@AuthenticationPrincipal Jwt jwt` to extract user identity, use ONLY `.with(jwt()...)` with subject and authorities - **DO NOT use `@WithMockUser`**.
 
 ```java
 import tools.jackson.databind.ObjectMapper;
@@ -120,9 +118,9 @@ import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import java.util.List;
 import java.util.Map;
 
-@WithMockUser(authorities = "SCOPE_USER")
 @Test @DisplayName("Should create wishlist item and return status code 201")
 void createWishlistItemTestCase1() throws Exception {
+    UUID userId = UUID.randomUUID();
     var request = new CreateWishlistItemRequest(productSKUId, 2);
     var response = new WishlistItemResponse(UUID.randomUUID(), productSKUId, "Product",
             new ProductPriceCatalogueResponse(BigDecimal.TEN, BigDecimal.TEN, 10, "DISCOUNT"));
@@ -137,8 +135,8 @@ void createWishlistItemTestCase1() throws Exception {
     mockMvc.perform(post("/api/v1/wishlist")
             .content(requestBody)
             .contentType(MediaType.APPLICATION_JSON)
-            .with(jwt().jwt(jwt -> jwt.subject(UUID.randomUUID().toString()))
-                    .authorities(List.of(new SimpleGrantedAuthority("SCOPE_USER"))))
+            .with(jwt().jwt(jwt -> jwt.subject(userId.toString()))
+                    .authorities(new SimpleGrantedAuthority("SCOPE_USER")))
     ).andExpect(status().isCreated())
       .andExpect(content().json(expectedJSON));
 }
@@ -147,13 +145,14 @@ void createWishlistItemTestCase1() throws Exception {
 **Required Elements**:
 | Element | Purpose |
 |---------|---------|
-| `.jwt(jwt -> jwt.subject(UUID.randomUUID().toString()))` | Provides user ID for JWT extraction |
-| `.authorities(List.of(new SimpleGrantedAuthority("SCOPE_ADMIN")))` | Provides authority for authorization |
+| `.jwt(jwt -> jwt.subject(userId.toString()))` | Provides user ID for JWT extraction |
+| `.authorities(new SimpleGrantedAuthority("SCOPE_USER"))` | Provides authority for authorization |
 
-**Why Both Are Needed**:
-- `@WithMockUser` passes the security filter chain but doesn't provide JWT
-- `.with(jwt()...)` provides the actual JWT token that the controller can extract
-- `.authorities()` on jwt() ensures the OAuth2 resource server validates the token has proper scope
+**Why NOT use @WithMockUser**:
+- `@WithMockUser` creates a mock authentication but does NOT provide a real JWT token
+- `.with(jwt()...)` creates a JWT token that the OAuth2 resource server can validate
+- When controller needs userId from JWT (via `@AuthenticationPrincipal`), you need the actual JWT token structure
+- The `.authorities()` on jwt() ensures the OAuth2 resource server validates the token has proper scope
 
 ### Required Authentication Test Cases
 
@@ -206,24 +205,24 @@ void {methodName}TestCase{N}() throws Exception {
 
 #### 403 Forbidden (Wrong Role/Scope)
 
-```java
-@WithMockUser(authorities = "SCOPE_USER")
-@Test @DisplayName("Should return status code 403 if client is not admin")
-void {methodName}TestCase{N}() throws Exception {
-    mockMvc.perform({httpMethod}("/api/v1/{endpoint}")
-            .with(jwt().jwt(jwt -> jwt.subject(UUID.randomUUID().toString()))
-                    .authorities(List.of(new SimpleGrantedAuthority("SCOPE_USER"))))
-    ).andExpect(status().isForbidden());
-}
-```
-
-**Note**: For SCOPE-only endpoints, you can omit `.with(jwt()...)`:
+For SCOPE-only endpoints:
 ```java
 @WithMockUser(authorities = "SCOPE_USER")
 @Test @DisplayName("Should return status code 403 if client is not admin")
 void {methodName}TestCase{N}() throws Exception {
     mockMvc.perform(get("/admin/api/v1/prices"))
             .andExpect(status().isForbidden());
+}
+```
+
+For JWT-dependent endpoints:
+```java
+@Test @DisplayName("Should return status code 403 if wrong scope")
+void {methodName}TestCase{N}() throws Exception {
+    mockMvc.perform({httpMethod}("/api/v1/{endpoint}")
+            .with(jwt().jwt(jwt -> jwt.subject(UUID.randomUUID().toString()))
+                    .authorities(new SimpleGrantedAuthority("SCOPE_STOCK_MANAGER")))
+    ).andExpect(status().isForbidden());
 }
 ```
 
@@ -243,15 +242,15 @@ void {methodName}TestCase{N}() throws Exception {
 ### Decision Flowchart
 
 ```
-Does controller use @AuthenticationPrincipal Jwt jwt?
+Does controller use @AuthenticationPrincipal Jwt jwt to get userId?
 ├── NO (SCOPE-only) → Use @WithMockUser ONLY
 │   ├── Success: @WithMockUser(authorities = "SCOPE_ADMIN")
 │   ├── 401: No annotation, no jwt()
 │   └── 403: @WithMockUser(authorities = "SCOPE_USER")
-└── YES (JWT required) → Use BOTH @WithMockUser AND jwt()
-    ├── Success: @WithMockUser + jwt() with subject + authorities
+└── YES (userId required) → Use ONLY .with(jwt()...) with subject + authorities
+    ├── Success: .with(jwt().jwt(jwt -> jwt.subject(userId)).authorities(...))
     ├── 401: No annotation, no jwt()
-    └── 403: @WithMockUser + jwt() with wrong scope
+    └── 403: .with(jwt().jwt(jwt -> jwt.subject(...)).authorities(wrongScope))
 ```
 
 ### Complete Test Class Template (SCOPE-only)
@@ -337,11 +336,9 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.webmvc.test.autoconfigure.WebMvcTest;
 import org.springframework.context.annotation.Import;
 import org.springframework.http.MediaType;
-import org.springframework.security.test.context.support.WithMockUser;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.MockMvc;
 
-import java.util.List;
 import java.util.Map;
 import java.util.UUID;
 
@@ -361,9 +358,9 @@ public class {Controller}Tests {
     @Autowired private MockMvc mockMvc;
     @Autowired private ObjectMapper objectMapper;
 
-    @WithMockUser(authorities = "SCOPE_USER")
     @Test @DisplayName("Should {behavior} and return status code 200")
     void {methodName}TestCase1() throws Exception {
+        UUID userId = UUID.randomUUID();
         var request = new {Request}(params);
         var response = new {Response}(params);
 
@@ -377,8 +374,8 @@ public class {Controller}Tests {
         mockMvc.perform(post("/api/v1/{endpoint}")
                 .content(requestBody)
                 .contentType(MediaType.APPLICATION_JSON)
-                .with(jwt().jwt(jwt -> jwt.subject(UUID.randomUUID().toString()))
-                        .authorities(List.of(new SimpleGrantedAuthority("SCOPE_USER"))))
+                .with(jwt().jwt(jwt -> jwt.subject(userId.toString()))
+                        .authorities(new SimpleGrantedAuthority("SCOPE_USER")))
         ).andExpect(status().isOk())
           .andExpect(content().json(expectedJSON));
     }
@@ -389,12 +386,11 @@ public class {Controller}Tests {
                 .andExpect(status().isUnauthorized());
     }
 
-    @WithMockUser(authorities = "SCOPE_USER")
-    @Test @DisplayName("Should return status code 403 if client is not allowed")
+    @Test @DisplayName("Should return status code 403 if wrong scope")
     void {methodName}TestCase3() throws Exception {
         mockMvc.perform(post("/api/v1/{endpoint}")
                 .with(jwt().jwt(jwt -> jwt.subject(UUID.randomUUID().toString()))
-                        .authorities(List.of(new SimpleGrantedAuthority("SCOPE_USER"))))
+                        .authorities(new SimpleGrantedAuthority("SCOPE_STOCK_MANAGER")))
         ).andExpect(status().isForbidden());
     }
 }
@@ -410,12 +406,16 @@ public class {Controller}Tests {
 
 | Test Case | SCOPE-only Endpoint | JWT-dependent Endpoint | Expected Status |
 |-----------|-------------------|----------------------|-----------------|
-| Success | `@WithMockUser(authorities = "SCOPE_ADMIN")` | `@WithMockUser` + `.with(jwt()...)` | 2xx |
+| Success | `@WithMockUser(authorities = "SCOPE_ADMIN")` | `.with(jwt().jwt(jwt -> jwt.subject(userId)).authorities(...))` | 2xx |
 | 401 Not Authenticated | No annotation | No annotation | 401 Unauthorized |
-| 403 Wrong Scope | `@WithMockUser(authorities = "SCOPE_USER")` | `@WithMockUser` + `.with(jwt()...)` (wrong scope) | 403 Forbidden |
-| Business Exception | `@WithMockUser(authorities = "SCOPE_ADMIN")` | `@WithMockUser` + `.with(jwt()...)` | 4xx |
+| 403 Wrong Scope | `@WithMockUser(authorities = "SCOPE_USER")` | `.with(jwt().jwt(jwt -> jwt.subject(...)).authorities(wrongScope))` | 403 Forbidden |
+| Business Exception | `@WithMockUser(authorities = "SCOPE_ADMIN")` | `.with(jwt().jwt(jwt -> jwt.subject(userId)).authorities(...))` | 4xx |
 
 **Key Rule**: EVERY endpoint MUST test both 401 (unauthenticated) and 403 (wrong scope/role).
+
+**Important**: Do NOT use `@WithMockUser` together with `.with(jwt()...)`. These are mutually exclusive approaches:
+- `@WithMockUser` = for endpoints that only check SCOPE (no userId needed)
+- `.with(jwt()...)` with subject + authorities = for endpoints that need userId from JWT
 
 ---
 

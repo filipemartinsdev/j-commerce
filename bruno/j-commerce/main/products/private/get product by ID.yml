@@ -5,7 +5,7 @@ info:
 
 http:
   method: GET
-  url: https://localhost/product/api/v1/products/5f735365-5284-4784-8c34-f53f5c2b1968
+  url: https://localhost/product/api/v1/products/688ce043-d87e-4ddc-81d1-84fc738c60e9
   auth: inherit
 
 settings:

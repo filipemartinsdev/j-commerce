@@ -27,7 +27,7 @@ public class SecurityConfig {
                         .requestMatchers("/v3/api-docs/**", "/swagger-ui/**", "/h2-console/**").permitAll()
                         .requestMatchers("/api/v1/register", "/api/v1/login", "/api/v1/refresh").permitAll()
                         .requestMatchers("/actuator/**").permitAll()
-                        .anyRequest().authenticated()
+                        .anyRequest().hasAuthority("SCOPE_USER")
                 )
 
                 .oauth2ResourceServer(oauth -> oauth

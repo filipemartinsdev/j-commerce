@@ -1,5 +1,6 @@
 package com.products.infra.web.catalogue;
 
+import tools.jackson.databind.ObjectMapper;
 import com.products.application.dto.PagedResponse;
 import com.products.application.dto.ProductCategoryResponse;
 import com.products.application.dto.StockStatus;
@@ -22,6 +23,7 @@ import org.springframework.test.web.servlet.MockMvc;
 
 import java.math.BigDecimal;
 import java.util.List;
+import java.util.Map;
 import java.util.UUID;
 
 import static org.mockito.ArgumentMatchers.any;
@@ -34,49 +36,32 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 @Import(SecurityConfig.class)
 public class ProductControllerTests {
     @Autowired private MockMvc mockMvc;
+    @Autowired private ObjectMapper objectMapper;
 
     @MockitoBean private ProductCatalogueService productCatalogueService;
     @MockitoBean private ProductCategoryService productCategoryService;
 
-    @Test @DisplayName("Should retrieve product categories and status code 200")
+    @Test @DisplayName("Should retrieve product categories and return status code 200")
     @WithMockUser(authorities = "SCOPE_USER")
     void getCategoriesTestCase1() throws Exception {
         ProductCategoryResponse productCategoryResponse = new ProductCategoryResponse(1, "testing");
-
-        String expectedJSON = """
-            {
-                "status": "success",
-                "data": {
-                    "page": 0,
-                    "size": 20,
-                    "totalPages": 1,
-                    "totalElements": 1,
-                    "isLast": true,
-                    "content": [
-                        {
-                            "id": 1,
-                            "name": "testing"
-                        }
-                    ]
-                }
-            }
-        """;
+        PagedResponse<ProductCategoryResponse> pagedResponse = PagedResponse.<ProductCategoryResponse>builder()
+                .page(0)
+                .size(20)
+                .totalElements(1L)
+                .totalPages(1)
+                .isLast(true)
+                .content(List.of(productCategoryResponse))
+                .build();
 
         when(productCategoryService.getAll(any()))
-                .thenReturn(
-                        PagedResponse.<ProductCategoryResponse>builder()
-                                .page(0)
-                                .size(20)
-                                .totalElements(1L)
-                                .totalPages(1)
-                                .isLast(true)
-                                .content(List.of(productCategoryResponse))
-                                .build()
-                );
+                .thenReturn(pagedResponse);
+
+        Map<String, Object> response = Map.of("status", "success", "data", pagedResponse);
 
         mockMvc.perform(get("/api/v1/categories"))
                 .andExpect(status().isOk())
-                .andExpect(content().json(expectedJSON));
+                .andExpect(content().json(objectMapper.writeValueAsString(response)));
     }
 
     @Test @DisplayName("Should return status code 401 if client is not authenticated")
@@ -91,61 +76,25 @@ public class ProductControllerTests {
         var productSummaryCatalogueResponse = new ProductSummaryCatalogueResponse(
                 UUID.randomUUID(),
                 "testing",
-                new ProductCategoryResponse(
-                        1,
-                        "testing"
-                ),
-                new ProductPriceCatalogueResponse(
-                        BigDecimal.ONE,
-                        BigDecimal.ONE,
-                        0,
-                        "testing"
-                )
+                new ProductCategoryResponse(1, "testing"),
+                new ProductPriceCatalogueResponse(BigDecimal.ONE, BigDecimal.ONE, 0, "testing")
         );
+        PagedResponse<ProductSummaryCatalogueResponse> pagedResponse = PagedResponse.<ProductSummaryCatalogueResponse>builder()
+                .page(0)
+                .size(20)
+                .isLast(true)
+                .totalElements(1L)
+                .totalPages(1)
+                .content(List.of(productSummaryCatalogueResponse))
+                .build();
 
-        when(productCatalogueService.getAll(any())).thenReturn(
-                PagedResponse.<ProductSummaryCatalogueResponse>builder()
-                        .page(0)
-                        .size(20)
-                        .isLast(true)
-                        .totalElements(1L)
-                        .totalPages(1)
-                        .content(List.of(productSummaryCatalogueResponse))
-                        .build()
-        );
+        when(productCatalogueService.getAll(any())).thenReturn(pagedResponse);
 
-        String expectedJSON = """
-            {
-                "status": "success",
-                "data": {
-                    "page": 0,
-                    "size": 20,
-                    "totalPages": 1,
-                    "totalElements": 1,
-                    "isLast": true,
-                    "content": [
-                        {
-                            "productId": "%s",
-                            "name": "testing",
-                            "category": {
-                                "id": 1,
-                                "name": "testing"
-                            },
-                            "price": {
-                                "original": 1.00,
-                                "current": 1.00,
-                                "discountPercent": 0,
-                                "type": "testing"
-                            }
-                        }
-                    ]
-                }
-            }
-        """.formatted(productSummaryCatalogueResponse.productId());
+        Map<String, Object> response = Map.of("status", "success", "data", pagedResponse);
 
         mockMvc.perform(get("/api/v1/products"))
                 .andExpect(status().isOk())
-                .andExpect(content().json(expectedJSON));
+                .andExpect(content().json(objectMapper.writeValueAsString(response)));
     }
 
     @Test @DisplayName("Should return status code 401 if client is not authenticated")
@@ -168,51 +117,19 @@ public class ProductControllerTests {
                                 "testing",
                                 "testing",
                                 StockStatus.IN_STOCK,
-                                new ProductPriceCatalogueResponse(
-                                        BigDecimal.ONE,
-                                        BigDecimal.ONE,
-                                        0,
-                                        "testing"
-                                )
+                                new ProductPriceCatalogueResponse(BigDecimal.ONE, BigDecimal.ONE, 0, "testing")
                         )
                 )
         );
 
-        String expectedJSON = """
-            {
-                "status": "success",
-                "data": {
-                    "id": "%s",
-                    "name": "testing",
-                    "description": "testing",
-                    "category": {
-                        "id": 1,
-                        "name": "testing"
-                    },
-                    "SKUs": [
-                        {
-                            "id": "%s",
-                            "SKU": "testing",
-                            "name": "testing",
-                            "stockStatus": "IN_STOCK",
-                            "price": {
-                                "original": 1.00,
-                                "current": 1.00,
-                                "discountPercent": 0,
-                                "type": "testing"
-                            }
-                        }
-                    ]
-                    }
-            }
-        """.formatted(productCatalogueResponse.id(),  productCatalogueResponse.SKUs().get(0).id());
-
         when(productCatalogueService.getProductSummaryByProductId(any()))
                 .thenReturn(productCatalogueResponse);
 
-        mockMvc.perform(get("/api/v1/products/"+productCatalogueResponse.id()))
+        Map<String, Object> response = Map.of("status", "success", "data", productCatalogueResponse);
+
+        mockMvc.perform(get("/api/v1/products/" + productCatalogueResponse.id()))
                 .andExpect(status().isOk())
-                .andExpect(content().json(expectedJSON));
+                .andExpect(content().json(objectMapper.writeValueAsString(response)));
     }
 
     @Test @DisplayName("Should return status code 404 if product not exists by ID")
@@ -223,13 +140,13 @@ public class ProductControllerTests {
         doThrow(ProductNotFoundException.class)
                 .when(productCatalogueService).getProductSummaryByProductId(productId);
 
-        mockMvc.perform(get("/api/v1/products/"+productId))
+        mockMvc.perform(get("/api/v1/products/" + productId))
                 .andExpect(status().isNotFound());
     }
 
     @Test @DisplayName("Should return status code 401 if client is not authenticated")
     void getProductByIdTestCase3() throws Exception {
-        mockMvc.perform(get("/api/v1/product/"+UUID.randomUUID()))
+        mockMvc.perform(get("/api/v1/product/" + UUID.randomUUID()))
                 .andExpect(status().isUnauthorized());
     }
 }

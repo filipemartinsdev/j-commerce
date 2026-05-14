@@ -23,14 +23,6 @@ spring:
           enabled: true
           max-retries: 3
           multiplier: 2.0
-  cloud:
-    openfeign:
-      client:
-        config:
-          addressCoordinatesClient:
-            default-request-headers:
-              User-Agent: "JCommerce/1.0 (dev.filipemartins@gmail.com)"
-              Referer: "https://github.com/filipemartinsdev/j-commerce"
 management:
   endpoints:
     web:
@@ -66,3 +58,6 @@ broker:
 
     notifyCancelledOrder:
       name: notification.notify_cancelled_order
+
+graphHopperClient:
+  apiKey: ${GRAPH_HOPPER_API_KEY:test}

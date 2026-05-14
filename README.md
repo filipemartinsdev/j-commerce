@@ -138,12 +138,13 @@ The Swagger UI for each microservice will be available at:
 
 The Identity microservice creates default users via Flyway migration:
 
-| Email | Password | Roles |
-|-------|----------|------|
-| admin@gmail.com | admin123 | `USER`, `ADMIN` |
-| common@gmail.com | common123 | `USER` |
-| stockman@gmail.com | stockman123 | `USER`, `STOCK_MANAGER` |
-| driver@gmail.com | driver123 | `USER`, `DRIVER` |
+| Email               | Password     | Roles                   |
+|---------------------|--------------|-------------------------|
+| admin@gmail.com     | admin123     | `USER`, `ADMIN`         |
+| common@gmail.com    | common123    | `USER`                  |
+| stockman@gmail.com  | stockman123  | `USER`, `STOCK_MANAGER` |
+| driver@gmail.com    | driver123    | `USER`, `DRIVER`        |
+| logistics@gmail.com | logistics123 | `USER`, `LOGISTICS`     |
 
 ---
 
@@ -172,7 +173,16 @@ Services will be available at:
 
 ## Architecture
 
-<img src="images/architecture.png" width="1000pt">
+![c4_model_1.png](images/c4_model_1.png)
+
+![c4_model_2.png](images/c4_model_2.png)
+
+
+[//]: # (<img src="images/c4_model_1.png" width="1000pt">)
+
+[//]: # ()
+[//]: # (<img src="images/c4_model_2.png" width="1000pt">)
+
 
 ### Authentication
 

@@ -17,7 +17,7 @@ Microservice for authentication, user management and profile handling.
 ### User Management
 
 - User profile management
-- Role-based access control (`USER`, `ADMIN`, `STOCK_MANAGER` and `DRIVER`)
+- Role-based access control (`USER`, `ADMIN`, `STOCK_MANAGER`, `DRIVER` and `LOGISTICS`)
 - User listing
 - User role update
 
@@ -68,12 +68,13 @@ Microservice for authentication, user management and profile handling.
 
 On first run, default users are created via Flyway migration:
 
-| Email | Password | Roles |
-|-------|----------|------|
-| admin@gmail.com | admin123 | `USER`, `ADMIN` |
-| common@gmail.com | common123 | `USER` |
-| stockman@gmail.com | stockman123 | `USER`, `STOCK_MANAGER` |
-| driver@gmail.com | driver123 | `USER`, `DRIVER` |
+| Email | Password     | Roles                   |
+|-------|--------------|-------------------------|
+| admin@gmail.com | admin123     | `USER`, `ADMIN`         |
+| common@gmail.com | common123    | `USER`                  |
+| stockman@gmail.com | stockman123  | `USER`, `STOCK_MANAGER` |
+| driver@gmail.com | driver123    | `USER`, `DRIVER`        |
+| logistics@gmail.com | logistics123 | `USER`, `LOGISTICS`     |
 
 
 ## Database

@@ -3,7 +3,8 @@ VALUES
     (1, 'USER'),
     (2, 'ADMIN'),
     (3, 'STOCK_MANAGER'),
-    (4, 'DRIVER');
+    (4, 'DRIVER'),
+    (5, 'LOGISTICS');
 
 -- DEFAULT USER ADMIN
 
@@ -192,4 +193,54 @@ VALUES (
         LIMIT 1
     ),
     1
+);
+
+-- DEFAULT USER LOGISTICS
+
+INSERT INTO user_credentials (user_id, email, encrypted_password, first_name, last_name, created_at, is_active)
+VALUES(
+    gen_random_uuid(),
+    'logistics@gmail.com',
+    '$2a$10$i.knubAZcegWaSt.RZKfNObzg.eqx0EiO8yajq40IzH1cE7XRyNHC',
+    'logistics',
+    'test',
+    CURRENT_TIMESTAMP,
+    TRUE
+);
+
+INSERT INTO user_profile (user_id, email, first_name, last_name, created_at, is_active)
+VALUES (
+    (
+        SELECT u.user_id
+        FROM user_credentials u
+        WHERE u.email = 'logistics@gmail.com'
+        LIMIT 1
+    ),
+    'logistics@gmail.com',
+    'logistics',
+    'test',
+    CURRENT_TIMESTAMP,
+    TRUE
+);
+
+INSERT INTO user_role (user_id, role_id)
+VALUES (
+    (
+        SELECT u.user_id
+        FROM user_credentials u
+        WHERE u.email = 'logistics@gmail.com'
+        LIMIT 1
+    ),
+    1
+);
+
+INSERT INTO user_role (user_id, role_id)
+VALUES (
+    (
+        SELECT u.user_id
+        FROM user_credentials u
+        WHERE u.email = 'logistics@gmail.com'
+        LIMIT 1
+    ),
+    5
 );

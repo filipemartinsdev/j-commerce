@@ -8,8 +8,23 @@ CREATE TABLE delivery_address (
     neighborhood    VARCHAR(100) NOT NULL,
     city            VARCHAR(100) NOT NULL,
     state           CHAR(2) NOT NULL,
-    latitude        DOUBLE PRECISION,
-    longitude       DOUBLE PRECISION,
+    latitude        DECIMAL(10, 8) NOT NULL,
+    longitude       DECIMAL(11, 8) NOT NULL,
+    created_at      TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    is_active       BOOLEAN NOT NULL DEFAULT TRUE
+);
+
+CREATE TABLE storage_address (
+    id              UUID PRIMARY KEY,
+    zip_code        CHAR(8) NOT NULL,
+    street          VARCHAR(255) NOT NULL,
+    number          VARCHAR(20) NOT NULL,
+    complement      VARCHAR(255),
+    neighborhood    VARCHAR(100) NOT NULL,
+    city            VARCHAR(100) NOT NULL,
+    state           CHAR(2) NOT NULL,
+    latitude        DECIMAL(10, 8) NOT NULL,
+    longitude       DECIMAL(11, 8) NOT NULL,
     created_at      TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT CURRENT_TIMESTAMP,
     is_active       BOOLEAN NOT NULL DEFAULT TRUE
 );
@@ -48,5 +63,7 @@ CREATE TABLE shipping (
     status_id               INT REFERENCES shipping_status(id) NOT NULL,
     sales_order_id          UUID UNIQUE REFERENCES sales_order(id) NOT NULL,
     delivery_address_id     UUID REFERENCES delivery_address(id) NOT NULL,
+    expected_delivery_date  TIMESTAMP WITH TIME ZONE NOT NULL,
     created_at              TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT CURRENT_TIMESTAMP
 );
+

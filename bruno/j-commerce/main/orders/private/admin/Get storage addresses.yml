@@ -1,0 +1,15 @@
+info:
+  name: Get storage addresses
+  type: http
+  seq: 1
+
+http:
+  method: GET
+  url: https://localhost/order/admin/api/v1/storage-addresses
+  auth: inherit
+
+settings:
+  encodeUrl: true
+  timeout: 0
+  followRedirects: true
+  maxRedirects: 5

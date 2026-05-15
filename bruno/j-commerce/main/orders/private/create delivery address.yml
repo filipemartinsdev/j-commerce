@@ -13,13 +13,23 @@ http:
   body:
     type: json
     data: |-
-      
       {
         "haveNumber": false,
         "latitude": -16.76172706126886, 
         "longitude": -49.27842031602914,
-        "complement": "depois do posto ipiranga"
+        "complement": "Depois do posto ipiranga"
       }
+
+      // {
+      //   "haveNumber": true,
+      //   "street": "Rua das oliveiras",
+      //   "zipCode": "74914460",
+      //   "number": "1",
+      //   "neighborhood": "Jardim Maria Inês",
+      //   "city": "Goiânia",
+      //   "state": "GO",
+      //   "complement": "Quadra 49, Lote 23"
+      // }
   auth: inherit
 
 settings:

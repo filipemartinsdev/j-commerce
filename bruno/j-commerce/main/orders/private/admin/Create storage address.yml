@@ -1,0 +1,28 @@
+info:
+  name: Create storage address
+  type: http
+  seq: 2
+
+http:
+  method: POST
+  url: https://localhost/order/admin/api/v1/storage-addresses?byCoordinates=true
+  params:
+    - name: byCoordinates
+      value: "true"
+      type: query
+  body:
+    type: json
+    data: |-
+      {
+        "haveNumber": false,
+        "latitude": -16.76172706126886, 
+        "longitude": -49.27842031602914,
+        "complement": "Depois do posto ipiranga 3"
+      }
+  auth: inherit
+
+settings:
+  encodeUrl: true
+  timeout: 0
+  followRedirects: true
+  maxRedirects: 5

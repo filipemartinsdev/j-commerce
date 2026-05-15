@@ -10,7 +10,7 @@ http:
     type: json
     data: |
       {
-        "productId": "688ce043-d87e-4ddc-81d1-84fc738c60e9",
+        "productId": "dfea66bb-270f-42e0-bb9e-114107bcd675",
         "name": "Mouse Atack Shark x11 Black",
         "SKU": "MS-AS-X11-BLK"
       }

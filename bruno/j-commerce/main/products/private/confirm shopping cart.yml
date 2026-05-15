@@ -10,7 +10,7 @@ http:
     type: json
     data: |
       {
-        "deliveryAddressId": "5d435395-4c0c-4c64-b561-1fa8cc8da878"
+        "deliveryAddressId": "8ba8e33e-6290-4c80-99d1-866ad930b27f"
       }
   auth: inherit
 

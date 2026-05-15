@@ -5,7 +5,11 @@ info:
 
 http:
   method: GET
-  url: https://localhost/order/api/v1/sales-orders/e33434d8-23c2-4b64-bf7f-3ac78b643e27
+  url: https://localhost/order/api/v1/sales-orders/:id
+  params:
+    - name: id
+      value: e5e0cb8f-6c72-4d3b-9a8c-f673e6d5eafc
+      type: path
   body:
     type: json
     data: ""

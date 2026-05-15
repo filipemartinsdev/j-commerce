@@ -1,14 +1,14 @@
 info:
-  name: get product by ID
+  name: Check-in shipping
   type: http
-  seq: 3
+  seq: 5
 
 http:
-  method: GET
-  url: https://localhost/product/api/v1/products/:id
+  method: POST
+  url: https://localhost/order/admin/api/v1/shippings/:id/check-in
   params:
     - name: id
-      value: 1e9a9047-e826-4f83-9dc8-84775c780db5
+      value: 846318ca-8440-4be0-9a33-f7258f5b797f
       type: path
   auth: inherit
 

@@ -22,7 +22,8 @@ public class Role {
         USER(1, "USER"),
         ADMIN(2, "ADMIN"),
         STOCK_MANAGER(3, "STOCK_MANAGER"),
-        DRIVER(4, "DRIVER");
+        DRIVER(4, "DRIVER"),
+        LOGISTICS(5, "LOGISTICS");
 
         private final int id;
         private final String name;
@@ -38,6 +39,7 @@ public class Role {
                 case 2 -> ADMIN;
                 case 3 -> STOCK_MANAGER;
                 case 4 -> DRIVER;
+                case 5 -> LOGISTICS;
                 default -> null;
             };
         }

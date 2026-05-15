@@ -32,14 +32,14 @@ public class MessageBrokerListener {
             queues = "${broker.queues.createShipping.name}"
     )
     public void listenCreateShipping(@Payload CreateShippingMessage message){
-        adminShippingService.createShipping(message);
+        adminShippingService.createShippingFromMessage(message);
     }
 
     @RabbitListener(
             queues = "${broker.queues.cancelShipments.name}"
     )
     public void listenCancelShipments(@Payload SalesOrderCancelledMessage message){
-        adminShippingService.cancelShipments(message.salesOrderId());
+        adminShippingService.cancelShipmentsBySalesOrderId(message.salesOrderId());
     }
 
     @RabbitListener(

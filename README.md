@@ -6,6 +6,8 @@
 
 <h3> J-Commerce </h3>
 
+
+
 <p>  Microservice-based <br>
 E-Commerce platform
 
@@ -37,24 +39,24 @@ E-Commerce platform
 
 ## Count Lines Of Code
 
-````
+````prototext
 -------------------------------------------------------------------------------
 Language                     files          blank        comment           code
 -------------------------------------------------------------------------------
-Java                           308           3199            234          15486
-XML                             46             39              0           3795
-Markdown                        15            627              0           1981
-YAML                            89            262             39           1743
-Maven                            5             40              5            970
-SQL                             12             88              4            586
+Java                           355           3887            243          18381
+XML                             51             45              0           4241
+Markdown                        15            643              0           2016
+YAML                            97            285             39           1916
+Maven                            5             41              5            975
+SQL                             13            113              9            816
 Bourne Shell                     2             36             52            221
 DOS Batch                        1             24              0            165
-Text                            35              0              0            140
+Text                            37              0              0            148
 INI                              4              0              0             23
 Dockerfile                       2              6              0             15
-Properties                       1              0              0              3
+Properties                       2              0              0              6
 -------------------------------------------------------------------------------
-SUM:                           520           4321            334          25128
+SUM:                           584           5080            348          28923
 -------------------------------------------------------------------------------
 ````
 
@@ -287,12 +289,13 @@ The entire order flow is based on asynchronous communication, using **Spring AMQ
 | `notification.notify_payment_confirmed` | Notify the user that payment has been made        |
 
 
+![messaging_exchange_default.png](images/messaging_exchange_default.png)
 
-<img src="images/messaging_exchange_default.png" width="620pt">
+![messaging_exchange_payment_generated.png](images/messaging_exchange_payment_generated.png)
 
-<img src="images/messaging_exchange_payment_generated.png" width="620pt">
+![messaging_exchange_payment_confirmed.png](images/messaging_exchange_payment_confirmed.png)
 
-<img src="images/messaging_exchange_payment_confirmed.png" width="620pt">
+![messaging_exchange_order_cancelled.png](images/messaging_exchange_order_cancelled.png)
 
 
 ## Purchase confirmation
@@ -307,4 +310,8 @@ The payment (mock invoice) is generated and sent by email, through a robust asyn
 
 ---
 
+<div align="center">
+
 _Made with ❤️ and ☕ by **Filipe Martins**._
+
+</div>

@@ -4,11 +4,18 @@ import com.orders.application.dto.PagedResponse;
 import com.orders.application.dto.SalesOrderResponse;
 import com.orders.application.dto.SalesOrderSummaryResponse;
 import com.orders.application.exception.CantCancelSalesOrderException;
+import com.orders.application.exception.CantCreateSalesOrderException;
 import com.orders.application.exception.SalesOrderNotFoundException;
+import com.orders.application.message.CreateOrderMessage;
+import com.orders.application.message.CreateShippingMessage;
+import com.orders.application.message.GeneratePaymentMessage;
 import com.orders.application.service.mapper.SalesOrderMapper;
+import com.orders.domain.entity.DeliveryAddress;
 import com.orders.domain.entity.SalesOrder;
+import com.orders.domain.entity.SalesOrderItem;
 import com.orders.domain.entity.SalesOrderStatus;
 import com.orders.domain.entity.Shipping;
+import com.orders.domain.entity.ShippingStatus;
 import com.orders.infra.persistence.DeliveryAddressRepository;
 import com.orders.infra.persistence.SalesOrderItemRepository;
 import com.orders.infra.persistence.SalesOrderRepository;
@@ -38,33 +45,89 @@ import static org.mockito.Mockito.*;
 
 @ExtendWith(MockitoExtension.class)
 public class SalesOrderServiceTests {
-
-    @Mock
-    private SalesOrderRepository salesOrderRepository;
-
-    @Mock
-    private SalesOrderItemRepository salesOrderItemRepository;
-
-    @Mock
-    private SalesOrderStatusRepository salesOrderStatusRepository;
-
-    @Mock
-    private SalesOrderMapper salesOrderMapper;
-
-    @Mock
-    private DeliveryAddressRepository deliveryAddressRepository;
-
-    @Mock
-    private ShippingStatusRepository shippingStatusRepository;
-
-    @Mock
-    private ShippingRepository shippingRepository;
-
-    @Mock
-    private MessageBrokerProducer messageBrokerProducer;
+    @Mock private SalesOrderRepository salesOrderRepository;
+    @Mock private SalesOrderStatusRepository salesOrderStatusRepository;
+    @Mock private SalesOrderMapper salesOrderMapper;
+    @Mock private MessageBrokerProducer messageBrokerProducer;
 
     @InjectMocks
     private SalesOrderService salesOrderService;
+
+    @Test
+    @DisplayName("Should create order successfully")
+    void createOrderTestCase1() {
+        UUID userId = UUID.randomUUID();
+        UUID addressId = UUID.randomUUID();
+        UUID orderId = UUID.randomUUID();
+
+        DeliveryAddress deliveryAddress = new DeliveryAddress();
+        deliveryAddress.setId(addressId);
+        deliveryAddress.setLatitude(-23.0);
+        deliveryAddress.setLongitude(-46.0);
+
+        SalesOrderStatus pendingStatus = new SalesOrderStatus();
+        pendingStatus.setId(SalesOrderStatus.Value.PENDING.getId());
+        pendingStatus.setName("PENDING");
+
+        ShippingStatus shippingPendingStatus = new ShippingStatus();
+        shippingPendingStatus.setId(ShippingStatus.Value.PENDING.getId());
+        shippingPendingStatus.setName("PENDING");
+
+        SalesOrder order = new SalesOrder();
+        order.setId(orderId);
+        order.setUserId(userId);
+        order.setStatus(pendingStatus);
+
+        SalesOrderItem item = new SalesOrderItem();
+        item.setProductSkuId(UUID.randomUUID());
+        item.setUnits(2);
+        item.setUnitPrice(new BigDecimal("50.00"));
+        item.setSalesOrder(order);
+        order.setItems(List.of(item));
+
+        CreateOrderMessage.OrderItem orderItem = new CreateOrderMessage.OrderItem(
+                UUID.randomUUID(),
+                "Product",
+                2,
+                new BigDecimal("50.00")
+        );
+
+        CreateOrderMessage message = new CreateOrderMessage(
+                userId,
+                List.of(orderItem),
+                addressId
+        );
+
+        when(salesOrderStatusRepository.getReferenceById(SalesOrderStatus.Value.PENDING.getId()))
+                .thenReturn(pendingStatus);
+        when(salesOrderRepository.save(any(SalesOrder.class)))
+                .thenReturn(order);
+
+        salesOrderService.createOrder(message);
+
+        verify(salesOrderRepository).save(any(SalesOrder.class));
+        verify(messageBrokerProducer).produceCreateShipping(any(CreateShippingMessage.class));
+        verify(messageBrokerProducer).produceGeneratePayment(any(GeneratePaymentMessage.class));
+    }
+
+    @Test
+    @DisplayName("Should throw CantCreateSalesOrderException if item list is empty")
+    void createOrderTestCase2() {
+        UUID userId = UUID.randomUUID();
+
+        CreateOrderMessage message = new CreateOrderMessage(
+                userId,
+                List.of(),
+                UUID.randomUUID()
+        );
+
+        assertThrows(CantCreateSalesOrderException.class, () -> {
+            salesOrderService.createOrder(message);
+        });
+
+        verify(salesOrderRepository, never()).save(any(SalesOrder.class));
+        verify(messageBrokerProducer, never()).produceGeneratePayment(any(GeneratePaymentMessage.class));
+    }
 
     @Test
     @DisplayName("Should return paginated sales orders")
@@ -87,8 +150,7 @@ public class SalesOrderServiceTests {
                 order.getId(),
                 Instant.now(),
                 "PENDING",
-                new BigDecimal("100.00"),
-                "PENDING"
+                new BigDecimal("100.00")
         );
 
         when(salesOrderRepository.findAllByUserId(userId, pageable))
@@ -140,15 +202,15 @@ public class SalesOrderServiceTests {
         order.setId(orderId);
         order.setUserId(userId);
         order.setStatus(orderStatus);
-        order.setShipping(shipping);
+        order.setShipments(List.of(shipping));
         order.setItems(List.of());
 
         SalesOrderSummaryResponse response = new SalesOrderSummaryResponse(
                 orderId,
                 "PENDING",
-                "PENDING",
                 new BigDecimal("100.00"),
                 List.of(),
+                null,
                 null,
                 Instant.now()
         );
@@ -188,7 +250,7 @@ public class SalesOrderServiceTests {
         UUID userId = UUID.randomUUID();
 
         SalesOrderStatus status = new SalesOrderStatus();
-        status.setId(1);
+        status.setId(SalesOrderStatus.Value.PENDING.getId());
         status.setName("PENDING");
 
         Shipping shipping = new Shipping();
@@ -197,15 +259,15 @@ public class SalesOrderServiceTests {
         order.setId(orderId);
         order.setUserId(userId);
         order.setStatus(status);
-        order.setShipping(shipping);
+        order.setShipments(List.of(shipping));
 
         SalesOrderStatus cancelledStatus = new SalesOrderStatus();
-        cancelledStatus.setId(6);
+        cancelledStatus.setId(SalesOrderStatus.Value.CANCELLED.getId());
         cancelledStatus.setName("CANCELLED");
 
         when(salesOrderRepository.findById(orderId))
                 .thenReturn(Optional.of(order));
-        when(salesOrderStatusRepository.getReferenceById(6))
+        when(salesOrderStatusRepository.getReferenceById(SalesOrderStatus.Value.CANCELLED.getId()))
                 .thenReturn(cancelledStatus);
         when(salesOrderRepository.save(any(SalesOrder.class)))
                 .thenReturn(order);
@@ -213,7 +275,6 @@ public class SalesOrderServiceTests {
         salesOrderService.requestToCancelOrder(orderId, userId);
 
         verify(salesOrderRepository).findById(orderId);
-        verify(salesOrderStatusRepository).getReferenceById(6);
     }
 
     @Test

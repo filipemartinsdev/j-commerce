@@ -144,4 +144,32 @@ public class GlobalExceptionHandler {
                 .status(HttpStatus.BAD_REQUEST)
                 .body(StandardResponse.fail(exception.getMessage()));
     }
+
+    @ExceptionHandler(CantCheckInShippingException.class)
+    public ResponseEntity<StandardResponse<Void>> handleCantCheckInShipping(CantCheckInShippingException exception) {
+        return ResponseEntity
+                .status(HttpStatus.BAD_REQUEST)
+                .body(StandardResponse.fail(exception.getMessage()));
+    }
+
+    @ExceptionHandler(CantCheckOutShippingException.class)
+    public ResponseEntity<StandardResponse<Void>> handleCantCheckOutShipping(CantCheckOutShippingException exception) {
+        return ResponseEntity
+                .status(HttpStatus.BAD_REQUEST)
+                .body(StandardResponse.fail(exception.getMessage()));
+    }
+
+    @ExceptionHandler(CantCancelShippingException.class)
+    public ResponseEntity<StandardResponse<Void>> handleCantCancelShipping(CantCancelShippingException exception) {
+        return ResponseEntity
+                .status(HttpStatus.BAD_REQUEST)
+                .body(StandardResponse.fail(exception.getMessage()));
+    }
+
+    @ExceptionHandler(InvalidReverseGeocodingResponseException.class)
+    public ResponseEntity<StandardResponse<Void>> handleInvalidReverseGeocodingResponse(InvalidReverseGeocodingResponseException exception) {
+        return ResponseEntity
+                .status(HttpStatus.BAD_GATEWAY)
+                .body(StandardResponse.error());
+    }
 }

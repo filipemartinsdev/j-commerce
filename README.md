@@ -172,6 +172,17 @@ Services will be available at:
 
 ---
 
+## Use Cases
+
+### Customer use cases
+
+![customer_use_cases.png](images/customer_use_cases.png)
+
+### Management use cases
+
+![management_use_cases.png](images/management_use_cases.png)
+
+
 ## Architecture
 
 The system has a concise list of C4 Model diagrams for architecture documentation. 

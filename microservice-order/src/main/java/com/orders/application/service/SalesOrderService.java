@@ -25,18 +25,15 @@ public class SalesOrderService {
     private final SalesOrderRepository salesOrderRepository;
     private final SalesOrderStatusRepository salesOrderStatusRepository;
     private final SalesOrderMapper salesOrderMapper;
-    private final ShippingStatusRepository shippingStatusRepository;
     private final MessageBrokerProducer messageBrokerProducer;
 
-    public SalesOrderService(SalesOrderRepository salesOrderRepository, SalesOrderStatusRepository salesOrderStatusRepository, SalesOrderMapper salesOrderMapper, ShippingStatusRepository shippingStatusRepository, MessageBrokerProducer messageBrokerProducer) {
+    public SalesOrderService(SalesOrderRepository salesOrderRepository, SalesOrderStatusRepository salesOrderStatusRepository, SalesOrderMapper salesOrderMapper, MessageBrokerProducer messageBrokerProducer) {
         this.salesOrderRepository = salesOrderRepository;
         this.salesOrderStatusRepository = salesOrderStatusRepository;
         this.salesOrderMapper = salesOrderMapper;
-        this.shippingStatusRepository = shippingStatusRepository;
         this.messageBrokerProducer = messageBrokerProducer;
     }
 
-    //    TODO: update unit tests to include new message producing
     @Transactional
     public void createOrder(CreateOrderMessage message) {
         if(message.items().isEmpty())

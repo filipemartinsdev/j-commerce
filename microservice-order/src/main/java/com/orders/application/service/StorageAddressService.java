@@ -18,20 +18,18 @@ import org.springframework.stereotype.Service;
 
 import java.util.UUID;
 
-// TODO: create unit tests for this
-
 @Service
 public class StorageAddressService {
     private final StorageAddressRepository storageAddressRepository;
     private final PagedResponseFactory<StorageAddressResponse> pagedResponseFactory;
     private final StorageAddressMapper storageAddressMapper;
-    private final NominatimClient nominatimClient;
+    private final GeocodingService geocodingService;
 
-    public StorageAddressService(StorageAddressRepository storageAddressRepository, PagedResponseFactory<StorageAddressResponse> pagedResponseFactory, StorageAddressMapper storageAddressMapper, NominatimClient nominatimClient) {
+    public StorageAddressService(StorageAddressRepository storageAddressRepository, PagedResponseFactory<StorageAddressResponse> pagedResponseFactory, StorageAddressMapper storageAddressMapper, GeocodingService geocodingService) {
         this.storageAddressRepository = storageAddressRepository;
         this.pagedResponseFactory = pagedResponseFactory;
         this.storageAddressMapper = storageAddressMapper;
-        this.nominatimClient = nominatimClient;
+        this.geocodingService = geocodingService;
     }
 
     public Double[] getMainStorageAddressPoint(){
@@ -56,6 +54,20 @@ public class StorageAddressService {
 
         StorageAddress address = storageAddressMapper.toEntity(request);
 
+        GeocodingService.Point point = geocodingService.toCoordinates(
+                new GeocodingService.Address(
+                        request.street().get(),
+                        request.neighborhood().get(),
+                        request.city().get(),
+                        request.zipCode().get(),
+                        request.state().get(),
+                        "BR"
+                )
+        );
+
+        address.setLatitude(point.lat());
+        address.setLongitude(point.lon());
+
         return storageAddressMapper.toResponse(storageAddressRepository.save(address));
     }
 
@@ -76,38 +88,32 @@ public class StorageAddressService {
 
     public StorageAddressResponse createByCoordinates(StorageAddressRequest request) {
         if (request.latitude().isEmpty() || request.longitude().isEmpty())
-            throw new InvalidDeliveryAddressCoordinatesException("Latitude and Longitude is mandatory");
+            throw new InvalidStorageAddressException("Latitude and Longitude is mandatory");
 
-        AddressByCoordinatesResponse addressResponse = requestAddress(
-                request.latitude().get(),
-                request.longitude().get());
+
+        GeocodingService.Address addressResponse = geocodingService.toAddress(
+                new GeocodingService.Point(
+                        request.latitude().get(),
+                        request.longitude().get()
+                )
+        );
 
         if (!isAddressFromBrazil(addressResponse))
-            throw new InvalidDeliveryAddressCoordinatesException("Address is not from Brazil");
-
-        if (addressResponse.address().zipCode() == null || addressResponse.address().road() == null)
-            throw new InvalidDeliveryAddressCoordinatesException("Invalid address");
+            throw new InvalidStorageAddressException("Address is not from Brazil");
 
         return storageAddressMapper.toResponse(registerAddressByCoordinatesResponse(request, addressResponse));
     }
 
-    private AddressByCoordinatesResponse requestAddress(double lat, double lon){
-        ResponseEntity<AddressByCoordinatesResponse> response = nominatimClient.getAddressByCoordinates(
-                lat, lon, "json"
-        );
-
-        return response.getBody();
+    private boolean isAddressFromBrazil(GeocodingService.Address address) {
+        return address.countryCode().equalsIgnoreCase("br");
     }
 
-    private boolean isAddressFromBrazil(AddressByCoordinatesResponse response) {
-        return response.address().countryCode().equals("br");
-    }
-
-    private StorageAddress registerAddressByCoordinatesResponse(StorageAddressRequest request, AddressByCoordinatesResponse addressByCoordinatesResponse) {
-        StorageAddress address = storageAddressMapper.toEntity(addressByCoordinatesResponse);
+    private StorageAddress registerAddressByCoordinatesResponse(StorageAddressRequest request, GeocodingService.Address addressResponse) {
+        StorageAddress address = storageAddressMapper.toEntity(addressResponse);
 
         address.setLatitude(request.latitude().get());
         address.setLongitude(request.longitude().get());
+        address.setNumber("S/N");
 
         if (request.complement().isPresent())
             address.setComplement(request.complement().get());

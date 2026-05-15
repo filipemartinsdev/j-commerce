@@ -14,26 +14,22 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 
+import java.util.Optional;
 import java.util.UUID;
 
 @Slf4j
 @Service
 public class DeliveryAddressService {
-    @Value("${graphHopperClient.apiKey}")
-    private String GRAPH_HOPPER_API_KEY;
-
     private final DeliveryAddressRepository deliveryAddressRepository;
     private final DeliveryAddressMapper deliveryAddressMapper;
-    private final NominatimClient nominatimClient;
     private final PagedResponseFactory<DeliveryAddressResponse> pagedResponseFactory;
-    private final GraphHopperClient graphHopperClient;
+    private final GeocodingService geocodingService;
 
-    public DeliveryAddressService(DeliveryAddressRepository deliveryAddressRepository, DeliveryAddressMapper deliveryAddressMapper, NominatimClient nominatimClient, PagedResponseFactory<DeliveryAddressResponse> pagedResponseFactory, GraphHopperClient graphHopperClient) {
+    public DeliveryAddressService(DeliveryAddressRepository deliveryAddressRepository, DeliveryAddressMapper deliveryAddressMapper, PagedResponseFactory<DeliveryAddressResponse> pagedResponseFactory, GeocodingService geocodingService) {
         this.deliveryAddressRepository = deliveryAddressRepository;
         this.deliveryAddressMapper = deliveryAddressMapper;
-        this.nominatimClient = nominatimClient;
         this.pagedResponseFactory = pagedResponseFactory;
-        this.graphHopperClient = graphHopperClient;
+        this.geocodingService = geocodingService;
     }
 
     public PagedResponse<DeliveryAddressResponse> getAllByUserId(UUID userId, Pageable pageable) {
@@ -48,23 +44,24 @@ public class DeliveryAddressService {
         DeliveryAddress address = deliveryAddressMapper.toEntity(request);
         address.setUserId(userId);
 
-        String completeAddress = address.getStreet() + ", " + address.getNeighborhood() + ", " + address.getCity() + ", " + address.getState() + ", " + address.getZipCode() + ", " + "Brasil";
+        GeocodingService.Point point = geocodingService.toCoordinates(
+                new GeocodingService.Address(
+                        request.street().get(),
+                        request.neighborhood().get(),
+                        request.city().get(),
+                        request.zipCode().get(),
+                        request.state().get(),
+                        "BR"
+                )
+        );
 
-        GeocodingResponse geocodingResponse = graphHopperClient.geocode(GRAPH_HOPPER_API_KEY, completeAddress).getBody();
+        address.setLatitude(point.lat());
+        address.setLongitude(point.lon());
 
-        validateGeocodingResponse(geocodingResponse);
-
-        address.setLatitude(geocodingResponse.hits().getFirst().point().lat());
-        address.setLongitude(geocodingResponse.hits().getFirst().point().lon());
+        if (request.haveNumber())
+            address.setNumber(request.number().get());
 
         return deliveryAddressMapper.toResponse(deliveryAddressRepository.save(address));
-    }
-
-    private void validateGeocodingResponse(GeocodingResponse geocodingResponse){
-        if (geocodingResponse == null)
-            throw new InvalidGeocodingResponseException("Null geocoding response");
-        else
-            geocodingResponse.validate();
     }
 
     private void validateRequestToCreateByUserId(CreateDeliveryAddressRequest request) {
@@ -86,55 +83,43 @@ public class DeliveryAddressService {
         if (request.latitude().isEmpty() || request.longitude().isEmpty())
             throw new InvalidDeliveryAddressCoordinatesException("Latitude and Longitude is mandatory");
 
-        AddressByCoordinatesResponse addressResponse = requestAddress(
-                request.latitude().get(),
-                request.longitude().get());
-
-        if (!isAddressFromBrazil(addressResponse))
-            throw new InvalidDeliveryAddressCoordinatesException("Address is not from Brazil");
-
-        if (addressResponse.address().zipCode() == null || addressResponse.address().road() == null)
-            throw new InvalidDeliveryAddressCoordinatesException("Invalid address");
-
-        return deliveryAddressMapper.toResponse(registerAddressByCoordinatesResponse(request, addressResponse, userId));
-    }
-
-    private AddressByCoordinatesResponse requestAddress(double lat, double lon){
-        ResponseEntity<AddressByCoordinatesResponse> response = nominatimClient.getAddressByCoordinates(
-                lat, lon, "json"
+        GeocodingService.Address geocodedAddress = geocodingService.toAddress(
+                new GeocodingService.Point(
+                        request.latitude().get(), request.longitude().get()
+                )
         );
 
-        if (response.getStatusCode().is4xxClientError()) {
-            log.error("Invalid coordinates API response: {}", response.getBody());
-            throw new InvalidDeliveryAddressCoordinatesException("Invalid address coordinates");
-        }
+        if (!isAddressFromBrazil(geocodedAddress))
+            throw new InvalidDeliveryAddressCoordinatesException("Address is not from Brazil");
 
-        else if (response.getStatusCode().is2xxSuccessful())
-            return response.getBody();
-
-        else {
-            log.error("Coordinates API error: {}", response.getBody());
-            throw new AddressByCoordinatesClientBadGateway("Coordinates service is unavailable");
-        }
+        return deliveryAddressMapper.toResponse(
+                registerGeocodedAddress(
+                        geocodedAddress,
+                        request.latitude().get(),
+                        request.longitude().get(),
+                        request.complement(),
+                        userId
+                )
+        );
     }
 
-    private boolean isAddressFromBrazil(AddressByCoordinatesResponse response) {
-        return response.address().countryCode().equals("br");
+    private boolean isAddressFromBrazil(GeocodingService.Address response) {
+        return response.countryCode().equalsIgnoreCase("br");
     }
 
-    private DeliveryAddress registerAddressByCoordinatesResponse(CreateDeliveryAddressRequest request, AddressByCoordinatesResponse addressByCoordinatesResponse, UUID userId) {
-        DeliveryAddress address = deliveryAddressMapper.toEntity(addressByCoordinatesResponse);
+    private DeliveryAddress registerGeocodedAddress(GeocodingService.Address geocodedAddress, double lat, double lon, Optional<String> complement, UUID userId) {
+        DeliveryAddress address = deliveryAddressMapper.toEntity(geocodedAddress);
 
+        address.setNumber("S/N");
         address.setUserId(userId);
-        address.setLatitude(request.latitude().get());
-        address.setLongitude(request.longitude().get());
+        address.setLatitude(lat);
+        address.setLongitude(lon);
 
-        if (request.complement().isPresent())
-            address.setComplement(request.complement().get());
+        if (complement.isPresent())
+            address.setComplement(complement.get());
 
         return deliveryAddressRepository.save(address);
     }
-
 
     public DeliveryAddressResponse getById(UUID id, UUID userId) {
         DeliveryAddress address = deliveryAddressRepository.findActiveByIdAndUserId(id, userId)
@@ -146,7 +131,9 @@ public class DeliveryAddressService {
     public void deleteById(UUID id, UUID userId) {
         DeliveryAddress address = deliveryAddressRepository.findActiveByIdAndUserId(id, userId)
                 .orElseThrow(() -> new DeliveryAddressNotFoundException("Delivery address not found with ID: "+id));
+
         address.setIsActive(false);
+
         deliveryAddressRepository.save(address);
     }
 

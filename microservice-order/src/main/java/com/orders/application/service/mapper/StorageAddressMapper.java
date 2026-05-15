@@ -3,6 +3,7 @@ package com.orders.application.service.mapper;
 import com.orders.application.dto.AddressByCoordinatesResponse;
 import com.orders.application.dto.StorageAddressRequest;
 import com.orders.application.dto.StorageAddressResponse;
+import com.orders.application.service.GeocodingService;
 import com.orders.domain.entity.StorageAddress;
 import org.springframework.stereotype.Component;
 
@@ -39,20 +40,14 @@ public class StorageAddressMapper {
         return address;
     }
 
-    public StorageAddress toEntity(AddressByCoordinatesResponse addressByCoordinatesResponse) {
+    public StorageAddress toEntity(GeocodingService.Address geocodingResponse) {
         var address = new StorageAddress();
-        address.setZipCode(addressByCoordinatesResponse.address().zipCode().replace("-", ""));
-        address.setStreet(addressByCoordinatesResponse.address().road());
-        address.setNumber("S/N");
-        address.setNeighborhood(addressByCoordinatesResponse.address().neighborhood());
-        address.setState(addressByCoordinatesResponse.address().countryStateCode().split("-")[1]);
 
-        if (addressByCoordinatesResponse.address().city() != null)
-            address.setCity(addressByCoordinatesResponse.address().city());
-        else if (addressByCoordinatesResponse.address().municipality() != null)
-            address.setCity(addressByCoordinatesResponse.address().municipality());
-        else if (addressByCoordinatesResponse.address().stateDistrict() != null)
-            address.setCity(addressByCoordinatesResponse.address().stateDistrict());
+        address.setStreet(geocodingResponse.street());
+        address.setNeighborhood(geocodingResponse.neighborhood());
+        address.setCity(geocodingResponse.city());
+        address.setState(geocodingResponse.stateCode());
+        address.setZipCode(geocodingResponse.zipCode());
 
         return address;
     }

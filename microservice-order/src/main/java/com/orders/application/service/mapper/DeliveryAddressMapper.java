@@ -3,6 +3,7 @@ package com.orders.application.service.mapper;
 import com.orders.application.dto.AddressByCoordinatesResponse;
 import com.orders.application.dto.CreateDeliveryAddressRequest;
 import com.orders.application.dto.DeliveryAddressResponse;
+import com.orders.application.service.GeocodingService;
 import com.orders.domain.entity.DeliveryAddress;
 import org.springframework.stereotype.Component;
 
@@ -40,20 +41,14 @@ public class DeliveryAddressMapper {
         return address;
     }
 
-    public DeliveryAddress toEntity(AddressByCoordinatesResponse addressByCoordinatesResponse) {
+    public DeliveryAddress toEntity(GeocodingService.Address geocodedAddress){
         var address = new DeliveryAddress();
-        address.setZipCode(addressByCoordinatesResponse.address().zipCode().replace("-", ""));
-        address.setStreet(addressByCoordinatesResponse.address().road());
-        address.setNumber("S/N");
-        address.setNeighborhood(addressByCoordinatesResponse.address().neighborhood());
-        address.setState(addressByCoordinatesResponse.address().countryStateCode().split("-")[1]);
 
-        if (addressByCoordinatesResponse.address().city() != null)
-            address.setCity(addressByCoordinatesResponse.address().city());
-        else if (addressByCoordinatesResponse.address().municipality() != null)
-            address.setCity(addressByCoordinatesResponse.address().municipality());
-        else if (addressByCoordinatesResponse.address().stateDistrict() != null)
-            address.setCity(addressByCoordinatesResponse.address().stateDistrict());
+        address.setStreet(geocodedAddress.street());
+        address.setNeighborhood(geocodedAddress.neighborhood());
+        address.setCity(geocodedAddress.city());
+        address.setZipCode(geocodedAddress.zipCode());
+        address.setState(geocodedAddress.stateCode());
 
         return address;
     }

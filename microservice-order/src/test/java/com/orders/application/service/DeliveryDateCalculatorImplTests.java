@@ -18,98 +18,58 @@ import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 @ExtendWith(MockitoExtension.class)
 public class DeliveryDateCalculatorImplTests {
     @Mock private StorageAddressService storageAddressService;
-    @Mock private GraphHopperClient graphHopperClient;
+    @Mock private RouteService routeService;
 
     @InjectMocks DeliveryDateCalculatorImpl deliveryDateCalculatorImpl;
 
     @Test @DisplayName("Should create delivery date after now")
     void getDeliveryDateTestCase1() {
-//        Given
-        Double lat = -14D;
-        Double lon = -50D;
+        Double[] storagePoint = new Double[]{-23.0, -46.0};
+        when(storageAddressService.getMainStorageAddressPoint()).thenReturn(storagePoint);
 
-        StorageAddress storageAddress = new StorageAddress();
-        storageAddress.setLatitude(lat);
-        storageAddress.setLongitude(lon);
+        when(routeService.route(any(), any()))
+                .thenReturn(new RouteService.Route(1000L, 5000L));
 
-        when(storageAddressService.getMainStorageAddressPoint())
-                .thenReturn(new Double[]{storageAddress.getLatitude(), storageAddress.getLongitude()});
+        Instant result = deliveryDateCalculatorImpl.getDeliveryDate(-23.5, -46.5);
 
-        when(graphHopperClient.route(any(), any()))
-                .thenReturn(
-                        ResponseEntity.ok(
-                                new RouteResponse(List.of(new RouteResponse.Path(0L, 0L)))
-                        )
-                );
-
-        Instant minExpectedDeliveryDate = Instant.now();
-
-//        When
-        Instant deliveryDate = deliveryDateCalculatorImpl.getDeliveryDate(lat, lon);
-
-//        Then
-        assertNotNull(deliveryDate);
-        assertTrue(deliveryDate.isAfter(minExpectedDeliveryDate));
+        assertNotNull(result);
+        assertTrue(result.isAfter(Instant.now()));
+        verify(storageAddressService).getMainStorageAddressPoint();
+        verify(routeService).route(any(), any());
     }
 
     @Test @DisplayName("Should create delivery date to one day after now")
     void getDeliveryDateTestCase2() {
-//        Given
-        Double lat = -14D;
-        Double lon = -50D;
+        Double[] storagePoint = new Double[]{-23.0, -46.0};
+        when(storageAddressService.getMainStorageAddressPoint()).thenReturn(storagePoint);
 
-        StorageAddress storageAddress = new StorageAddress();
-        storageAddress.setLatitude(lat);
-        storageAddress.setLongitude(lon);
+        when(routeService.route(any(), any()))
+                .thenReturn(new RouteService.Route(0L, 0L));
 
-        when(storageAddressService.getMainStorageAddressPoint())
-                .thenReturn(new Double[]{storageAddress.getLatitude(), storageAddress.getLongitude()});
+        Instant result = deliveryDateCalculatorImpl.getDeliveryDate(-23.5, -46.5);
 
-        when(graphHopperClient.route(any(), any()))
-                .thenReturn(
-                        ResponseEntity.ok(
-                                new RouteResponse(List.of(new RouteResponse.Path(0L, 0L)))
-                        )
-                );
-
-        long oneHourOnSeconds = 86400L;
-        Instant minExpectedDeliveryDate = Instant.now().plusSeconds(oneHourOnSeconds);
-
-//        When
-        Instant deliveryDate = deliveryDateCalculatorImpl.getDeliveryDate(lat, lon);
-
-//        Then
-        assertNotNull(deliveryDate);
-        assertTrue(deliveryDate.isAfter(minExpectedDeliveryDate));
+        assertNotNull(result);
+        Instant oneDayFromNow = Instant.now().plusSeconds(86400);
+        assertTrue(result.isAfter(Instant.now()));
+        assertTrue(result.isBefore(oneDayFromNow.plusSeconds(1)));
     }
 
     @Test @DisplayName("Should throw InvalidRouteResponseException if route response is invalid")
     void getDeliveryDateTestCase3() {
-//        Brazilian coordinates
-        Double lat = 0D;
-        Double lon = 0D;
+        Double[] storagePoint = new Double[]{-23.0, -46.0};
+        when(storageAddressService.getMainStorageAddressPoint()).thenReturn(storagePoint);
 
-        StorageAddress storageAddress = new StorageAddress();
-        storageAddress.setLatitude(lat);
-        storageAddress.setLongitude(lon);
-
-        when(storageAddressService.getMainStorageAddressPoint())
-                .thenReturn(new Double[]{storageAddress.getLatitude(), storageAddress.getLongitude()});
-
-        when(graphHopperClient.route(any(), any()))
-                .thenReturn(
-                        ResponseEntity.ok(
-                                new RouteResponse(List.of())
-                        )
-                );
+        when(routeService.route(any(), any()))
+                .thenThrow(new InvalidRouteResponseException());
 
         assertThrows(InvalidRouteResponseException.class, () -> {
-            deliveryDateCalculatorImpl.getDeliveryDate(lat, lon);
+            deliveryDateCalculatorImpl.getDeliveryDate(-23.5, -46.5);
         });
     }
 }

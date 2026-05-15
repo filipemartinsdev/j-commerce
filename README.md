@@ -288,15 +288,17 @@ The entire order flow is based on asynchronous communication, using **Spring AMQ
 
 ### Queues
 
-|Name  | Description                                       |
-|--|---------------------------------------------------|
-| `order.create_order` | Create an order from shopping cart                |
-| `order.handle_payment_timeout` | Cancel order when payment expires                 |
-| `order.confirm_order_payment` | Confirm payment of order                          |
-| `payment.generate_payment` | Generate payment for order                        |
-| `payment.wait_pending_payment` | Set TTL of 1 day for payment                      |
+| Name                                    | Description                                       |
+|-----------------------------------------|---------------------------------------------------|
+| `order.create_order`                    | Create an order from shopping cart                |
+| `order.handle_payment_timeout`          | Cancel order when payment expires                 |
+| `order.confirm_order_payment`           | Confirm payment of order                          |
+| `payment.generate_payment`              | Generate payment for order                        |
+| `payment.wait_pending_payment`          | Set TTL of 1 day for payment                      |
 | `notification.notify_payment_generated` | Notify the user that a payment has been generated |
 | `notification.notify_payment_confirmed` | Notify the user that payment has been made        |
+| `order.create_shipping`                 | Create shipping for order                         |
+| `order.cancel_shipments`                | Cancel shipments from order                       |
 
 
 ![messaging_exchange_default.png](images/messaging_exchange_default.png)

@@ -280,10 +280,12 @@ The entire order flow is based on asynchronous communication, using **Spring AMQ
 
 ### Exchanges
 
-|Name   | Description | Destin Queues |
-|---|--|--|
-| `payment.generated.fanout` | Fanout exchange to notify that a payment has been generated | `payment.wait_pending_payment`, `notification_notify_payment_generated` | 
-| `payment.confirmed.fanout` | Fanout exchange to notify that a payment has been confirmed | `order.confirm_order_payment`, `notification.notify_payment_confirmed` |
+| Name                       | Description                                                 | Destin Queues                                                                                             |
+|----------------------------|-------------------------------------------------------------|-----------------------------------------------------------------------------------------------------------|
+| `amqp.direct`              | Default exchange to set direct queues                       | `order.create_order`, `order.create_shipping`, `payment.generate_payment`, `order.handle_payment_timeout` |
+| `payment.generated.fanout` | Fanout exchange to notify that a payment has been generated | `payment.wait_pending_payment`, `notification_notify_payment_generated`                                   | 
+| `payment.confirmed.fanout` | Fanout exchange to notify that a payment has been confirmed | `order.confirm_order_payment`, `notification.notify_payment_confirmed`                                    |
+| `order.cancelled.fanout`   | Fanout exchange to cancel an order                          | `order.cancel_shipments`, `product.refund_items`, `notification.notify_order_cancelled`                   |
 
 
 ### Queues

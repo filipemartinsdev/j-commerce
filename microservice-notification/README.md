@@ -2,4 +2,6 @@
 
 # Notification Microservice
 
-> 🚧 Comming soon...
+## Database
+
+![notification_db.png](../images/notification_db.png)

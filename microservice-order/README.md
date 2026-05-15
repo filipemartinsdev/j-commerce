@@ -8,6 +8,7 @@
 
 ![sales_order_status.png](../images/sales_order_status.png)
 
+![shipping_status.png](../images/shipping_status.png)
 
 ## Shopping cart confirmation
 
@@ -18,4 +19,4 @@
 - PostgreSQL 17
 - Flyway for migrations
 
-![db_order.png](../images/db_order.png)
+![order_db.png](../images/order_db.png)

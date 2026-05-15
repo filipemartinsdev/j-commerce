@@ -173,16 +173,19 @@ Services will be available at:
 
 ## Architecture
 
+The system has a concise list of C4 Model diagrams for architecture documentation. 
+
+### System context
+
 ![c4_model_1.png](images/c4_model_1.png)
+
+![c4_model_1_items.png](images/c4_model_1_items.png)
+
+###  Containers
 
 ![c4_model_2.png](images/c4_model_2.png)
 
-
-[//]: # (<img src="images/c4_model_1.png" width="1000pt">)
-
-[//]: # ()
-[//]: # (<img src="images/c4_model_2.png" width="1000pt">)
-
+![c4_model_2_items.png](images/c4_model_2_items.png)
 
 ### Authentication
 

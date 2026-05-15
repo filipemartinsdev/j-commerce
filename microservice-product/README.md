@@ -89,4 +89,8 @@ Microservice for managing product catalogue, stock, pricing, shopping cart, wish
 - PostgreSQL 17
 - Flyway for migrations
 
-![db_product.png](../images/db_product.png)
+![product_db.png](../images/product_db.png)
+
+### Views
+
+![product_views_db.png](../images/product_views_db.png)

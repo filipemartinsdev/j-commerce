@@ -82,4 +82,4 @@ On first run, default users are created via Flyway migration:
 - PostgreSQL 17
 - Flyway for migrations
 
-![db_identity.png](../images/db_identity.png)
+![identity_db.png](../images/identity_db.png)

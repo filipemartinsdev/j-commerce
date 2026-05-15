@@ -13,7 +13,6 @@ E-Commerce platform
 
 </div>
 
->  🚧 In progress...
 
 ## Microservices
 
@@ -39,7 +38,7 @@ E-Commerce platform
 
 ## Count Lines Of Code
 
-````prototext
+````text
 -------------------------------------------------------------------------------
 Language                     files          blank        comment           code
 -------------------------------------------------------------------------------

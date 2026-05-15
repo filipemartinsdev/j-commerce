@@ -14,7 +14,7 @@ import java.time.Instant;
 import java.util.UUID;
 
 @Entity @Table(name = "delivery_address")
-@Data @NoArgsConstructor @AllArgsConstructor @ToString
+@Data @NoArgsConstructor @AllArgsConstructor
 public class DeliveryAddress {
     @Id @GeneratedValue(strategy = GenerationType.UUID)
     private UUID id;

@@ -1,6 +1,5 @@
 package com.orders.application.service;
 
-import com.orders.domain.entity.SalesOrder;
 import org.springframework.stereotype.Component;
 
 import java.time.Instant;

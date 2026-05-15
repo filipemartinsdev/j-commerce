@@ -29,6 +29,7 @@ E-Commerce platform
 1. [Stack](#general-stack)
 2. [Architecture](#achitecture)
 3. [How to execute](#how-to-execute)
+3. [Use Cases](#use-cases)
 4. [Architecture](#architecture)
 5. [Database](#database)
 6. [Messaging](#messaging)
@@ -312,7 +313,7 @@ The entire order flow is based on asynchronous communication, using **Spring AMQ
 ![messaging_exchange_order_cancelled.png](images/messaging_exchange_order_cancelled.png)
 
 
-## Purchase confirmation
+### Purchase confirmation
 
 The payment (mock invoice) is generated and sent by email, through a robust asynchronous messaging flow.
 

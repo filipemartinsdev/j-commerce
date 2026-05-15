@@ -7,66 +7,74 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.ControllerAdvice;
 import org.springframework.web.bind.annotation.ExceptionHandler;
+import org.springframework.web.method.annotation.MethodArgumentTypeMismatchException;
 
 @Slf4j
 @ControllerAdvice
 public class GlobalExceptionHandler {
 
     @ExceptionHandler(Exception.class)
-    public ResponseEntity<StandardResponse<Void>> handleException(Exception e) {
-        log.error(e.getMessage(), e);
+    public ResponseEntity<StandardResponse<Void>> handleException(Exception exception) {
+        log.error(exception.getMessage(), exception);
         return ResponseEntity
                 .status(HttpStatus.INTERNAL_SERVER_ERROR)
-                .body(StandardResponse.error(e.getMessage()));
+                .body(StandardResponse.error(exception.getMessage()));
     }
 
     @ExceptionHandler(SalesOrderNotFoundException.class)
-    public ResponseEntity<StandardResponse<Void>> handleSalesOrderNotFound(SalesOrderNotFoundException e) {
+    public ResponseEntity<StandardResponse<Void>> handleSalesOrderNotFound(SalesOrderNotFoundException exception) {
         return ResponseEntity
                 .status(HttpStatus.NOT_FOUND)
-                .body(StandardResponse.fail(e.getMessage()));
+                .body(StandardResponse.fail(exception.getMessage()));
     }
 
     @ExceptionHandler(DeliveryAddressNotFoundException.class)
-    public ResponseEntity<StandardResponse<Void>> handleDeliveryAddressNotFound(DeliveryAddressNotFoundException e) {
+    public ResponseEntity<StandardResponse<Void>> handleDeliveryAddressNotFound(DeliveryAddressNotFoundException exception) {
         return ResponseEntity
                 .status(HttpStatus.NOT_FOUND)
-                .body(StandardResponse.fail(e.getMessage()));
+                .body(StandardResponse.fail(exception.getMessage()));
     }
 
     @ExceptionHandler(CantCreateSalesOrderException.class)
-    public ResponseEntity<StandardResponse<Void>> handleCantCreateSalesOrder(CantCreateSalesOrderException e) {
+    public ResponseEntity<StandardResponse<Void>> handleCantCreateSalesOrder(CantCreateSalesOrderException exception) {
         return ResponseEntity
                 .status(HttpStatus.BAD_REQUEST)
-                .body(StandardResponse.fail(e.getMessage()));
+                .body(StandardResponse.fail(exception.getMessage()));
     }
 
     @ExceptionHandler(CantCancelSalesOrderException.class)
-    public ResponseEntity<StandardResponse<Void>> handleCantCancelSalesOrder(CantCancelSalesOrderException e) {
+    public ResponseEntity<StandardResponse<Void>> handleCantCancelSalesOrder(CantCancelSalesOrderException exception) {
         return ResponseEntity
                 .status(HttpStatus.BAD_REQUEST)
-                .body(StandardResponse.fail(e.getMessage()));
+                .body(StandardResponse.fail(exception.getMessage()));
     }
 
     @ExceptionHandler(ForbiddenOperationException.class)
-    public ResponseEntity<StandardResponse<Void>> handleForbiddenOperation(ForbiddenOperationException e) {
+    public ResponseEntity<StandardResponse<Void>> handleForbiddenOperation(ForbiddenOperationException exception) {
         return ResponseEntity
                 .status(HttpStatus.FORBIDDEN)
-                .body(StandardResponse.fail(e.getMessage()));
+                .body(StandardResponse.fail(exception.getMessage()));
     }
 
     @ExceptionHandler(InvalidDeliveryAddressCoordinatesException.class)
-    public ResponseEntity<StandardResponse<Void>> handleInvalidDeliveryAddressCoordinates(InvalidDeliveryAddressCoordinatesException e) {
+    public ResponseEntity<StandardResponse<Void>> handleInvalidDeliveryAddressCoordinates(InvalidDeliveryAddressCoordinatesException exception) {
         return ResponseEntity
                 .status(HttpStatus.BAD_REQUEST)
-                .body(StandardResponse.fail(e.getMessage()));
+                .body(StandardResponse.fail(exception.getMessage()));
     }
 
     @ExceptionHandler(InvalidDeliveryAddressException.class)
-    public ResponseEntity<StandardResponse<Void>> handleInvalidDeliveryAddress(InvalidDeliveryAddressException e) {
+    public ResponseEntity<StandardResponse<Void>> handleInvalidDeliveryAddress(InvalidDeliveryAddressException exception) {
         return ResponseEntity
                 .status(HttpStatus.BAD_REQUEST)
-                .body(StandardResponse.fail(e.getMessage()));
+                .body(StandardResponse.fail(exception.getMessage()));
+    }
+
+    @ExceptionHandler(StorageAddressNotFoundException.class)
+    public ResponseEntity<StandardResponse<Void>> handleStorageAddressNotFound(StorageAddressNotFoundException exception) {
+        return ResponseEntity
+                .status(HttpStatus.NOT_FOUND)
+                .body(StandardResponse.fail(exception.getMessage()));
     }
 
     @ExceptionHandler(InvalidEntityMapperException.class)
@@ -83,5 +91,57 @@ public class GlobalExceptionHandler {
         return ResponseEntity
                 .status(HttpStatus.INTERNAL_SERVER_ERROR)
                 .body(StandardResponse.error(exception.getMessage()));
+    }
+
+    @ExceptionHandler(InvalidRouteResponseException.class)
+    public ResponseEntity<StandardResponse<Void>> handleInvalidRouteResponse(InvalidRouteResponseException exception){
+        log.error(exception.getMessage(), exception);
+        return ResponseEntity
+                .status(HttpStatus.BAD_GATEWAY)
+                .body(StandardResponse.error());
+    }
+
+    @ExceptionHandler(CantUpdateShippingStatusException.class)
+    public ResponseEntity<StandardResponse<Void>> handleCantUpdateShippingStatus(CantUpdateShippingStatusException exception) {
+        return ResponseEntity
+                .status(HttpStatus.BAD_REQUEST)
+                .body(StandardResponse.fail(exception.getMessage()));
+    }
+
+    @ExceptionHandler(ShippingStatusNotFoundException.class)
+    public ResponseEntity<StandardResponse<Void>> handleShippingStatusNotFound(ShippingStatusNotFoundException exception) {
+        return ResponseEntity
+                .status(HttpStatus.NOT_FOUND)
+                .body(StandardResponse.fail(exception.getMessage()));
+    }
+
+    @ExceptionHandler(ShippingNotFoundException.class)
+    public ResponseEntity<StandardResponse<Void>> handleShippingNotFound(ShippingNotFoundException exception) {
+        return ResponseEntity
+                .status(HttpStatus.NOT_FOUND)
+                .body(StandardResponse.fail(exception.getMessage()));
+    }
+
+    @ExceptionHandler(MethodArgumentTypeMismatchException.class)
+    public ResponseEntity<StandardResponse<Void>> handleMethodArgumentTypeMismatch(MethodArgumentTypeMismatchException exception) {
+        return ResponseEntity
+                .status(HttpStatus.BAD_REQUEST)
+                .body(StandardResponse.fail(exception.getMessage()));
+    }
+
+    @ExceptionHandler(BadGatewayException.class)
+    public ResponseEntity<StandardResponse<Void>> handleBadGateway(BadGatewayException exception) {
+        log.error(exception.getMessage(), exception);
+
+        return ResponseEntity
+                .status(HttpStatus.BAD_GATEWAY)
+                .body(StandardResponse.error());
+    }
+
+    @ExceptionHandler(CantDispatchShippingException.class)
+    public ResponseEntity<StandardResponse<Void>> handleCantDispatchShipping(CantDispatchShippingException exception) {
+        return ResponseEntity
+                .status(HttpStatus.BAD_REQUEST)
+                .body(StandardResponse.fail(exception.getMessage()));
     }
 }

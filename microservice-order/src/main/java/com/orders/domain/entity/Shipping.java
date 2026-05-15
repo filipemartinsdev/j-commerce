@@ -22,7 +22,7 @@ public class Shipping {
     private ShippingStatus status;
 
     @NotNull
-    @OneToOne(fetch = FetchType.LAZY)
+    @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "sales_order_id")
     private SalesOrder salesOrder;
 
@@ -30,6 +30,13 @@ public class Shipping {
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "delivery_address_id")
     private DeliveryAddress deliveryAddress;
+
+    @NotNull
+    @Column(name = "expected_delivery_date")
+    private Instant expectedDeliveryDate;
+
+    @Column(name = "driver_id")
+    private UUID driverId;
 
     @CreationTimestamp
     @Column(name = "created_at")

@@ -19,8 +19,8 @@ public class ShippingStatus {
 
     public enum Value {
         PENDING(1),
-        IN_TRANSIT(2),
-        IN_DISTRIBUTION_CENTER(3),
+        DISPATCHED(2),
+        IN_TRANSIT(3),
         DELIVERED(4),
         CANCELLED(5);
 

@@ -61,9 +61,10 @@ CREATE TABLE shipping_status (
 CREATE TABLE shipping (
     id                      UUID PRIMARY KEY,
     status_id               INT REFERENCES shipping_status(id) NOT NULL,
-    sales_order_id          UUID UNIQUE REFERENCES sales_order(id) NOT NULL,
+    sales_order_id          UUID REFERENCES sales_order(id) NOT NULL,
     delivery_address_id     UUID REFERENCES delivery_address(id) NOT NULL,
     expected_delivery_date  TIMESTAMP WITH TIME ZONE NOT NULL,
+    driver_id               UUID,
     created_at              TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT CURRENT_TIMESTAMP
 );
 

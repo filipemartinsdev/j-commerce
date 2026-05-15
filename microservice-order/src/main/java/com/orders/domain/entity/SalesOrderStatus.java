@@ -20,10 +20,7 @@ public class SalesOrderStatus {
     public enum Value {
         PENDING(1),
         CONFIRMED(2),
-        PROCESSING(3),
-        IN_TRANSIT(4),
-        DELIVERED(5),
-        CANCELLED(6);
+        CANCELLED(3);
 
         @Getter
         private final int id;

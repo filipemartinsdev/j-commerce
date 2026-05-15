@@ -4,6 +4,7 @@ import com.orders.application.dto.SalesOrderResponse;
 import com.orders.application.dto.SalesOrderSummaryResponse;
 import com.orders.domain.entity.SalesOrder;
 import com.orders.domain.entity.SalesOrderItem;
+import com.orders.domain.entity.Shipping;
 import org.springframework.context.annotation.Lazy;
 import org.springframework.stereotype.Component;
 
@@ -25,8 +26,7 @@ public class SalesOrderMapper {
                 entity.getId(),
                 entity.getCreatedAt(),
                 entity.getStatus().getName(),
-                getFinalValue(entity.getItems()),
-                entity.getShipping().getStatus().getName()
+                getFinalValue(entity.getItems())
         );
     }
 
@@ -44,13 +44,21 @@ public class SalesOrderMapper {
         return new SalesOrderSummaryResponse(
                 entity.getId(),
                 entity.getStatus().getName(),
-                entity.getShipping().getStatus().getName(),
                 getFinalValue(entity.getItems()),
                 entity.getItems().stream()
                         .map(salesOrderItemMapper::toResponse)
                         .toList(),
-                deliveryAddressMapper.toResponse(entity.getShipping().getDeliveryAddress()),
+                deliveryAddressMapper.toResponse(entity.getShipments().get(0).getDeliveryAddress()),
+                toShippingResponse(entity.getShipments().get(0)),
                 entity.getCreatedAt()
+        );
+    }
+
+    private SalesOrderSummaryResponse.ShippingResponse toShippingResponse(Shipping shipping){
+        return new SalesOrderSummaryResponse.ShippingResponse(
+                shipping.getId(),
+                shipping.getStatus().getName(),
+                shipping.getExpectedDeliveryDate()
         );
     }
 }

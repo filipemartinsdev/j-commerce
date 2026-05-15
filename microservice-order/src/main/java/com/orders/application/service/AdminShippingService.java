@@ -6,7 +6,6 @@ import com.orders.application.dto.ShippingResponse;
 import com.orders.application.exception.*;
 import com.orders.application.factory.PagedResponseFactory;
 import com.orders.application.message.CreateShippingMessage;
-import com.orders.application.message.SalesOrderCancelledMessage;
 import com.orders.application.service.mapper.ShippingMapper;
 import com.orders.domain.entity.*;
 import com.orders.infra.persistence.DeliveryAddressRepository;
@@ -14,7 +13,6 @@ import com.orders.infra.persistence.SalesOrderRepository;
 import com.orders.infra.persistence.ShippingRepository;
 import com.orders.infra.persistence.ShippingStatusRepository;
 import jakarta.transaction.Transactional;
-import org.springframework.boot.micrometer.metrics.actuate.endpoint.MetricsEndpoint;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
@@ -40,8 +38,7 @@ public class AdminShippingService {
         this.deliveryDateCalculator = deliveryDateCalculator;
     }
 
-    //    TODO: unit tests
-    public void createShipping(CreateShippingMessage message) {
+    public void createShippingFromMessage(CreateShippingMessage message) {
         DeliveryAddress deliveryAddress = deliveryAddressRepository.findById(message.deliveryAddressId())
                 .orElseThrow(() -> new DeliveryAddressNotFoundException("Delivery address not found with ID: " + message.deliveryAddressId()));
 
@@ -66,13 +63,12 @@ public class AdminShippingService {
 
     }
 
-    //    TODO: unit tests
     public void finishShipping(UUID shippingId){
         Shipping shipping = shippingRepository.findById(shippingId)
                 .orElseThrow(() -> new ShippingNotFoundException("Shipping not found with ID: " + shippingId));
 
         if(!isShippingInTransit(shipping))
-            throw new CantDispatchShippingException("Shipping is not in transit");
+            throw new CantCheckOutShippingException("Shipping is not in transit");
 
         shipping.setStatus(shippingStatusRepository.getReferenceById(ShippingStatus.Value.DELIVERED.getId()));
 
@@ -83,22 +79,29 @@ public class AdminShippingService {
         return shipping.getStatus().getId().equals(ShippingStatus.Value.IN_TRANSIT.getId());
     }
 
-//    TODO: unit tests
-    public void cancelShipments(UUID orderId){
+    public void cancelShipmentsBySalesOrderId(UUID salesOrderId){
+        SalesOrder salesOrder = salesOrderRepository.findById(salesOrderId)
+                .orElseThrow(() -> new SalesOrderNotFoundException("SalesOrder not found by ID: " + salesOrderId));
 
+        for (Shipping shipping : salesOrder.getShipments())
+            shipping.setStatus(shippingStatusRepository.getReferenceById(ShippingStatus.Value.CANCELLED.getId()));
+
+        salesOrderRepository.save(salesOrder);
     }
 
-//    TODO: unit tests
     @Transactional
     public void cancelShipping(UUID shippingId){
         Shipping shipping = shippingRepository.findById(shippingId)
                 .orElseThrow(() -> new ShippingNotFoundException("Shipping not found with ID: " + shippingId));
 
         if (isShippingCancelled(shipping))
-            throw new CantDispatchShippingException("Shipping is cancelled");
+            throw new CantCancelShippingException("Shipping is cancelled");
 
         if (isShippingDelivered(shipping))
-            throw new CantDispatchShippingException("Shipping is delivered");
+            throw new CantCancelShippingException("Shipping is delivered");
+
+        shipping.setStatus(shippingStatusRepository.getReferenceById(ShippingStatus.Value.CANCELLED.getId()));
+        shippingRepository.save(shipping);
     }
 
     private boolean isShippingDelivered(Shipping shipping){
@@ -109,7 +112,6 @@ public class AdminShippingService {
         return shipping.getStatus().getId().equals(ShippingStatus.Value.CANCELLED.getId());
     }
 
-//    TODO: unit tests
     public PagedResponse<ShippingResponse> getAll(Pageable pageable) {
         return pagedResponseFactory.fromPage(
                 shippingRepository.findAll(pageable),
@@ -117,7 +119,6 @@ public class AdminShippingService {
         );
     }
 
-//    TODO: unit tests
     public PagedResponse<ShippingResponse> getAllBySalesOrderId(UUID salesOrderId, Pageable pageable) {
         return pagedResponseFactory.fromPage(
                 shippingRepository.findAllBySalesOrderId(salesOrderId, pageable),
@@ -125,7 +126,6 @@ public class AdminShippingService {
         );
     }
 
-//    TODO: unit tests
     public void dispatchShipping(UUID id) {
         Shipping shipping = shippingRepository.findById(id)
                 .orElseThrow(() -> new ShippingNotFoundException("Shipping not found by ID: " + id));
@@ -140,7 +140,6 @@ public class AdminShippingService {
     }
 
 //    TODO: create startShipping message to notify the event
-//    TODO: unit tests
     public void startShipping(UUID id, UUID driverId) {
         Shipping shipping = shippingRepository.findById(id)
                 .orElseThrow(() -> new ShippingNotFoundException("Shipping not found by ID: " + id));

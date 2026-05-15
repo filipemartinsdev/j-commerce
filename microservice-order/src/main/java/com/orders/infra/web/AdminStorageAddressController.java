@@ -12,7 +12,6 @@ import org.springframework.web.bind.annotation.*;
 
 import java.util.UUID;
 
-// TODO: integration tests with WebMvcTest
 // TODO: openAPI docs
 @RestController
 @RequestMapping("/admin/api/v1/storage-addresses")

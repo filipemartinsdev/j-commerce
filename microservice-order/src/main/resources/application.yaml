@@ -16,13 +16,14 @@ spring:
 
   rabbitmq:
     listener:
-      direct:
+      simple:
         prefetch: 20
-
         retry:
           enabled: true
-          max-retries: 3
+          max-retries: 10
+          initial-interval: 2000ms
           multiplier: 2.0
+
 management:
   endpoints:
     web:
@@ -43,6 +44,12 @@ broker:
   queues:
     createOrder:
       name: order.create_order
+
+    createShipping:
+      name: order.create_shipping
+
+    cancelShipments:
+      name: order.cancel_shipments
 
     generatePayment:
       name: payment.generate_payment

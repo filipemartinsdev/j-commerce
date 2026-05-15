@@ -1,9 +1,7 @@
 package com.orders.infra.messaging;
 
-import com.orders.application.message.ConfirmOrderMessage;
-import com.orders.application.message.CreateOrderMessage;
-import com.orders.application.message.HandlePaymentTimeoutMessage;
-import com.orders.application.message.PaymentConfirmedMessage;
+import com.orders.application.message.*;
+import com.orders.application.service.AdminShippingService;
 import com.orders.application.service.SalesOrderService;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.amqp.rabbit.annotation.RabbitListener;
@@ -16,9 +14,11 @@ import org.springframework.context.annotation.Profile;
 @Slf4j
 public class MessageBrokerListener {
     private final SalesOrderService salesOrderService;
+    private final AdminShippingService adminShippingService;
 
-    public MessageBrokerListener(SalesOrderService salesOrderService) {
+    public MessageBrokerListener(SalesOrderService salesOrderService, AdminShippingService adminShippingService) {
         this.salesOrderService = salesOrderService;
+        this.adminShippingService = adminShippingService;
     }
 
     @RabbitListener(
@@ -26,6 +26,20 @@ public class MessageBrokerListener {
     )
     public void listenCreateOrder(@Payload CreateOrderMessage message){
         salesOrderService.createOrder(message);
+    }
+
+    @RabbitListener(
+            queues = "${broker.queues.createShipping.name}"
+    )
+    public void listenCreateShipping(@Payload CreateShippingMessage message){
+        adminShippingService.createShipping(message);
+    }
+
+    @RabbitListener(
+            queues = "${broker.queues.cancelShipments.name}"
+    )
+    public void listenCancelShipments(@Payload SalesOrderCancelledMessage message){
+        adminShippingService.cancelShipments(message.salesOrderId());
     }
 
     @RabbitListener(

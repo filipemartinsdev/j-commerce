@@ -1,9 +1,6 @@
 package com.orders.config;
 
-import org.springframework.amqp.core.Binding;
-import org.springframework.amqp.core.BindingBuilder;
-import org.springframework.amqp.core.FanoutExchange;
-import org.springframework.amqp.core.Queue;
+import org.springframework.amqp.core.*;
 import org.springframework.amqp.support.converter.JacksonJsonMessageConverter;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
@@ -18,6 +15,12 @@ public class BrokerConfig {
 
     @Value("${broker.queues.createOrder.name}")
     private String CREATE_ORDER_QUEUE_NAME;
+
+    @Value("${broker.queues.createShipping.name}")
+    private String CREATE_SHIPPING_QUEUE_NAME;
+
+    @Value("${broker.queues.cancelShipments.name}")
+    private String CANCEL_SHIPMENTS_QUEUE_NAME;
 
     @Value("${broker.queues.generatePayment.name}")
     private String GENERATE_PAYMENT_QUEUE_NAME;
@@ -38,6 +41,16 @@ public class BrokerConfig {
     @Bean
     public Queue createOrderQueue() {
         return new Queue(CREATE_ORDER_QUEUE_NAME, true);
+    }
+
+    @Bean
+    public Queue createShippingQueue() {
+        return new Queue(CREATE_SHIPPING_QUEUE_NAME, true);
+    }
+
+    @Bean
+    public Queue cancelShipmentsQueue() {
+        return new Queue(CANCEL_SHIPMENTS_QUEUE_NAME, true);
     }
 
     @Bean
@@ -78,6 +91,11 @@ public class BrokerConfig {
     @Bean
     public Binding bindingOrderCancelled2(Queue notifyCancelledOrderQueue, FanoutExchange orderCancelledFanoutExchange) {
         return BindingBuilder.bind(notifyCancelledOrderQueue).to(orderCancelledFanoutExchange);
+    }
+
+    @Bean
+    public Binding bindingOrderCancelled3(Queue cancelShipmentsQueue, FanoutExchange orderCancelledFanoutExchange) {
+        return BindingBuilder.bind(cancelShipmentsQueue).to(orderCancelledFanoutExchange);
     }
 
     @Bean

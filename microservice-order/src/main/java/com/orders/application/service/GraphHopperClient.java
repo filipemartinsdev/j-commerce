@@ -4,6 +4,8 @@ import com.orders.application.dto.GeocodingResponse;
 import com.orders.application.dto.RouteRequest;
 import com.orders.application.dto.RouteResponse;
 import com.orders.config.GraphHopperFeignClientConfig;
+import feign.Headers;
+import io.swagger.v3.oas.annotations.headers.Header;
 import jakarta.validation.Valid;
 import org.springframework.cloud.openfeign.FeignClient;
 import org.springframework.http.ResponseEntity;
@@ -12,7 +14,7 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestParam;
 
-@FeignClient(name = "graphHopperClient", url = "https://https://graphhopper.com", configuration = GraphHopperFeignClientConfig.class)
+@FeignClient(name = "graphHopperClient", url = "https://graphhopper.com", configuration = GraphHopperFeignClientConfig.class)
 public interface GraphHopperClient {
     @PostMapping("/api/1/route")
     ResponseEntity<RouteResponse> route(

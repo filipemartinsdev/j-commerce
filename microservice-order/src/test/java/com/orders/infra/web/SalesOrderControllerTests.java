@@ -55,8 +55,7 @@ public class SalesOrderControllerTests {
                 orderId,
                 Instant.now(),
                 "PENDING",
-                new BigDecimal("100.00"),
-                "PENDING"
+                new BigDecimal("100.00")
         );
 
         var pagedResponse = PagedResponse.<SalesOrderResponse>builder()
@@ -129,10 +128,10 @@ public class SalesOrderControllerTests {
         var response = new SalesOrderSummaryResponse(
                 orderId,
                 "PENDING",
-                "PENDING",
                 new BigDecimal("100.00"),
                 List.of(itemResponse),
                 deliveryAddressResponse,
+                null,
                 Instant.now()
         );
 

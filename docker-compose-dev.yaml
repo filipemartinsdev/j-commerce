@@ -42,6 +42,7 @@ services:
       POSTGRES_DB: ${PG_ORDER_DATABASE}
       POSTGRES_USER: ${PG_ORDER_USER}
       POSTGRES_PASSWORD: ${PG_ORDER_PASSWORD}
+      GRAPH_HOPPER_API_KEY:
     volumes:
       - order_data:/var/lib/postgresql/data
 
@@ -167,6 +168,7 @@ services:
       SPRING_DATASOURCE_PASSWORD: ${PG_ORDER_PASSWORD}
       SPRING_DATA_REDIS_URL: redis://cache:6379
       ACTIVE_PROFILE: dev
+      GRAPH_HOPPER_API_KEY:
 
   notification:
     container_name: notification_service

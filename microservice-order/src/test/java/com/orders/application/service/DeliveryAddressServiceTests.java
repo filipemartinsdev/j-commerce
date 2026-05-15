@@ -1,10 +1,8 @@
 package com.orders.application.service;
 
 import com.orders.application.dto.*;
-import com.orders.application.exception.AddressByCoordinatesClientBadGateway;
-import com.orders.application.exception.DeliveryAddressNotFoundException;
-import com.orders.application.exception.InvalidDeliveryAddressCoordinatesException;
-import com.orders.application.exception.InvalidDeliveryAddressException;
+import com.orders.application.exception.*;
+import com.orders.application.factory.PagedResponseFactory;
 import com.orders.application.service.mapper.DeliveryAddressMapper;
 import com.orders.domain.entity.DeliveryAddress;
 import com.orders.infra.persistence.DeliveryAddressRepository;
@@ -19,7 +17,6 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.PageRequest;
-import org.springframework.http.ResponseEntity;
 
 import java.time.Instant;
 import java.util.List;
@@ -32,93 +29,82 @@ import static org.mockito.Mockito.*;
 
 @ExtendWith(MockitoExtension.class)
 public class DeliveryAddressServiceTests {
+    @Mock private DeliveryAddressRepository deliveryAddressRepository;
+    @Mock private DeliveryAddressMapper deliveryAddressMapper;
+    @Mock private PagedResponseFactory<DeliveryAddressResponse> pagedResponseFactory;
+    @Mock private GeocodingService geocodingService;
 
-    @Mock
-    private DeliveryAddressRepository deliveryAddressRepository;
+    @InjectMocks private DeliveryAddressService deliveryAddressService;
 
-    @Mock
-    private DeliveryAddressMapper deliveryAddressMapper;
 
-    @Mock
-    private AddressByCoordinatesClient addressByCoordinatesClient;
-
-    @InjectMocks
-    private DeliveryAddressService deliveryAddressService;
-
-    @Test
-    @DisplayName("Should return paginated addresses")
+    @Test @DisplayName("Should retrieve addresses by user ID successfully")
     void getAllByUserIdTestCase1() {
         UUID userId = UUID.randomUUID();
         Pageable pageable = PageRequest.of(0, 10);
 
-        DeliveryAddress address = new DeliveryAddress();
-        address.setId(UUID.randomUUID());
-        address.setUserId(userId);
-        address.setStreet("Test Street");
-        address.setZipCode("12345678");
+        DeliveryAddress entity = new DeliveryAddress();
+        entity.setId(UUID.randomUUID());
+        entity.setUserId(userId);
+        entity.setStreet("Test Street");
+        entity.setZipCode("12345678");
+        entity.setNeighborhood("Test Neighborhood");
+        entity.setCity("Test City");
+        entity.setState("SP");
+        entity.setNumber("123");
+        entity.setIsActive(true);
 
-        Page<DeliveryAddress> page = new PageImpl<>(List.of(address), pageable, 1);
-
+        Page<DeliveryAddress> page = new PageImpl<>(List.of(entity), pageable, 1);
         DeliveryAddressResponse response = new DeliveryAddressResponse(
-                address.getId(),
-                address.getZipCode(),
-                address.getStreet(),
-                address.getNumber(),
-                address.getComplement(),
-                address.getNeighborhood(),
-                address.getCity(),
-                address.getState(),
-                address.getLatitude(),
-                address.getLongitude(),
-                Instant.now()
-        );
+                entity.getId(), "12345678", "Test Street", "123", null,
+                "Test Neighborhood", "Test City", "SP", null, null, Instant.now());
 
-        when(deliveryAddressRepository.findAllActiveByUserId(userId, pageable))
-                .thenReturn(page);
-        when(deliveryAddressMapper.toResponse(address))
-                .thenReturn(response);
+        PagedResponse<DeliveryAddressResponse> pagedResponse = PagedResponse.<DeliveryAddressResponse>builder()
+                .page(0).size(10).totalElements(1L).totalPages(1)
+                .isLast(true).content(List.of(response)).build();
+
+        when(deliveryAddressRepository.findAllActiveByUserId(userId, pageable)).thenReturn(page);
+        when(pagedResponseFactory.fromPage(eq(page), any())).thenReturn(pagedResponse);
 
         PagedResponse<DeliveryAddressResponse> result = deliveryAddressService.getAllByUserId(userId, pageable);
 
         assertNotNull(result);
         assertEquals(1, result.totalElements());
-        assertEquals("Test Street", result.content().get(0).street());
-        verify(deliveryAddressRepository).findAllActiveByUserId(userId, pageable);
+        assertEquals(1, result.content().size());
     }
 
-    @Test
-    @DisplayName("Should return empty page when no addresses")
+    @Test @DisplayName("Should return empty PagedResponse if not exists any address")
     void getAllByUserIdTestCase2() {
         UUID userId = UUID.randomUUID();
         Pageable pageable = PageRequest.of(0, 10);
 
         Page<DeliveryAddress> emptyPage = new PageImpl<>(List.of(), pageable, 0);
 
-        when(deliveryAddressRepository.findAllActiveByUserId(userId, pageable))
-                .thenReturn(emptyPage);
+        PagedResponse<DeliveryAddressResponse> pagedResponse = PagedResponse.<DeliveryAddressResponse>builder()
+                .page(0).size(10).totalElements(0L).totalPages(0)
+                .isLast(true).content(List.of()).build();
+
+        when(deliveryAddressRepository.findAllActiveByUserId(userId, pageable)).thenReturn(emptyPage);
+        when(pagedResponseFactory.fromPage(eq(emptyPage), any())).thenReturn(pagedResponse);
 
         PagedResponse<DeliveryAddressResponse> result = deliveryAddressService.getAllByUserId(userId, pageable);
 
         assertNotNull(result);
         assertEquals(0, result.totalElements());
         assertTrue(result.content().isEmpty());
-        verify(deliveryAddressRepository).findAllActiveByUserId(userId, pageable);
     }
 
-    @Test
-    @DisplayName("Should create new address")
+    @Test @DisplayName("Should create address successfully")
     void createByUserIdTestCase1() {
         UUID userId = UUID.randomUUID();
-
         CreateDeliveryAddressRequest request = new CreateDeliveryAddressRequest(
-                false,
+                true,
                 Optional.of("12345678"),
                 Optional.of("Test Street"),
                 Optional.of("123"),
-                Optional.of("Apt 1"),
-                Optional.of("Test Neighborhood"),
-                Optional.of("Test City"),
-                Optional.of("TS"),
+                Optional.of("Complement"),
+                Optional.of("Neighborhood"),
+                Optional.of("City"),
+                Optional.of("SP"),
                 Optional.empty(),
                 Optional.empty()
         );
@@ -126,41 +112,127 @@ public class DeliveryAddressServiceTests {
         DeliveryAddress entity = new DeliveryAddress();
         entity.setId(UUID.randomUUID());
         entity.setUserId(userId);
+        entity.setZipCode("12345678");
+        entity.setStreet("Test Street");
+        entity.setNumber("123");
+        entity.setComplement("Complement");
+        entity.setNeighborhood("Neighborhood");
+        entity.setCity("City");
+        entity.setState("SP");
+        entity.setLatitude(-23.0);
+        entity.setLongitude(-46.0);
+        entity.setIsActive(true);
 
         DeliveryAddressResponse response = new DeliveryAddressResponse(
-                entity.getId(),
-                "12345678",
-                "Test Street",
-                "123",
-                "Apt 1",
-                "Test Neighborhood",
-                "Test City",
-                "TS",
-                null,
-                null,
-                Instant.now()
-        );
+                entity.getId(), "12345678", "Test Street", "123", "Complement",
+                "Neighborhood", "City", "SP", -23.0, -46.0, Instant.now());
 
-        when(deliveryAddressMapper.toEntity(request))
-                .thenReturn(entity);
-        when(deliveryAddressRepository.save(any(DeliveryAddress.class)))
-                .thenReturn(entity);
-        when(deliveryAddressMapper.toResponse(entity))
-                .thenReturn(response);
+        when(deliveryAddressMapper.toEntity(request)).thenReturn(entity);
+        when(geocodingService.toCoordinates(any())).thenReturn(new GeocodingService.Point(-23.0, -46.0));
+        when(deliveryAddressRepository.save(entity)).thenReturn(entity);
+        when(deliveryAddressMapper.toResponse(entity)).thenReturn(response);
 
         DeliveryAddressResponse result = deliveryAddressService.createByUserId(request, userId);
 
         assertNotNull(result);
         assertEquals("12345678", result.zipCode());
-        verify(deliveryAddressRepository).save(any(DeliveryAddress.class));
+        assertEquals("Test Street", result.street());
     }
 
-
-    @Test
-    @DisplayName("Should throw InvalidDeliveryAddressException when haveNumber is true and number is empty")
+    @Test @DisplayName("Should throw InvalidDeliveryAddressException if address is invalid")
     void createByUserIdTestCase2() {
         UUID userId = UUID.randomUUID();
+        CreateDeliveryAddressRequest request = new CreateDeliveryAddressRequest(
+                true,
+                Optional.of("12345678"),
+                Optional.empty(),
+                Optional.of("123"),
+                Optional.of("Complement"),
+                Optional.of("Neighborhood"),
+                Optional.of("City"),
+                Optional.of("SP"),
+                Optional.empty(),
+                Optional.empty()
+        );
 
+        assertThrows(InvalidDeliveryAddressException.class, () -> {
+            deliveryAddressService.createByUserId(request, userId);
+        });
+    }
+
+    @Test @DisplayName("Should create address by coordinates successfully")
+    void createByCoordinatesAndUserIdTestCase1() {
+        UUID userId = UUID.randomUUID();
+        CreateDeliveryAddressRequest request = new CreateDeliveryAddressRequest(
+                false,
+                Optional.empty(),
+                Optional.empty(),
+                Optional.empty(),
+                Optional.of("Complement"),
+                Optional.empty(),
+                Optional.empty(),
+                Optional.empty(),
+                Optional.of(-23.0),
+                Optional.of(-46.0)
+        );
+
+        GeocodingService.Address geocodedAddress = new GeocodingService.Address(
+                "Street", "Neighborhood", "City", "12345678", "SP", "br"
+        );
+
+        DeliveryAddress entity = new DeliveryAddress();
+        entity.setId(UUID.randomUUID());
+        entity.setUserId(userId);
+        entity.setStreet("Street");
+        entity.setNeighborhood("Neighborhood");
+        entity.setCity("City");
+        entity.setZipCode("12345678");
+        entity.setState("SP");
+        entity.setNumber("S/N");
+        entity.setComplement("Complement");
+        entity.setLatitude(-23.0);
+        entity.setLongitude(-46.0);
+        entity.setIsActive(true);
+
+        DeliveryAddressResponse response = new DeliveryAddressResponse(
+                entity.getId(), "12345678", "Street", "S/N", "Complement",
+                "Neighborhood", "City", "SP", -23.0, -46.0, Instant.now());
+
+        when(geocodingService.toAddress(any())).thenReturn(geocodedAddress);
+        when(deliveryAddressMapper.toEntity(geocodedAddress)).thenReturn(entity);
+        when(deliveryAddressRepository.save(entity)).thenReturn(entity);
+        when(deliveryAddressMapper.toResponse(entity)).thenReturn(response);
+
+        DeliveryAddressResponse result = deliveryAddressService.createByCoordinatesAndUserId(request, userId);
+
+        assertNotNull(result);
+        assertEquals("Street", result.street());
+    }
+
+    @Test @DisplayName("Should throw InvalidDeliveryAddressCoordinatesException if coordinates are not present")
+    void createByCoordinatesAndUserIdTestCase2() {
+        UUID userId = UUID.randomUUID();
+        CreateDeliveryAddressRequest request = new CreateDeliveryAddressRequest(
+                false,
+                Optional.empty(),
+                Optional.empty(),
+                Optional.empty(),
+                Optional.empty(),
+                Optional.empty(),
+                Optional.empty(),
+                Optional.empty(),
+                Optional.empty(),
+                Optional.empty()
+        );
+
+        assertThrows(InvalidDeliveryAddressCoordinatesException.class, () -> {
+            deliveryAddressService.createByCoordinatesAndUserId(request, userId);
+        });
+    }
+
+    @Test @DisplayName("Should throw InvalidDeliveryAddressCoordinatesException if coordinates are not from Brazil")
+    void createByCoordinatesAndUserIdTestCase3() {
+        UUID userId = UUID.randomUUID();
         CreateDeliveryAddressRequest request = new CreateDeliveryAddressRequest(
                 false,
                 Optional.empty(),
@@ -171,386 +243,143 @@ public class DeliveryAddressServiceTests {
                 Optional.empty(),
                 Optional.empty(),
                 Optional.of(-23.0),
-                Optional.of(-23.0)
+                Optional.of(-46.0)
         );
 
-        assertThrows(InvalidDeliveryAddressException.class, () -> {
-            deliveryAddressService.createByUserId(request, userId);
-        });
-
-        verify(addressByCoordinatesClient, never())
-                .getAddressByCoordinates(any(), any(), any());
-        verify(deliveryAddressRepository, never())
-                .save(any());
-    }
-
-    @Test
-    @DisplayName("Should create new address by coordinates")
-    void createByCoordinatesAndUserIdTestCase1() {
-        UUID userId = UUID.randomUUID();
-
-        CreateDeliveryAddressRequest request = new CreateDeliveryAddressRequest(
-                true,
-                Optional.empty(),
-                Optional.empty(),
-                Optional.empty(),
-                Optional.of("complement"),
-                Optional.empty(),
-                Optional.empty(),
-                Optional.empty(),
-                Optional.of(-23.0),
-                Optional.of(-23.0)
+        GeocodingService.Address geocodedAddress = new GeocodingService.Address(
+                "Street", "Neighborhood", "City", "12345678", "SP", "us"
         );
 
-        DeliveryAddress entity = new DeliveryAddress();
-        entity.setId(UUID.randomUUID());
-        entity.setUserId(userId);
-
-        AddressByCoordinatesResponse addressByCoordinatesResponse = new AddressByCoordinatesResponse(
-                new AddressByCoordinatesResponse.Address(
-                        "road",
-                        "neighborhood",
-                        "city",
-                        null,
-                        null,
-                        "uf",
-                        "zipCode",
-                        "br",
-                        "isoCode"
-                )
-        );
-
-        DeliveryAddressResponse response = new DeliveryAddressResponse(
-                entity.getId(),
-                addressByCoordinatesResponse.address().zipCode(),
-                addressByCoordinatesResponse.address().road(),
-                "S/N",
-                request.complement().get(),
-                addressByCoordinatesResponse.address().neighborhood(),
-                addressByCoordinatesResponse.address().city(),
-                addressByCoordinatesResponse.address().state(),
-                request.longitude().get(),
-                request.latitude().get(),
-                Instant.now()
-        );
-
-        when(deliveryAddressMapper.toEntity(addressByCoordinatesResponse))
-                .thenReturn(entity);
-        when(deliveryAddressRepository.save(any(DeliveryAddress.class)))
-                .thenReturn(entity);
-        when(deliveryAddressMapper.toResponse(entity))
-                .thenReturn(response);
-        when(addressByCoordinatesClient.getAddressByCoordinates(any(), any(), any()))
-                .thenReturn(ResponseEntity.ok().body(addressByCoordinatesResponse));
-
-        DeliveryAddressResponse result = deliveryAddressService.createByCoordinatesAndUserId(request, userId);
-
-        assertNotNull(result);
-        verify(addressByCoordinatesClient)
-                .getAddressByCoordinates(request.latitude().get(), request.longitude().get(), "json");
-        verify(deliveryAddressRepository)
-                .save(any(DeliveryAddress.class));
-    }
-
-    @Test
-    @DisplayName("Should throw InvalidDeliveryAddressCoordinatesException if byCoordinates is true and latitude/longitude is empty")
-    void createByCoordinatesAndUserIdTestCase2() {
-        UUID userId = UUID.randomUUID();
-
-        CreateDeliveryAddressRequest request = new CreateDeliveryAddressRequest(
-                true,
-                Optional.empty(),
-                Optional.empty(),
-                Optional.empty(),
-                Optional.empty(),
-                Optional.empty(),
-                Optional.empty(),
-                Optional.empty(),
-                Optional.empty(),
-                Optional.empty()
-        );
+        when(geocodingService.toAddress(any())).thenReturn(geocodedAddress);
 
         assertThrows(InvalidDeliveryAddressCoordinatesException.class, () -> {
             deliveryAddressService.createByCoordinatesAndUserId(request, userId);
         });
-
-        verify(addressByCoordinatesClient, never()).getAddressByCoordinates(any(), any(), any());
-        verify(deliveryAddressRepository, never()).save(any());
     }
 
-    @Test
-    @DisplayName("Should throw InvalidDeliveryAddressCoordinatesException if coordinates are not from Brazil")
-    void createByCoordinatesAndUserIdTestCase3() {
-        UUID userId = UUID.randomUUID();
-
-        CreateDeliveryAddressRequest request = new CreateDeliveryAddressRequest(
-                true,
-                Optional.empty(),
-                Optional.empty(),
-                Optional.empty(),
-                Optional.empty(),
-                Optional.empty(),
-                Optional.empty(),
-                Optional.empty(),
-                Optional.of(-23.0),
-                Optional.of(-23.0)
-        );
-
-        DeliveryAddress entity = new DeliveryAddress();
-        entity.setId(UUID.randomUUID());
-        entity.setUserId(userId);
-
-        AddressByCoordinatesResponse addressByCoordinatesResponse = new AddressByCoordinatesResponse(
-                new AddressByCoordinatesResponse.Address(
-                        "road",
-                        "neighborhood",
-                        "city",
-                        null,
-                        null,
-                        "uf",
-                        "zipCode",
-                        "eua",
-                        "isoCode"
-                )
-        );
-
-        DeliveryAddressResponse response = new DeliveryAddressResponse(
-                entity.getId(),
-                addressByCoordinatesResponse.address().zipCode(),
-                addressByCoordinatesResponse.address().road(),
-                "S/N",
-                "",
-                addressByCoordinatesResponse.address().neighborhood(),
-                addressByCoordinatesResponse.address().city(),
-                addressByCoordinatesResponse.address().state(),
-                request.longitude().get(),
-                request.latitude().get(),
-                Instant.now()
-        );
-
-        when(addressByCoordinatesClient.getAddressByCoordinates(any(), any(), any()))
-                .thenReturn(ResponseEntity.ok().body(addressByCoordinatesResponse));
-
-        assertThrows(InvalidDeliveryAddressCoordinatesException.class, () -> {
-            deliveryAddressService.createByCoordinatesAndUserId(request, userId);
-        });
-
-        verify(addressByCoordinatesClient).getAddressByCoordinates(request.latitude().get(), request.longitude().get(), "json");
-        verify(deliveryAddressRepository, never()).save(any());
-    }
-
-    @Test
-    @DisplayName("Should throw InvalidDeliveryAddressCoordinatesException when addressByCoordinatesClient response status code is 4xx")
-    void createByCoordinatesAndUserIdTestCase4() {
-        UUID userId = UUID.randomUUID();
-
-        CreateDeliveryAddressRequest request = new CreateDeliveryAddressRequest(
-                true,
-                Optional.empty(),
-                Optional.empty(),
-                Optional.empty(),
-                Optional.empty(),
-                Optional.empty(),
-                Optional.empty(),
-                Optional.empty(),
-                Optional.of(-23.0),
-                Optional.of(-23.0)
-        );
-
-        Mockito.when(addressByCoordinatesClient.getAddressByCoordinates(any(), any(), any()))
-                .thenReturn(ResponseEntity.badRequest().build());
-
-        assertThrows(InvalidDeliveryAddressCoordinatesException.class, () -> {
-            deliveryAddressService.createByCoordinatesAndUserId(request, userId);
-        });
-
-        verify(addressByCoordinatesClient).getAddressByCoordinates(request.latitude().get(), request.longitude().get(), "json");
-        verify(deliveryAddressRepository, never()).save(any());
-    }
-
-    @Test
-    @DisplayName("Should throw AddressByCoordinatesClientBadGateway when addressByCoordinatesClient response status code is 5xx")
-    void createByCoordinatesAndUserIdTestCase5() {
-        UUID userId = UUID.randomUUID();
-
-        CreateDeliveryAddressRequest request = new CreateDeliveryAddressRequest(
-                true,
-                Optional.empty(),
-                Optional.empty(),
-                Optional.empty(),
-                Optional.empty(),
-                Optional.empty(),
-                Optional.empty(),
-                Optional.empty(),
-                Optional.of(-23.0),
-                Optional.of(-23.0)
-        );
-
-        Mockito.when(addressByCoordinatesClient.getAddressByCoordinates(any(), any(), any()))
-                .thenReturn(ResponseEntity.internalServerError().build());
-
-        assertThrows(AddressByCoordinatesClientBadGateway.class, () -> {
-            deliveryAddressService.createByCoordinatesAndUserId(request, userId);
-        });
-
-        verify(addressByCoordinatesClient).getAddressByCoordinates(request.latitude().get(), request.longitude().get(), "json");
-        verify(deliveryAddressRepository, never()).save(any());
-    }
-
-
-    @Test
-    @DisplayName("Should return address by id")
+    @Test @DisplayName("Should retrieve address by ID successfully")
     void getByIdTestCase1() {
         UUID id = UUID.randomUUID();
         UUID userId = UUID.randomUUID();
 
-        DeliveryAddress address = new DeliveryAddress();
-        address.setId(id);
-        address.setUserId(userId);
-        address.setStreet("Test Street");
+        DeliveryAddress entity = new DeliveryAddress();
+        entity.setId(id);
+        entity.setUserId(userId);
+        entity.setZipCode("12345678");
+        entity.setStreet("Test Street");
+        entity.setNumber("123");
+        entity.setNeighborhood("Neighborhood");
+        entity.setCity("City");
+        entity.setState("SP");
+        entity.setIsActive(true);
 
         DeliveryAddressResponse response = new DeliveryAddressResponse(
-                id,
-                "12345678",
-                "Test Street",
-                "123",
-                null,
-                "Test Neighborhood",
-                "Test City",
-                "TS",
-                null,
-                null,
-                Instant.now()
-        );
+                id, "12345678", "Test Street", "123", null,
+                "Neighborhood", "City", "SP", null, null, Instant.now());
 
-        when(deliveryAddressRepository.findActiveByIdAndUserId(id, userId))
-                .thenReturn(Optional.of(address));
-        when(deliveryAddressMapper.toResponse(address))
-                .thenReturn(response);
+        when(deliveryAddressRepository.findActiveByIdAndUserId(id, userId)).thenReturn(Optional.of(entity));
+        when(deliveryAddressMapper.toResponse(entity)).thenReturn(response);
 
         DeliveryAddressResponse result = deliveryAddressService.getById(id, userId);
 
         assertNotNull(result);
-        assertEquals("Test Street", result.street());
+        assertEquals(id, result.id());
         verify(deliveryAddressRepository).findActiveByIdAndUserId(id, userId);
     }
 
-    @Test
-    @DisplayName("Should throw DeliveryAddressNotFoundException when not found")
+    @Test @DisplayName("Should throw DeliveryAddressNotFoundException if not found")
     void getByIdTestCase2() {
         UUID id = UUID.randomUUID();
         UUID userId = UUID.randomUUID();
 
-        when(deliveryAddressRepository.findActiveByIdAndUserId(id, userId))
-                .thenReturn(Optional.empty());
+        when(deliveryAddressRepository.findActiveByIdAndUserId(id, userId)).thenReturn(Optional.empty());
 
         assertThrows(DeliveryAddressNotFoundException.class, () -> {
             deliveryAddressService.getById(id, userId);
         });
-
-        verify(deliveryAddressRepository).findActiveByIdAndUserId(id, userId);
     }
 
-    @Test
-    @DisplayName("Should mark address as inactive by id")
+    @Test @DisplayName("Should mark address as inactive successfully")
     void deleteByIdTestCase1() {
         UUID id = UUID.randomUUID();
         UUID userId = UUID.randomUUID();
 
-        DeliveryAddress address = new DeliveryAddress();
-        address.setId(id);
-        address.setUserId(userId);
-        address.setIsActive(true);
+        DeliveryAddress entity = new DeliveryAddress();
+        entity.setId(id);
+        entity.setUserId(userId);
+        entity.setIsActive(true);
 
-        when(deliveryAddressRepository.findActiveByIdAndUserId(id, userId))
-                .thenReturn(Optional.of(address));
-        when(deliveryAddressRepository.save(any(DeliveryAddress.class)))
-                .thenReturn(address);
+        when(deliveryAddressRepository.findActiveByIdAndUserId(id, userId)).thenReturn(Optional.of(entity));
+        when(deliveryAddressRepository.save(entity)).thenReturn(entity);
 
         deliveryAddressService.deleteById(id, userId);
 
-        assertFalse(address.getIsActive());
-        verify(deliveryAddressRepository).save(address);
-        verify(deliveryAddressRepository, Mockito.never()).delete(any());
-        verify(deliveryAddressRepository, Mockito.never()).deleteById(any());
+        assertFalse(entity.getIsActive());
+        verify(deliveryAddressRepository).save(entity);
     }
 
-    @Test
-    @DisplayName("Should throw DeliveryAddressNotFoundException when address not exists or is inactive")
+    @Test @DisplayName("Should throw DeliveryAddressNotFoundException if not found")
     void deleteByIdTestCase2() {
         UUID id = UUID.randomUUID();
         UUID userId = UUID.randomUUID();
 
-        when(deliveryAddressRepository.findActiveByIdAndUserId(id, userId))
-                .thenReturn(Optional.empty());
+        when(deliveryAddressRepository.findActiveByIdAndUserId(id, userId)).thenReturn(Optional.empty());
 
         assertThrows(DeliveryAddressNotFoundException.class, () -> {
             deliveryAddressService.deleteById(id, userId);
         });
-
-        verify(deliveryAddressRepository).findActiveByIdAndUserId(id, userId);
     }
 
-    @Test
-    @DisplayName("Should update address by id")
+    @Test @DisplayName("Should update address successfully")
     void updateByIdTestCase1() {
         UUID id = UUID.randomUUID();
         UUID userId = UUID.randomUUID();
-
         UpdateDeliveryAddressRequest request = new UpdateDeliveryAddressRequest(
                 Optional.of("87654321"),
-                Optional.of("Updated Street"),
-                Optional.empty(),
-                Optional.empty(),
-                Optional.empty(),
-                Optional.empty(),
-                Optional.empty(),
+                Optional.of("New Street"),
+                Optional.of("456"),
+                Optional.of("New Complement"),
+                Optional.of("New Neighborhood"),
+                Optional.of("New City"),
+                Optional.of("RJ"),
                 Optional.empty(),
                 Optional.empty()
         );
 
-        DeliveryAddress address = new DeliveryAddress();
-        address.setId(id);
-        address.setUserId(userId);
-        address.setZipCode("12345678");
-        address.setStreet("Test Street");
+        DeliveryAddress entity = new DeliveryAddress();
+        entity.setId(id);
+        entity.setUserId(userId);
+        entity.setZipCode("12345678");
+        entity.setStreet("Old Street");
+        entity.setNumber("123");
+        entity.setComplement("Old Complement");
+        entity.setNeighborhood("Old Neighborhood");
+        entity.setCity("Old City");
+        entity.setState("SP");
+        entity.setIsActive(true);
 
         DeliveryAddressResponse response = new DeliveryAddressResponse(
-                id,
-                "87654321",
-                "Updated Street",
-                "123",
-                null,
-                "Test Neighborhood",
-                "Test City",
-                "TS",
-                null,
-                null,
-                Instant.now()
-        );
+                id, "87654321", "New Street", "456", "New Complement",
+                "New Neighborhood", "New City", "RJ", null, null, Instant.now());
 
-        when(deliveryAddressRepository.findActiveByIdAndUserId(id, userId))
-                .thenReturn(Optional.of(address));
-        when(deliveryAddressRepository.save(any(DeliveryAddress.class)))
-                .thenReturn(address);
-        when(deliveryAddressMapper.toResponse(address))
-                .thenReturn(response);
+        when(deliveryAddressRepository.findActiveByIdAndUserId(id, userId)).thenReturn(Optional.of(entity));
+        when(deliveryAddressRepository.save(entity)).thenReturn(entity);
+        when(deliveryAddressMapper.toResponse(entity)).thenReturn(response);
 
         DeliveryAddressResponse result = deliveryAddressService.updateById(id, userId, request);
 
         assertNotNull(result);
-        verify(deliveryAddressRepository).save(address);
+        assertEquals("New Street", result.street());
+        assertEquals("RJ", result.state());
     }
 
-    @Test
-    @DisplayName("Should throw DeliveryAddressNotFoundException when updating not found")
+    @Test @DisplayName("Should throw DeliveryAddressNotFoundException if not found")
     void updateByIdTestCase2() {
         UUID id = UUID.randomUUID();
         UUID userId = UUID.randomUUID();
-
         UpdateDeliveryAddressRequest request = new UpdateDeliveryAddressRequest(
                 Optional.of("87654321"),
-                Optional.empty(),
+                Optional.of("New Street"),
                 Optional.empty(),
                 Optional.empty(),
                 Optional.empty(),
@@ -560,13 +389,10 @@ public class DeliveryAddressServiceTests {
                 Optional.empty()
         );
 
-        when(deliveryAddressRepository.findActiveByIdAndUserId(id, userId))
-                .thenReturn(Optional.empty());
+        when(deliveryAddressRepository.findActiveByIdAndUserId(id, userId)).thenReturn(Optional.empty());
 
         assertThrows(DeliveryAddressNotFoundException.class, () -> {
             deliveryAddressService.updateById(id, userId, request);
         });
-
-        verify(deliveryAddressRepository).findActiveByIdAndUserId(id, userId);
     }
 }

@@ -1,6 +1,5 @@
 package com.orders.infra.persistence;
 
-import com.orders.application.dto.SalesOrderResponse;
 import com.orders.domain.entity.SalesOrder;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;

@@ -23,42 +23,35 @@ import java.util.UUID;
 @Service
 public class SalesOrderService {
     private final SalesOrderRepository salesOrderRepository;
-    private final SalesOrderItemRepository salesOrderItemRepository;
     private final SalesOrderStatusRepository salesOrderStatusRepository;
     private final SalesOrderMapper salesOrderMapper;
-    private final DeliveryAddressRepository deliveryAddressRepository;
     private final ShippingStatusRepository shippingStatusRepository;
-    private final ShippingRepository shippingRepository;
     private final MessageBrokerProducer messageBrokerProducer;
 
-    public SalesOrderService(SalesOrderRepository salesOrderRepository, SalesOrderItemRepository salesOrderItemRepository, SalesOrderStatusRepository salesOrderStatusRepository, SalesOrderMapper salesOrderMapper, DeliveryAddressRepository deliveryAddressRepository, ShippingStatusRepository shippingStatusRepository, ShippingRepository shippingRepository, MessageBrokerProducer messageBrokerProducer) {
+    public SalesOrderService(SalesOrderRepository salesOrderRepository, SalesOrderStatusRepository salesOrderStatusRepository, SalesOrderMapper salesOrderMapper, ShippingStatusRepository shippingStatusRepository, MessageBrokerProducer messageBrokerProducer) {
         this.salesOrderRepository = salesOrderRepository;
-        this.salesOrderItemRepository = salesOrderItemRepository;
         this.salesOrderStatusRepository = salesOrderStatusRepository;
         this.salesOrderMapper = salesOrderMapper;
-        this.deliveryAddressRepository = deliveryAddressRepository;
         this.shippingStatusRepository = shippingStatusRepository;
-        this.shippingRepository = shippingRepository;
         this.messageBrokerProducer = messageBrokerProducer;
     }
 
+    //    TODO: update unit tests to include new message producing
     @Transactional
     public void createOrder(CreateOrderMessage message) {
         if(message.items().isEmpty())
             throw new CantCreateSalesOrderException("Cant create order because items is empty");
 
         SalesOrder order = registerNewOrder(message.userId(), message.items());
-        registerShipping(message.deliveryAddressId(), order);
+//        registerShipping(message.deliveryAddressId(), order);
 
         messageBrokerProducer.produceGeneratePayment(
                 new GeneratePaymentMessage(order.getId(), message.userId(), getTotalAmount(order))
         );
-    }
 
-    private BigDecimal getTotalAmount(SalesOrder salesOrder){
-        return salesOrder.getItems().stream()
-                .map(item -> item.getUnitPrice().multiply(new BigDecimal(item.getUnits())))
-                .reduce(BigDecimal.ZERO, BigDecimal::add);
+        messageBrokerProducer.produceCreateShipping(
+                new CreateShippingMessage(order.getId(), message.deliveryAddressId())
+        );
     }
 
     private SalesOrder registerNewOrder(UUID userId, List<OrderItem> items) {
@@ -71,6 +64,12 @@ public class SalesOrderService {
         setSalesOrderItems(order, items);
 
         return salesOrderRepository.save(order);
+    }
+
+    private BigDecimal getTotalAmount(SalesOrder salesOrder){
+        return salesOrder.getItems().stream()
+                .map(item -> item.getUnitPrice().multiply(new BigDecimal(item.getUnits())))
+                .reduce(BigDecimal.ZERO, BigDecimal::add);
     }
 
     private void setSalesOrderItems(SalesOrder salesOrder, List<OrderItem> items) {
@@ -87,19 +86,6 @@ public class SalesOrderService {
                 .toList();
         salesOrder.setItems(salesOrderItems);
     }
-
-    private void registerShipping(UUID deliveryAddressId, SalesOrder salesOrder) {
-        Shipping shipping = new Shipping();
-        shipping.setSalesOrder(salesOrder);
-        shipping.setDeliveryAddress(deliveryAddressRepository.findById(deliveryAddressId)
-            .orElseThrow(() -> new DeliveryAddressNotFoundException("Delivery address not found with ID: " + deliveryAddressId))
-        );
-        shipping.setStatus(shippingStatusRepository.getReferenceById(
-                ShippingStatus.Value.PENDING.getId()
-        ));
-        shippingRepository.save(shipping);
-    }
-
 
     public PagedResponse<SalesOrderResponse> getAllByUserId(UUID userId, Pageable pageable) {
         Page<SalesOrder> page = salesOrderRepository.findAllByUserId(userId, pageable);
@@ -136,9 +122,7 @@ public class SalesOrderService {
 
     private void cancelOrder(SalesOrder order) {
         order.setStatus(salesOrderStatusRepository.getReferenceById(SalesOrderStatus.Value.CANCELLED.getId()));
-        order.getShipping().setStatus(
-                shippingStatusRepository.getReferenceById(ShippingStatus.Value.CANCELLED.getId())
-        );
+
         salesOrderRepository.save(order);
 
         publishOrderCancelledMessage(order);
@@ -164,7 +148,7 @@ public class SalesOrderService {
         SalesOrder order = salesOrderRepository.findById(message.orderId())
                 .orElseThrow(() -> new SalesOrderNotFoundException("Sales order not found with ID: "+message.orderId()));
 
-        order.setStatus(salesOrderStatusRepository.getReferenceById(SalesOrderStatus.Value.PROCESSING.getId()));
+        order.setStatus(salesOrderStatusRepository.getReferenceById(SalesOrderStatus.Value.CONFIRMED.getId()));
         salesOrderRepository.save(order);
     }
 
@@ -182,15 +166,11 @@ public class SalesOrderService {
     }
 
     private boolean canUserCancelOrder(UUID userId, SalesOrder order) {
-        return (isOrderStatusPending(order) || isOrderStatusProcessing(order)) && isUserOwnerOfOrder(userId, order);
+        return (isOrderStatusPending(order) && isUserOwnerOfOrder(userId, order));
     }
 
     private boolean isOrderStatusPending(SalesOrder order) {
         return order.getStatus().getId().equals(SalesOrderStatus.Value.PENDING.getId());
-    }
-
-    private boolean isOrderStatusProcessing(SalesOrder order) {
-        return order.getStatus().getId().equals(SalesOrderStatus.Value.PROCESSING.getId());
     }
 
     private boolean isUserOwnerOfOrder(UUID userId, SalesOrder order) {

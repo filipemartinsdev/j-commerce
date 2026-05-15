@@ -3,6 +3,7 @@ package com.orders.config;
 import jakarta.servlet.DispatcherType;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.http.HttpMethod;
 import org.springframework.security.config.Customizer;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.http.SessionCreationPolicy;
@@ -27,6 +28,15 @@ public class SecurityConfig {
                         .requestMatchers("/v3/api-docs/**", "/swagger-ui/**", "/h2-console/**").permitAll()
                         .requestMatchers("/api/v1/register", "/api/v1/login", "/api/v1/refresh").permitAll()
                         .requestMatchers("/actuator/**").permitAll()
+
+                        .requestMatchers(HttpMethod.GET, "/admin/api/v1/shippings/**").hasAnyAuthority("SCOPE_DRIVER", "SCOPE_LOGISTICS", "SCOPE_ADMIN")
+                        .requestMatchers("/admin/api/v1/shippings/*/check-in").hasAuthority("SCOPE_DRIVER")
+                        .requestMatchers("/admin/api/v1/shippings/*/check-out").hasAuthority("SCOPE_DRIVER")
+                        .requestMatchers("/admin/api/v1/shippings/**").hasAnyAuthority("SCOPE_LOGISTICS", "SCOPE_ADMIN")
+
+                        .requestMatchers(HttpMethod.GET, "/admin/api/v1/storage-addresses/**").hasAnyAuthority("SCOPE_DRIVER", "SCOPE_LOGISTICS", "SCOPE_ADMIN")
+                        .requestMatchers("/admin/api/v1/storage-addresses/**").hasAnyAuthority("SCOPE_LOGISTICS", "SCOPE_ADMIN")
+                        .requestMatchers("/admin/**").hasAuthority("SCOPE_ADMIN")
                         .anyRequest().hasAuthority("SCOPE_USER")
                 )
 

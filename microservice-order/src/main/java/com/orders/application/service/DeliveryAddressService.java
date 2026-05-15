@@ -1,16 +1,14 @@
 package com.orders.application.service;
 
 import com.orders.application.dto.*;
-import com.orders.application.exception.AddressByCoordinatesClientBadGateway;
-import com.orders.application.exception.DeliveryAddressNotFoundException;
-import com.orders.application.exception.InvalidDeliveryAddressCoordinatesException;
-import com.orders.application.exception.InvalidDeliveryAddressException;
+import com.orders.application.exception.*;
+import com.orders.application.factory.PagedResponseFactory;
 import com.orders.application.service.mapper.DeliveryAddressMapper;
 import com.orders.domain.entity.DeliveryAddress;
 import com.orders.infra.persistence.DeliveryAddressRepository;
-import jakarta.validation.ConstraintViolationException;
 import jakarta.validation.Valid;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.ResponseEntity;
@@ -21,30 +19,27 @@ import java.util.UUID;
 @Slf4j
 @Service
 public class DeliveryAddressService {
+    @Value("${graphHopperClient.apiKey}")
+    private String GRAPH_HOPPER_API_KEY;
+
     private final DeliveryAddressRepository deliveryAddressRepository;
     private final DeliveryAddressMapper deliveryAddressMapper;
-    private final AddressByCoordinatesClient addressByCoordinatesClient;
+    private final NominatimClient nominatimClient;
+    private final PagedResponseFactory<DeliveryAddressResponse> pagedResponseFactory;
+    private final GraphHopperClient graphHopperClient;
 
-    public DeliveryAddressService(DeliveryAddressRepository deliveryAddressRepository, DeliveryAddressMapper deliveryAddressMapper, AddressByCoordinatesClient addressByCoordinatesClient) {
+    public DeliveryAddressService(DeliveryAddressRepository deliveryAddressRepository, DeliveryAddressMapper deliveryAddressMapper, NominatimClient nominatimClient, PagedResponseFactory<DeliveryAddressResponse> pagedResponseFactory, GraphHopperClient graphHopperClient) {
         this.deliveryAddressRepository = deliveryAddressRepository;
         this.deliveryAddressMapper = deliveryAddressMapper;
-        this.addressByCoordinatesClient = addressByCoordinatesClient;
+        this.nominatimClient = nominatimClient;
+        this.pagedResponseFactory = pagedResponseFactory;
+        this.graphHopperClient = graphHopperClient;
     }
 
     public PagedResponse<DeliveryAddressResponse> getAllByUserId(UUID userId, Pageable pageable) {
         Page<DeliveryAddress> page = deliveryAddressRepository.findAllActiveByUserId(userId, pageable);
 
-        return PagedResponse.<DeliveryAddressResponse>builder()
-                .page(page.getNumber())
-                .size(page.getSize())
-                .isLast(page.isLast())
-                .totalPages(page.getTotalPages())
-                .totalElements(page.getTotalElements())
-                .content(page.getContent().stream()
-                        .map(deliveryAddressMapper::toResponse)
-                        .toList()
-                )
-                .build();
+        return pagedResponseFactory.fromPage(page, deliveryAddressMapper::toResponse);
     }
 
     public DeliveryAddressResponse createByUserId(CreateDeliveryAddressRequest request, UUID userId) {
@@ -53,7 +48,23 @@ public class DeliveryAddressService {
         DeliveryAddress address = deliveryAddressMapper.toEntity(request);
         address.setUserId(userId);
 
+        String completeAddress = address.getStreet() + ", " + address.getNeighborhood() + ", " + address.getCity() + ", " + address.getState() + ", " + address.getZipCode() + ", " + "Brasil";
+
+        GeocodingResponse geocodingResponse = graphHopperClient.geocode(GRAPH_HOPPER_API_KEY, completeAddress).getBody();
+
+        validateGeocodingResponse(geocodingResponse);
+
+        address.setLatitude(geocodingResponse.hits().getFirst().point().lat());
+        address.setLongitude(geocodingResponse.hits().getFirst().point().lon());
+
         return deliveryAddressMapper.toResponse(deliveryAddressRepository.save(address));
+    }
+
+    private void validateGeocodingResponse(GeocodingResponse geocodingResponse){
+        if (geocodingResponse == null)
+            throw new InvalidGeocodingResponseException("Null geocoding response");
+        else
+            geocodingResponse.validate();
     }
 
     private void validateRequestToCreateByUserId(CreateDeliveryAddressRequest request) {
@@ -89,7 +100,7 @@ public class DeliveryAddressService {
     }
 
     private AddressByCoordinatesResponse requestAddress(double lat, double lon){
-        ResponseEntity<AddressByCoordinatesResponse> response = addressByCoordinatesClient.getAddressByCoordinates(
+        ResponseEntity<AddressByCoordinatesResponse> response = nominatimClient.getAddressByCoordinates(
                 lat, lon, "json"
         );
 

@@ -40,9 +40,10 @@ public class SalesOrder {
     @SQLRestriction("is_active IS TRUE")
     private List<SalesOrderItem> items = new ArrayList<>();
 
-    @OneToOne(
-            fetch = FetchType.EAGER,
-            mappedBy = "salesOrder"
+    @OneToMany(
+            fetch = FetchType.LAZY,
+            mappedBy = "salesOrder",
+            cascade = CascadeType.ALL
     )
-    private Shipping shipping;
+    private List<Shipping> shipments = new ArrayList<>();
 }

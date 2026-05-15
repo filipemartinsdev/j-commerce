@@ -8,7 +8,6 @@ public record SalesOrderResponse(
         UUID id,
         Instant createdAt,
         String status,
-        BigDecimal value,
-        String shippingStatus
+        BigDecimal value
 ) {
 }

@@ -18,6 +18,10 @@ public class StandardResponse<T> {
         this.data = data;
     }
 
+    public static <T> StandardResponse<T> success(){
+        return new StandardResponse<T>("success", null, null);
+    }
+
     public static <T> StandardResponse<T> success(T data){
         return new StandardResponse<T>("success", null, data);
     }
@@ -28,6 +32,10 @@ public class StandardResponse<T> {
 
     public static <T> StandardResponse<T> fail(String message, T data){
         return new StandardResponse<T>("fail", message, data);
+    }
+
+    public static <T> StandardResponse<T> error(){
+        return new StandardResponse<T>("error", null, null);
     }
 
     public static <T> StandardResponse<T> error(String message){

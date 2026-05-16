@@ -3,6 +3,7 @@
 **/agent/
 .env
 .codex
+AGENTS.md
 
 **/HELP.md
 **/target/

@@ -315,7 +315,7 @@ The entire order flow is based on asynchronous communication, using **Spring AMQ
 
 ### Purchase confirmation
 
-The payment (mock invoice) is generated and sent by email, through a robust asynchronous messaging flow.
+The payment (mock invoice) is generated and notified, through a robust asynchronous messaging flow.
 
 ![client_purchase_successful.png](images/client_purchase_successful.png)
 

@@ -19,7 +19,10 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.Mockito;
+import org.mockito.invocation.InvocationOnMock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.mockito.stubbing.Answer;
+import org.springframework.ai.embedding.EmbeddingModel;
 import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
@@ -34,6 +37,9 @@ import static org.mockito.Mockito.*;
 
 @ExtendWith(MockitoExtension.class)
 public class ProductManagementServiceTests {
+    @Mock
+    private EmbeddingModel embeddingModel;
+
     @Mock
     private ProductRepository productRepository;
 
@@ -182,6 +188,11 @@ public class ProductManagementServiceTests {
                 .thenReturn(productEntity);
         when(productAdminMapper.toResponse(productEntity))
                 .thenReturn(response);
+
+        float[] embedding = {1, 2};
+
+        when(embeddingModel.embed(any(String.class)))
+                .thenReturn(embedding);
 
         // When
         ProductAdminResponse result = productManagementService.createProduct(request);

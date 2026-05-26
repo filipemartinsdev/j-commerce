@@ -6,11 +6,13 @@ import com.products.application.dto.catalogue.ProductCatalogueResponse;
 import com.products.application.service.ProductCatalogueService;
 import com.products.application.service.ProductCategoryService;
 import com.products.docs.ProductControllerDocs;
+import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.List;
 import java.util.UUID;
 
 @RestController
@@ -40,10 +42,10 @@ public class ProductController implements ProductControllerDocs {
     ) {
         PagedResponse<ProductSummaryCatalogueResponse> response;
 
-        if (category == -1)
-            response = productCatalogueService.getAll(pageable);
-        else
+        if (category != -1)
             response = productCatalogueService.getAllByCategoryId(category, pageable);
+        else
+            response = productCatalogueService.getAll(pageable);
 
         return ResponseEntity
                 .status(HttpStatus.OK)
@@ -55,5 +57,15 @@ public class ProductController implements ProductControllerDocs {
         return ResponseEntity
                 .status(HttpStatus.OK)
                 .body(StandardResponse.success(productCatalogueService.getProductSummaryByProductId(productId)));
+    }
+
+    @GetMapping("/products/search")
+    public ResponseEntity<StandardResponse<PagedResponse<ProductSummaryCatalogueResponse>>> getProductsBySearch(
+           @RequestParam(name = "query", required = true) String query,
+           Pageable pageable
+    ){
+        return ResponseEntity
+                .status(HttpStatus.OK)
+                .body(StandardResponse.success(productCatalogueService.semanticSearch(query, pageable)));
     }
 }

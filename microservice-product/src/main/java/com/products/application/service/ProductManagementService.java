@@ -11,10 +11,12 @@ import com.products.domain.entity.ProductSKU;
 import com.products.infra.persistence.ProductCategoryRepository;
 import com.products.infra.persistence.ProductRepository;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.ai.embedding.EmbeddingModel;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
+import java.util.List;
 import java.util.UUID;
 
 @Slf4j
@@ -24,12 +26,14 @@ public class ProductManagementService {
     private final ProductCategoryRepository productCategoryRepository;
     private final ProductAdminMapper productAdminMapper;
     private final PagedResponseFactory<ProductAdminResponse> pagedResponseFactory;
+    private final EmbeddingModel embeddingModel;
 
-    public ProductManagementService(ProductRepository productRepository, ProductCategoryRepository productCategoryRepository, ProductAdminMapper productAdminMapper, PagedResponseFactory<ProductAdminResponse> pagedResponseFactory) {
+    public ProductManagementService(ProductRepository productRepository, ProductCategoryRepository productCategoryRepository, ProductAdminMapper productAdminMapper, PagedResponseFactory<ProductAdminResponse> pagedResponseFactory, EmbeddingModel embeddingModel) {
         this.productRepository = productRepository;
         this.productCategoryRepository = productCategoryRepository;
         this.productAdminMapper = productAdminMapper;
         this.pagedResponseFactory = pagedResponseFactory;
+        this.embeddingModel = embeddingModel;
     }
 
     public ProductAdminResponse createProduct(CreateProductRequest request){
@@ -44,10 +48,19 @@ public class ProductManagementService {
         if (request.description().isPresent())
             product.setDescription(request.description().get());
 
+        product.setEmbedding(
+                embeddingModel.embed(getTextToEmbedding(request))
+        );
+
         return productAdminMapper.toResponse(
                 productRepository.save(product)
         );
     }
+
+    private String getTextToEmbedding(CreateProductRequest request) {
+        return request.name() + ", " + request.description();
+    }
+
 
     public ProductAdminResponse updateProduct(UUID productId, UpdateProductRequest request){
         Product product = productRepository.findById(productId)

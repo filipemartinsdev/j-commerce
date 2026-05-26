@@ -10,11 +10,9 @@ import com.products.application.exception.ProductNotFoundException;
 import com.products.application.factory.PagedResponseFactory;
 import com.products.application.service.mapper.ProductCategoryMapper;
 import com.products.application.service.mapper.ProductSKUCatalogueMapper;
-import com.products.domain.entity.Product;
-import com.products.domain.entity.ProductCategory;
-import com.products.domain.entity.ProductResumeCatalogue;
-import com.products.domain.entity.ProductSKUSummaryCatalogue;
+import com.products.domain.entity.*;
 import com.products.infra.persistence.*;
+import org.springframework.ai.embedding.EmbeddingModel;
 import org.springframework.cache.annotation.Cacheable;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -34,8 +32,10 @@ public class ProductCatalogueService {
     private final ProductSKUCatalogueMapper productSKUSummaryCatalogueMapper;
     private final ProductDiscountCalculator productDiscountCalculator;
     private final PagedResponseFactory<ProductSummaryCatalogueResponse> pagedResponseFactory;
+    private final SemanticProductCatalogueRepository semanticProductCatalogueRepository;
+    private final EmbeddingModel embeddingModel;
 
-    public ProductCatalogueService(ProductResumeCatalogueRepository productCatalogueResumeRepository, ProductCategoryRepository productCategoryRepository, ProductCategoryMapper productCategoryMapper, ProductRepository productRepository, ProductSKUSummaryCatalogueRepository productSKUSummaryCatalogueRepository, ProductSKUCatalogueMapper productSKUSummaryCatalogueMapper, ProductDiscountCalculator productDiscountCalculator, PagedResponseFactory<ProductSummaryCatalogueResponse> pagedResponseFactory) {
+    public ProductCatalogueService(ProductResumeCatalogueRepository productCatalogueResumeRepository, ProductCategoryRepository productCategoryRepository, ProductCategoryMapper productCategoryMapper, ProductRepository productRepository, ProductSKUSummaryCatalogueRepository productSKUSummaryCatalogueRepository, ProductSKUCatalogueMapper productSKUSummaryCatalogueMapper, ProductDiscountCalculator productDiscountCalculator, PagedResponseFactory<ProductSummaryCatalogueResponse> pagedResponseFactory, SemanticProductCatalogueRepository semanticProductCatalogueRepository, EmbeddingModel embeddingModel) {
         this.productCatalogueResumeRepository = productCatalogueResumeRepository;
         this.productCategoryRepository = productCategoryRepository;
         this.productCategoryMapper = productCategoryMapper;
@@ -44,6 +44,8 @@ public class ProductCatalogueService {
         this.productSKUSummaryCatalogueMapper = productSKUSummaryCatalogueMapper;
         this.productDiscountCalculator = productDiscountCalculator;
         this.pagedResponseFactory = pagedResponseFactory;
+        this.semanticProductCatalogueRepository = semanticProductCatalogueRepository;
+        this.embeddingModel = embeddingModel;
     }
 
     public PagedResponse<ProductSummaryCatalogueResponse> getAll(Pageable pageable) {
@@ -76,6 +78,7 @@ public class ProductCatalogueService {
         );
     }
 
+
     public PagedResponse<ProductSummaryCatalogueResponse> getAllByCategoryId(Integer categoryId, Pageable pageable) {
         Page<ProductResumeCatalogue> page = productCatalogueResumeRepository.findAllByCategoryId(categoryId, pageable);
 
@@ -101,4 +104,38 @@ public class ProductCatalogueService {
                     .toList()
         );
     }
+
+    public PagedResponse<ProductSummaryCatalogueResponse> semanticSearch(String query, Pageable pageable) {
+        float[] vector = embeddingModel.embed(query);
+
+        return pagedResponseFactory.fromPage(
+                semanticProductCatalogueRepository.findAll(vector, pageable),
+                this::createResumeCatalogueResponse
+        );
+    }
+
+    private ProductSummaryCatalogueResponse createResumeCatalogueResponse(SemanticProductCatalogue entity) {
+        int discountPercent = productDiscountCalculator.getDiscountPercent(
+                entity.getOriginalPriceValue(),
+                entity.getCurrentPriceValue()
+        );
+
+        return new ProductSummaryCatalogueResponse(
+                entity.getProductId(),
+                entity.getName(),
+
+                new ProductCategoryResponse(
+                        entity.getCategoryId(),
+                        entity.getCategoryName()
+                ),
+
+                new ProductPriceCatalogueResponse(
+                        entity.getOriginalPriceValue(),
+                        entity.getCurrentPriceValue(),
+                        discountPercent,
+                        entity.getCurrentPriceTypeName()
+                )
+        );
+    }
+
 }

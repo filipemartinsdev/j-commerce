@@ -6,9 +6,8 @@ import jakarta.validation.constraints.NotNull;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
-import org.hibernate.annotations.CreationTimestamp;
-import org.hibernate.annotations.SQLRestriction;
-import org.hibernate.annotations.UpdateTimestamp;
+import org.hibernate.annotations.*;
+import org.hibernate.type.SqlTypes;
 
 import java.time.Instant;
 import java.util.ArrayList;
@@ -38,6 +37,11 @@ public class Product {
     @CreationTimestamp
     @Column(name = "created_at")
     private Instant createdAt;
+
+    @Column(name = "embedding")
+    @Array(length = 1536)
+    @JdbcTypeCode(SqlTypes.VECTOR)
+    private float[] embedding;
 
     @UpdateTimestamp
     @Column(name = "updated_at")

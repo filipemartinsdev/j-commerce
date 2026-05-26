@@ -4,18 +4,15 @@ import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
-import org.hibernate.annotations.Array;
 import org.hibernate.annotations.Immutable;
-import org.hibernate.annotations.JdbcTypeCode;
-import org.hibernate.type.SqlTypes;
 
 import java.math.BigDecimal;
 import java.util.UUID;
 
-@Entity @Table(name = "product_resume")
+@Entity @Table(name = "product_catalogue_view")
 @Immutable
 @Data @NoArgsConstructor @AllArgsConstructor
-public class SemanticProductCatalogue {
+public class ProductCatalogueView {
     @Id @Column(name = "id")
     private UUID productId;
 
@@ -43,9 +40,4 @@ public class SemanticProductCatalogue {
 
     @Column(name = "stock_count")
     private Integer stockCount;
-
-    @Column(name = "embedding")
-    @Array(length = 1536)
-    @JdbcTypeCode(SqlTypes.VECTOR)
-    private float[] embedding;
 }

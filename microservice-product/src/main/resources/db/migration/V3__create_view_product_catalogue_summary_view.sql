@@ -1,4 +1,4 @@
-CREATE VIEW product_sku_summary_catalogue AS
+CREATE VIEW product_catalogue_summary_view AS
     SELECT
         sku.id AS id,
         sku.product_id AS product_id,
@@ -14,10 +14,10 @@ CREATE VIEW product_sku_summary_catalogue AS
     FROM product_sku sku
 
     JOIN product_stock st
-        ON st.product_sku_id = sku.id
+    ON st.product_sku_id = sku.id
 
     JOIN product_sku_price origPrice
-        ON origPrice.product_sku_id = sku.id
+    ON origPrice.product_sku_id = sku.id
         AND origPrice.price_type_id = 1
         AND origPrice.start_at <= CURRENT_TIMESTAMP
         AND (origPrice.end_at > CURRENT_TIMESTAMP OR origPrice.end_at IS NULL)
@@ -39,10 +39,10 @@ CREATE VIEW product_sku_summary_catalogue AS
     ) curr ON TRUE
 
     LEFT JOIN product_price_type pt
-        ON pt.id = curr.price_type_id
+    ON pt.id = curr.price_type_id
 
     JOIN product p
-        ON p.id = sku.product_id
+    ON p.id = sku.product_id
         AND p.is_active IS TRUE
 
     WHERE sku.is_active IS TRUE;

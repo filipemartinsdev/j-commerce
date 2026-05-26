@@ -4,8 +4,6 @@ import com.products.application.dto.*;
 import com.products.application.dto.catalogue.ProductPriceCatalogueResponse;
 import com.products.application.dto.catalogue.ProductSummaryCatalogueResponse;
 import com.products.application.dto.catalogue.ProductCatalogueResponse;
-import com.products.application.exception.InvalidProductCategoryException;
-import com.products.application.exception.ProductCategoryNotFoundException;
 import com.products.application.exception.ProductNotFoundException;
 import com.products.application.factory.PagedResponseFactory;
 import com.products.application.service.mapper.ProductCategoryMapper;
@@ -13,34 +11,32 @@ import com.products.application.service.mapper.ProductSKUCatalogueMapper;
 import com.products.domain.entity.*;
 import com.products.infra.persistence.*;
 import org.springframework.ai.embedding.EmbeddingModel;
-import org.springframework.cache.annotation.Cacheable;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
-import java.util.Optional;
 import java.util.UUID;
 
 @Service
 public class ProductCatalogueService {
-    private final ProductResumeCatalogueRepository productCatalogueResumeRepository;
+    private final ProductCatalogueViewRepository productCatalogueResumeRepository;
     private final ProductCategoryRepository productCategoryRepository;
     private final ProductCategoryMapper productCategoryMapper;
     private final ProductRepository productRepository;
-    private final ProductSKUSummaryCatalogueRepository productSKUSummaryCatalogueRepository;
+    private final ProductCatalogueSummaryViewRepository productCatalogueSummaryViewRepository;
     private final ProductSKUCatalogueMapper productSKUSummaryCatalogueMapper;
     private final ProductDiscountCalculator productDiscountCalculator;
     private final PagedResponseFactory<ProductSummaryCatalogueResponse> pagedResponseFactory;
-    private final SemanticProductCatalogueRepository semanticProductCatalogueRepository;
+    private final SemanticProductCatalogueViewRepository semanticProductCatalogueRepository;
     private final EmbeddingModel embeddingModel;
 
-    public ProductCatalogueService(ProductResumeCatalogueRepository productCatalogueResumeRepository, ProductCategoryRepository productCategoryRepository, ProductCategoryMapper productCategoryMapper, ProductRepository productRepository, ProductSKUSummaryCatalogueRepository productSKUSummaryCatalogueRepository, ProductSKUCatalogueMapper productSKUSummaryCatalogueMapper, ProductDiscountCalculator productDiscountCalculator, PagedResponseFactory<ProductSummaryCatalogueResponse> pagedResponseFactory, SemanticProductCatalogueRepository semanticProductCatalogueRepository, EmbeddingModel embeddingModel) {
+    public ProductCatalogueService(ProductCatalogueViewRepository productCatalogueResumeRepository, ProductCategoryRepository productCategoryRepository, ProductCategoryMapper productCategoryMapper, ProductRepository productRepository, ProductCatalogueSummaryViewRepository productCatalogueSummaryViewRepository, ProductSKUCatalogueMapper productSKUSummaryCatalogueMapper, ProductDiscountCalculator productDiscountCalculator, PagedResponseFactory<ProductSummaryCatalogueResponse> pagedResponseFactory, SemanticProductCatalogueViewRepository semanticProductCatalogueRepository, EmbeddingModel embeddingModel) {
         this.productCatalogueResumeRepository = productCatalogueResumeRepository;
         this.productCategoryRepository = productCategoryRepository;
         this.productCategoryMapper = productCategoryMapper;
         this.productRepository = productRepository;
-        this.productSKUSummaryCatalogueRepository = productSKUSummaryCatalogueRepository;
+        this.productCatalogueSummaryViewRepository = productCatalogueSummaryViewRepository;
         this.productSKUSummaryCatalogueMapper = productSKUSummaryCatalogueMapper;
         this.productDiscountCalculator = productDiscountCalculator;
         this.pagedResponseFactory = pagedResponseFactory;
@@ -49,12 +45,12 @@ public class ProductCatalogueService {
     }
 
     public PagedResponse<ProductSummaryCatalogueResponse> getAll(Pageable pageable) {
-        Page<ProductResumeCatalogue> page = productCatalogueResumeRepository.findAll(pageable);
+        Page<ProductCatalogueView> page = productCatalogueResumeRepository.findAll(pageable);
 
         return pagedResponseFactory.fromPage(page, this::createResumeCatalogueResponse);
     }
 
-    private ProductSummaryCatalogueResponse createResumeCatalogueResponse(ProductResumeCatalogue entity) {
+    private ProductSummaryCatalogueResponse createResumeCatalogueResponse(ProductCatalogueView entity) {
         int discountPercent = productDiscountCalculator.getDiscountPercent(
                 entity.getOriginalPriceValue(),
                 entity.getCurrentPriceValue()
@@ -80,7 +76,7 @@ public class ProductCatalogueService {
 
 
     public PagedResponse<ProductSummaryCatalogueResponse> getAllByCategoryId(Integer categoryId, Pageable pageable) {
-        Page<ProductResumeCatalogue> page = productCatalogueResumeRepository.findAllByCategoryId(categoryId, pageable);
+        Page<ProductCatalogueView> page = productCatalogueResumeRepository.findAllByCategoryId(categoryId, pageable);
 
         return pagedResponseFactory.fromPage(page, this::createResumeCatalogueResponse);
     }
@@ -89,7 +85,7 @@ public class ProductCatalogueService {
         Product product = productRepository.findById(productId)
                 .orElseThrow(() -> new ProductNotFoundException("Product not found with ID:"+productId));
 
-        List<ProductSKUSummaryCatalogue> SKUs = productSKUSummaryCatalogueRepository.findAllByProductId(productId);
+        List<ProductCatalogueSummaryView> SKUs = productCatalogueSummaryViewRepository.findAllByProductId(productId);
 
         return new ProductCatalogueResponse(
                 product.getId(),
@@ -114,7 +110,7 @@ public class ProductCatalogueService {
         );
     }
 
-    private ProductSummaryCatalogueResponse createResumeCatalogueResponse(SemanticProductCatalogue entity) {
+    private ProductSummaryCatalogueResponse createResumeCatalogueResponse(SemanticProductCatalogueView entity) {
         int discountPercent = productDiscountCalculator.getDiscountPercent(
                 entity.getOriginalPriceValue(),
                 entity.getCurrentPriceValue()

@@ -1,17 +1,15 @@
 package com.products.infra.persistence;
 
-import com.products.domain.entity.ProductResumeCatalogue;
-import com.products.domain.entity.SemanticProductCatalogue;
+import com.products.domain.entity.SemanticProductCatalogueView;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 
-import java.util.List;
 import java.util.UUID;
 
-public interface SemanticProductCatalogueRepository extends JpaRepository<SemanticProductCatalogue, UUID> {
+public interface SemanticProductCatalogueViewRepository extends JpaRepository<SemanticProductCatalogueView, UUID> {
     @Query(
             nativeQuery = true,
 
@@ -26,5 +24,5 @@ public interface SemanticProductCatalogueRepository extends JpaRepository<Semant
             SELECT COUNT(*) FROM semantic_product_catalogue p
             """
     )
-    Page<SemanticProductCatalogue> findAll(@Param("query") float[] query, Pageable pageable);
+    Page<SemanticProductCatalogueView> findAll(@Param("query") float[] query, Pageable pageable);
 }

@@ -4,15 +4,23 @@ import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
+import org.hibernate.annotations.Array;
 import org.hibernate.annotations.Immutable;
+import org.hibernate.annotations.JdbcTypeCode;
+import org.hibernate.type.SqlTypes;
 
 import java.math.BigDecimal;
 import java.util.UUID;
 
-@Entity @Table(name = "product_resume")
+/*
+* View to retrieve products using semantic search (vector similarity).
+* Only entity definition, don't load this on memory.
+* See SemanticProductCatalogueProjection.
+* **/
+@Entity @Table(name = "semantic_product_catalogue_view")
 @Immutable
 @Data @NoArgsConstructor @AllArgsConstructor
-public class ProductResumeCatalogue {
+public class SemanticProductCatalogueView {
     @Id @Column(name = "id")
     private UUID productId;
 
@@ -40,4 +48,9 @@ public class ProductResumeCatalogue {
 
     @Column(name = "stock_count")
     private Integer stockCount;
+
+    @Column(name = "embedding")
+    @Array(length = 1536)
+    @JdbcTypeCode(SqlTypes.VECTOR)
+    private float[] embedding;
 }

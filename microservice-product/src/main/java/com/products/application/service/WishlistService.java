@@ -10,9 +10,9 @@ import com.products.application.factory.PagedResponseFactory;
 import com.products.application.service.mapper.WishlistItemMapper;
 import com.products.domain.entity.ProductSKU;
 import com.products.domain.entity.WishlistItem;
-import com.products.domain.entity.WishlistItemProductSKUResume;
+import com.products.domain.entity.WishlistItemSummaryView;
 import com.products.infra.persistence.ProductSKURepository;
-import com.products.infra.persistence.WishlistItemProductSKUResumeRepository;
+import com.products.infra.persistence.WishlistItemSummaryViewRepository;
 import com.products.infra.persistence.WishlistItemRepository;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -24,12 +24,12 @@ import java.util.UUID;
 public class WishlistService {
     private final WishlistItemRepository wishlistItemRepository;
     private final ProductSKURepository productSKURepository;
-    private final WishlistItemProductSKUResumeRepository wishlistItemProductSKUResumeRepository;
+    private final WishlistItemSummaryViewRepository wishlistItemProductSKUResumeRepository;
     private final WishlistItemMapper wishlistItemMapper;
     private final ProductDiscountCalculator productDiscountCalculator;
     private final PagedResponseFactory<WishlistItemResponse> pagedResponseFactory;
 
-    public WishlistService(WishlistItemRepository wishlistItemRepository, ProductSKURepository productSKURepository, WishlistItemProductSKUResumeRepository wishlistItemProductSKUResumeRepository, WishlistItemMapper wishlistItemMapper, ProductDiscountCalculator productDiscountCalculator, PagedResponseFactory<WishlistItemResponse> pagedResponseFactory) {
+    public WishlistService(WishlistItemRepository wishlistItemRepository, ProductSKURepository productSKURepository, WishlistItemSummaryViewRepository wishlistItemProductSKUResumeRepository, WishlistItemMapper wishlistItemMapper, ProductDiscountCalculator productDiscountCalculator, PagedResponseFactory<WishlistItemResponse> pagedResponseFactory) {
         this.wishlistItemRepository = wishlistItemRepository;
         this.productSKURepository = productSKURepository;
         this.wishlistItemProductSKUResumeRepository = wishlistItemProductSKUResumeRepository;
@@ -39,7 +39,7 @@ public class WishlistService {
     }
 
     public PagedResponse<WishlistItemResponse> getAllItems(UUID authenticatedUser, Pageable pageable){
-        Page<WishlistItemProductSKUResume> page = wishlistItemProductSKUResumeRepository.findAllByUserId(authenticatedUser, pageable);
+        Page<WishlistItemSummaryView> page = wishlistItemProductSKUResumeRepository.findAllByUserId(authenticatedUser, pageable);
 
         return pagedResponseFactory.fromPage(page, (entity) -> {
                 int discount = productDiscountCalculator.getDiscountPercent(entity.getOriginalPrice(), entity.getCurrentPrice());

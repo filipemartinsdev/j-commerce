@@ -12,9 +12,9 @@ import java.math.BigDecimal;
 import java.time.Instant;
 import java.util.UUID;
 
-@Entity @Table(name = "product_sku_summary_catalogue")
+@Entity @Table(name = "product_catalogue_summary_view")
 @Data @NoArgsConstructor @AllArgsConstructor
-public class ProductSKUSummaryCatalogue {
+public class ProductCatalogueSummaryView {
     @Id
     private UUID id;
 

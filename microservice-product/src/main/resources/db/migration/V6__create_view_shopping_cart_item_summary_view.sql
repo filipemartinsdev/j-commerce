@@ -1,4 +1,4 @@
-CREATE VIEW shopping_cart_item_product_sku_resume AS
+CREATE VIEW shopping_cart_item_summary_view AS
     SELECT
         sci.id AS id,
         sci.user_id AS user_id,
@@ -12,11 +12,11 @@ CREATE VIEW shopping_cart_item_product_sku_resume AS
     FROM shopping_cart_item sci
 
     JOIN product_sku sku
-        ON sku.id = sci.product_sku_id
+    ON sku.id = sci.product_sku_id
         AND sku.is_active IS TRUE
 
     JOIN product_sku_price orig_price
-        ON orig_price.product_sku_id = sku.id
+    ON orig_price.product_sku_id = sku.id
         AND orig_price.price_type_id = 1
         AND orig_price.start_at <= CURRENT_TIMESTAMP
         AND (orig_price.end_at > CURRENT_TIMESTAMP OR orig_price.end_at IS NULL)
@@ -37,10 +37,10 @@ CREATE VIEW shopping_cart_item_product_sku_resume AS
     ) curr ON TRUE
 
     LEFT JOIN product_price_type pt
-        ON pt.id = curr.price_type_id
+    ON pt.id = curr.price_type_id
 
     JOIN product p
-        ON p.id = sku.product_id
+    ON p.id = sku.product_id
         AND p.is_active IS TRUE
 
     WHERE sci.is_active IS TRUE;

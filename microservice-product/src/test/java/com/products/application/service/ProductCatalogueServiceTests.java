@@ -7,7 +7,6 @@ import com.products.application.dto.catalogue.ProductPriceCatalogueResponse;
 import com.products.application.dto.catalogue.ProductSummaryCatalogueResponse;
 import com.products.application.dto.catalogue.ProductSKUCatalogueResponse;
 import com.products.application.dto.catalogue.ProductCatalogueResponse;
-import com.products.application.exception.InvalidProductCategoryException;
 import com.products.application.exception.ProductNotFoundException;
 import com.products.application.factory.PagedResponseFactory;
 import com.products.application.service.mapper.ProductCategoryMapper;
@@ -36,11 +35,11 @@ import static org.mockito.Mockito.*;
 
 @ExtendWith(MockitoExtension.class)
 public class ProductCatalogueServiceTests {
-    @Mock private ProductResumeCatalogueRepository productCatalogueResumeRepository;
+    @Mock private ProductCatalogueViewRepository productCatalogueResumeRepository;
     @Mock private ProductCategoryRepository productCategoryRepository;
     @Mock private ProductCategoryMapper productCategoryMapper;
     @Mock private ProductRepository productRepository;
-    @Mock private ProductSKUSummaryCatalogueRepository productSKUSummaryCatalogueRepository;
+    @Mock private ProductCatalogueSummaryViewRepository productCatalogueSummaryViewRepository;
     @Mock private ProductSKUCatalogueMapper productSKUSummaryCatalogueMapper;
     @Mock private ProductDiscountCalculator productDiscountCalculator;
     @Mock private PagedResponseFactory<ProductSummaryCatalogueResponse> pagedResponseFactory;
@@ -48,12 +47,12 @@ public class ProductCatalogueServiceTests {
     @InjectMocks
     private ProductCatalogueService productCatalogueService;
 
-    @Test @DisplayName("Should retrieve all active ProductResumeCatalogue successfully")
+    @Test @DisplayName("Should retrieve all active ProductCatalogueView successfully")
     void getAllTestCase1() {
         // Given
         Pageable pageable = PageRequest.of(0, 10);
 
-        ProductResumeCatalogue product1 = new ProductResumeCatalogue();
+        ProductCatalogueView product1 = new ProductCatalogueView();
         product1.setProductId(UUID.randomUUID());
         product1.setName("Product 1");
         product1.setCategoryId(1);
@@ -63,7 +62,7 @@ public class ProductCatalogueServiceTests {
         product1.setCurrentPriceTypeName("Sale");
         product1.setStockCount(50);
 
-        ProductResumeCatalogue product2 = new ProductResumeCatalogue();
+        ProductCatalogueView product2 = new ProductCatalogueView();
         product2.setProductId(UUID.randomUUID());
         product2.setName("Product 2");
         product2.setCategoryId(2);
@@ -73,7 +72,7 @@ public class ProductCatalogueServiceTests {
         product2.setCurrentPriceTypeName("Discount");
         product2.setStockCount(30);
 
-        Page<ProductResumeCatalogue> page = new PageImpl<>(List.of(product1, product2), pageable, 2);
+        Page<ProductCatalogueView> page = new PageImpl<>(List.of(product1, product2), pageable, 2);
 
         ProductPriceCatalogueResponse price1 = new ProductPriceCatalogueResponse(
                 new BigDecimal("100.00"), new BigDecimal("50.00"), 50, "Sale"
@@ -116,11 +115,11 @@ public class ProductCatalogueServiceTests {
         verify(pagedResponseFactory).fromPage(any(), any());
     }
 
-    @Test @DisplayName("Should retrieve empty PagedResponse if not exists any ProductResumeCatalogue")
+    @Test @DisplayName("Should retrieve empty PagedResponse if not exists any ProductCatalogueView")
     void getAllTestCase2() {
         // Given
         Pageable pageable = PageRequest.of(0, 10);
-        Page<ProductResumeCatalogue> emptyPage = new PageImpl<>(Collections.emptyList(), pageable, 0);
+        Page<ProductCatalogueView> emptyPage = new PageImpl<>(Collections.emptyList(), pageable, 0);
 
         PagedResponse<ProductSummaryCatalogueResponse> expectedResponse = PagedResponse.<ProductSummaryCatalogueResponse>builder()
                 .content(new java.util.ArrayList<>())
@@ -145,13 +144,13 @@ public class ProductCatalogueServiceTests {
         verify(pagedResponseFactory).fromPage(any(), any());
     }
 
-    @Test @DisplayName("Should retrieve all active ProductResumeCatalogue by categoryId")
+    @Test @DisplayName("Should retrieve all active ProductCatalogueView by categoryId")
     void getAllByCategoryIdTestCase1() {
         // Given
         Integer categoryId = 1;
         Pageable pageable = PageRequest.of(0, 10);
 
-        ProductResumeCatalogue product1 = new ProductResumeCatalogue();
+        ProductCatalogueView product1 = new ProductCatalogueView();
         product1.setProductId(UUID.randomUUID());
         product1.setName("Product 1");
         product1.setCategoryId(categoryId);
@@ -160,7 +159,7 @@ public class ProductCatalogueServiceTests {
         product1.setCurrentPriceValue(new BigDecimal("100.00"));
         product1.setCurrentPriceTypeName("Offer");
 
-        Page<ProductResumeCatalogue> page = new PageImpl<>(List.of(product1), pageable, 1);
+        Page<ProductCatalogueView> page = new PageImpl<>(List.of(product1), pageable, 1);
 
         ProductPriceCatalogueResponse price1 = new ProductPriceCatalogueResponse(
                 new BigDecimal("100.00"), new BigDecimal("100.00"), 0, "Offer"
@@ -193,12 +192,12 @@ public class ProductCatalogueServiceTests {
         verify(pagedResponseFactory).fromPage(any(), any());
     }
 
-    @Test @DisplayName("Should retrieve empty PagedResponse if not exists any ProductResumeCatalogue by categoryId")
+    @Test @DisplayName("Should retrieve empty PagedResponse if not exists any ProductCatalogueView by categoryId")
     void getAllByCategoryIdTestCase2() {
         // Given
         Integer categoryId = 1;
         Pageable pageable = PageRequest.of(0, 10);
-        Page<ProductResumeCatalogue> emptyPage = new PageImpl<>(Collections.emptyList(), pageable, 0);
+        Page<ProductCatalogueView> emptyPage = new PageImpl<>(Collections.emptyList(), pageable, 0);
 
         PagedResponse<ProductSummaryCatalogueResponse> expectedResponse = PagedResponse.<ProductSummaryCatalogueResponse>builder()
                 .content(new java.util.ArrayList<>())
@@ -238,7 +237,7 @@ public class ProductCatalogueServiceTests {
         category.setName("Electronics");
         product.setCategory(category);
 
-        ProductSKUSummaryCatalogue sku1 = new ProductSKUSummaryCatalogue();
+        ProductCatalogueSummaryView sku1 = new ProductCatalogueSummaryView();
         sku1.setId(UUID.randomUUID());
         sku1.setProductId(productId);
         sku1.setSKU("SKU1");
@@ -257,7 +256,7 @@ public class ProductCatalogueServiceTests {
         ProductCategoryResponse categoryResponse = new ProductCategoryResponse(1, "Electronics");
 
         when(productRepository.findById(productId)).thenReturn(Optional.of(product));
-        when(productSKUSummaryCatalogueRepository.findAllByProductId(productId)).thenReturn(List.of(sku1));
+        when(productCatalogueSummaryViewRepository.findAllByProductId(productId)).thenReturn(List.of(sku1));
         when(productCategoryMapper.toResponse(category)).thenReturn(categoryResponse);
         when(productDiscountCalculator.getDiscountPercent(any(), any())).thenReturn(50);
         when(productSKUSummaryCatalogueMapper.toResponse(sku1, 50)).thenReturn(skuResponse);
@@ -272,7 +271,7 @@ public class ProductCatalogueServiceTests {
         assertEquals("Test Product", result.description());
         assertEquals(1, result.SKUs().size());
         verify(productRepository).findById(productId);
-        verify(productSKUSummaryCatalogueRepository).findAllByProductId(productId);
+        verify(productCatalogueSummaryViewRepository).findAllByProductId(productId);
     }
 
     @Test @DisplayName("Should throw ProductNotFoundException if product is not active or not exists by ID")
@@ -288,6 +287,6 @@ public class ProductCatalogueServiceTests {
         });
 
         verify(productRepository).findById(productId);
-        verify(productSKUSummaryCatalogueRepository, never()).findAllByProductId(any());
+        verify(productCatalogueSummaryViewRepository, never()).findAllByProductId(any());
     }
 }

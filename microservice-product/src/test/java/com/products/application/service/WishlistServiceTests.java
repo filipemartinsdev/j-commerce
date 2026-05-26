@@ -9,9 +9,9 @@ import com.products.application.exception.WishlistItemNotFoundException;
 import com.products.application.factory.PagedResponseFactory;
 import com.products.domain.entity.ProductSKU;
 import com.products.domain.entity.WishlistItem;
-import com.products.domain.entity.WishlistItemProductSKUResume;
+import com.products.domain.entity.WishlistItemSummaryView;
 import com.products.infra.persistence.ProductSKURepository;
-import com.products.infra.persistence.WishlistItemProductSKUResumeRepository;
+import com.products.infra.persistence.WishlistItemSummaryViewRepository;
 import com.products.infra.persistence.WishlistItemRepository;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -43,7 +43,7 @@ public class WishlistServiceTests {
     private ProductSKURepository productSKURepository;
 
     @Mock
-    private WishlistItemProductSKUResumeRepository wishlistItemProductSKUResumeRepository;
+    private WishlistItemSummaryViewRepository wishlistItemProductSKUResumeRepository;
 
     @Mock
     private ProductDiscountCalculator productDiscountCalculator;
@@ -60,7 +60,7 @@ public class WishlistServiceTests {
         UUID userId = UUID.randomUUID();
         Pageable pageable = PageRequest.of(0, 10);
 
-        WishlistItemProductSKUResume entity = new WishlistItemProductSKUResume();
+        WishlistItemSummaryView entity = new WishlistItemSummaryView();
         entity.setUserId(userId);
         entity.setProductSKUId(UUID.randomUUID());
         entity.setProductSKUName("Test SKU");
@@ -68,7 +68,7 @@ public class WishlistServiceTests {
         entity.setCurrentPrice(BigDecimal.valueOf(80));
         entity.setPriceTypeName("PROMOTIONAL");
 
-        Page<WishlistItemProductSKUResume> page = new PageImpl<>(List.of(entity), pageable, 1);
+        Page<WishlistItemSummaryView> page = new PageImpl<>(List.of(entity), pageable, 1);
 
         WishlistItemResponse response = new WishlistItemResponse(
                 entity.getId(),
@@ -111,7 +111,7 @@ public class WishlistServiceTests {
         UUID userId = UUID.randomUUID();
         Pageable pageable = PageRequest.of(0, 10);
 
-        Page<WishlistItemProductSKUResume> emptyPage = new PageImpl<>(List.of(), pageable, 0);
+        Page<WishlistItemSummaryView> emptyPage = new PageImpl<>(List.of(), pageable, 0);
 
         PagedResponse<WishlistItemResponse> expectedResponse = PagedResponse.<WishlistItemResponse>builder()
                 .content(new java.util.ArrayList<>())

@@ -10,15 +10,14 @@ import com.products.application.message.CreateOrderMessage;
 import com.products.application.service.mapper.ShoppingCartItemMapper;
 import com.products.domain.entity.ProductSKU;
 import com.products.domain.entity.ShoppingCartItem;
-import com.products.domain.entity.ShoppingCartItemProductSKUSummary;
+import com.products.domain.entity.ShoppingCartItemSummaryView;
 import com.products.infra.persistence.ProductSKURepository;
-import com.products.infra.persistence.ShoppingCartItemProductSKUSummaryRepository;
+import com.products.infra.persistence.ShoppingCartItemSummaryViewRepository;
 import com.products.infra.persistence.ShoppingCartItemRepository;
 import jakarta.transaction.Transactional;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
-import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -29,7 +28,7 @@ import java.util.UUID;
 public class ShoppingCartService {
     private final ShoppingCartItemRepository shoppingCartItemRepository;
     private final ShoppingCartItemMapper shoppingCartItemProductSKUMapper;
-    private final ShoppingCartItemProductSKUSummaryRepository shoppingCartItemProductSKUSummaryRepository;
+    private final ShoppingCartItemSummaryViewRepository shoppingCartItemProductSKUSummaryRepository;
     private final ProductSKURepository productSKURepository;
     private final ProductStockChecker productStockChecker;
     private final MessageBrokerProducer shoppingCartConfirmationProducer;
@@ -38,7 +37,7 @@ public class ShoppingCartService {
     private final ProductStockManagementService productStockManagementService;
     private final PagedResponseFactory<ShoppingCartItemResponse> pagedResponseFactory;
 
-    public ShoppingCartService(ShoppingCartItemRepository shoppingCartItemRepository, ShoppingCartItemMapper shoppingCartItemProductSKUMapper, ShoppingCartItemProductSKUSummaryRepository shoppingCartItemProductSKUSummaryRepository, ProductSKURepository productSKURepository, ProductStockChecker productStockChecker, MessageBrokerProducer shoppingCartConfirmationProducer, StockMovementManagementService stockMovementService, SalesOrderClient salesOrderClient, ProductStockManagementService productStockManagementService, PagedResponseFactory<ShoppingCartItemResponse> pagedResponseFactory) {
+    public ShoppingCartService(ShoppingCartItemRepository shoppingCartItemRepository, ShoppingCartItemMapper shoppingCartItemProductSKUMapper, ShoppingCartItemSummaryViewRepository shoppingCartItemProductSKUSummaryRepository, ProductSKURepository productSKURepository, ProductStockChecker productStockChecker, MessageBrokerProducer shoppingCartConfirmationProducer, StockMovementManagementService stockMovementService, SalesOrderClient salesOrderClient, ProductStockManagementService productStockManagementService, PagedResponseFactory<ShoppingCartItemResponse> pagedResponseFactory) {
         this.shoppingCartItemRepository = shoppingCartItemRepository;
         this.shoppingCartItemProductSKUMapper = shoppingCartItemProductSKUMapper;
         this.shoppingCartItemProductSKUSummaryRepository = shoppingCartItemProductSKUSummaryRepository;
@@ -70,7 +69,7 @@ public class ShoppingCartService {
     }
 
     public PagedResponse<ShoppingCartItemResponse> getAllItems(UUID authenticatedUserId, Pageable pageable) {
-        Page<ShoppingCartItemProductSKUSummary> page = shoppingCartItemProductSKUSummaryRepository.findAllByUserId(authenticatedUserId, pageable);
+        Page<ShoppingCartItemSummaryView> page = shoppingCartItemProductSKUSummaryRepository.findAllByUserId(authenticatedUserId, pageable);
 
         return pagedResponseFactory.fromPage(page, shoppingCartItemProductSKUMapper::toResponse);
     }

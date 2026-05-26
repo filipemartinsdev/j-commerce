@@ -4,7 +4,6 @@ import com.products.application.dto.PagedResponse;
 import com.products.application.dto.catalogue.ConfirmShoppingCartRequest;
 import com.products.application.dto.catalogue.CreateShoppingCartItemRequest;
 import com.products.application.dto.catalogue.ShoppingCartItemResponse;
-import com.products.application.exception.DeliveryAddressNotFoundException;
 import com.products.application.exception.EmptyShoppingCartException;
 import com.products.application.exception.ProductOutOfStockException;
 import com.products.application.exception.ProductSKUNotFoundException;
@@ -15,9 +14,9 @@ import com.products.application.message.CreateOrderMessage;
 import com.products.application.service.mapper.ShoppingCartItemMapper;
 import com.products.domain.entity.ProductSKU;
 import com.products.domain.entity.ShoppingCartItem;
-import com.products.domain.entity.ShoppingCartItemProductSKUSummary;
+import com.products.domain.entity.ShoppingCartItemSummaryView;
 import com.products.infra.persistence.ProductSKURepository;
-import com.products.infra.persistence.ShoppingCartItemProductSKUSummaryRepository;
+import com.products.infra.persistence.ShoppingCartItemSummaryViewRepository;
 import com.products.infra.persistence.ShoppingCartItemRepository;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -51,7 +50,7 @@ class ShoppingCartServiceTests {
     private ShoppingCartItemMapper shoppingCartItemProductSKUMapper;
 
     @Mock
-    private ShoppingCartItemProductSKUSummaryRepository shoppingCartItemProductSKUSummaryRepository;
+    private ShoppingCartItemSummaryViewRepository shoppingCartItemProductSKUSummaryRepository;
 
     @Mock
     private ProductSKURepository productSKURepository;
@@ -158,7 +157,7 @@ class ShoppingCartServiceTests {
         UUID userId = UUID.randomUUID();
         Pageable pageable = PageRequest.of(0, 10);
 
-        ShoppingCartItemProductSKUSummary entity = new ShoppingCartItemProductSKUSummary();
+        ShoppingCartItemSummaryView entity = new ShoppingCartItemSummaryView();
         entity.setId(UUID.randomUUID());
         entity.setProductSKUId(UUID.randomUUID());
         entity.setProductSKUName("Test");
@@ -166,7 +165,7 @@ class ShoppingCartServiceTests {
         entity.setOriginalPrice(BigDecimal.valueOf(100));
         entity.setCurrentPrice(BigDecimal.valueOf(80));
 
-        Page<ShoppingCartItemProductSKUSummary> page = new PageImpl<>(List.of(entity), pageable, 1);
+        Page<ShoppingCartItemSummaryView> page = new PageImpl<>(List.of(entity), pageable, 1);
         ShoppingCartItemResponse response = new ShoppingCartItemResponse(
                 entity.getId(), entity.getProductSKUId(), entity.getProductSKUName(),
                 entity.getUnits(), entity.getOriginalPrice(), entity.getCurrentPrice(), 20
@@ -196,7 +195,7 @@ class ShoppingCartServiceTests {
     void getAllItemsTestCase2() {
         UUID userId = UUID.randomUUID();
         Pageable pageable = PageRequest.of(0, 10);
-        Page<ShoppingCartItemProductSKUSummary> emptyPage = new PageImpl<>(List.of(), pageable, 0);
+        Page<ShoppingCartItemSummaryView> emptyPage = new PageImpl<>(List.of(), pageable, 0);
 
         PagedResponse<ShoppingCartItemResponse> expectedResponse = PagedResponse.<ShoppingCartItemResponse>builder()
                 .content(new java.util.ArrayList<>())
@@ -273,7 +272,7 @@ class ShoppingCartServiceTests {
                 UUID.randomUUID(), "Product", 2, BigDecimal.valueOf(100)
         );
 
-        ShoppingCartItemProductSKUSummary summary = new ShoppingCartItemProductSKUSummary();
+        ShoppingCartItemSummaryView summary = new ShoppingCartItemSummaryView();
         summary.setProductSKUId(UUID.randomUUID());
         summary.setProductSKUName("Product");
         summary.setUnits(2);
@@ -326,13 +325,13 @@ class ShoppingCartServiceTests {
                 UUID.randomUUID(), "Product 2", 1, BigDecimal.valueOf(75)
         );
 
-        ShoppingCartItemProductSKUSummary summary1 = new ShoppingCartItemProductSKUSummary();
+        ShoppingCartItemSummaryView summary1 = new ShoppingCartItemSummaryView();
         summary1.setProductSKUId(UUID.randomUUID());
         summary1.setProductSKUName("Product 1");
         summary1.setUnits(2);
         summary1.setCurrentPrice(BigDecimal.valueOf(50));
 
-        ShoppingCartItemProductSKUSummary summary2 = new ShoppingCartItemProductSKUSummary();
+        ShoppingCartItemSummaryView summary2 = new ShoppingCartItemSummaryView();
         summary2.setProductSKUId(UUID.randomUUID());
         summary2.setProductSKUName("Product 2");
         summary2.setUnits(1);

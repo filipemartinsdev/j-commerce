@@ -19,19 +19,19 @@ services:
     image: postgres:17-alpine
     container_name: identity_db
     environment:
-      POSTGRES_DB: ${PG_IDENTITY_DATABASE}
-      POSTGRES_USER: ${PG_IDENTITY_USER}
-      POSTGRES_PASSWORD: ${PG_IDENTITY_PASSWORD}
+      POSTGRES_DB: ${PG_IDENTITY_DATABASE:-identity}
+      POSTGRES_USER: ${PG_IDENTITY_USER:-identity}
+      POSTGRES_PASSWORD: ${PG_IDENTITY_PASSWORD:-identity}
     volumes:
       - identity_data:/var/lib/postgresql/data
 
   product_db:
-    image: postgres:17-alpine
+    image: pgvector/pgvector:pg17-trixie
     container_name: product_db
     environment:
-      POSTGRES_DB: ${PG_PRODUCT_DATABASE}
-      POSTGRES_USER: ${PG_PRODUCT_USER}
-      POSTGRES_PASSWORD: ${PG_PRODUCT_PASSWORD}
+      POSTGRES_DB: ${PG_PRODUCT_DATABASE:-product}
+      POSTGRES_USER: ${PG_PRODUCT_USER:-product}
+      POSTGRES_PASSWORD: ${PG_PRODUCT_PASSWORD:-product}
     volumes:
       - product_data:/var/lib/postgresql/data
 
@@ -39,9 +39,9 @@ services:
     image: postgres:17-alpine
     container_name: order_db
     environment:
-      POSTGRES_DB: ${PG_ORDER_DATABASE}
-      POSTGRES_USER: ${PG_ORDER_USER}
-      POSTGRES_PASSWORD: ${PG_ORDER_PASSWORD}
+      POSTGRES_DB: ${PG_ORDER_DATABASE:-order}
+      POSTGRES_USER: ${PG_ORDER_USER:-order}
+      POSTGRES_PASSWORD: ${PG_ORDER_PASSWORD:-order}
       GRAPH_HOPPER_API_KEY:
     volumes:
       - order_data:/var/lib/postgresql/data
@@ -50,9 +50,9 @@ services:
     image: postgres:17-alpine
     container_name: notification_db
     environment:
-      POSTGRES_DB: ${PG_NOTIFICATION_DATABASE}
-      POSTGRES_USER: ${PG_NOTIFICATION_USER}
-      POSTGRES_PASSWORD: ${PG_NOTIFICATION_PASSWORD}
+      POSTGRES_DB: ${PG_NOTIFICATION_DATABASE:-notification}
+      POSTGRES_USER: ${PG_NOTIFICATION_USER:-notification}
+      POSTGRES_PASSWORD: ${PG_NOTIFICATION_PASSWORD:-notification}
     volumes:
       - notification_data:/var/lib/postgresql/data
 
@@ -75,8 +75,8 @@ services:
     volumes:
       - rabbitmq_data:/var/lib/rabbitmq
     environment:
-      RABBITMQ_DEFAULT_USER: ${RABBITMQ_USER}
-      RABBITMQ_DEFAULT_PASS: ${RABBITMQ_PASSWORD}
+      RABBITMQ_DEFAULT_USER: ${RABBITMQ_USER:-admin}
+      RABBITMQ_DEFAULT_PASS: ${RABBITMQ_PASSWORD:-admin}
 
 # ----- OBSERVABILITY ------
 
@@ -97,8 +97,8 @@ services:
     ports:
       - "3000:3000"
     environment:
-      GF_SECURITY_ADMIN_USER: ${GRAFANA_USER}
-      GF_SECURITY_ADMIN_PASSWORD: ${GRAFANA_PASSWORD}
+      GF_SECURITY_ADMIN_USER: ${GRAFANA_USER:-admin}
+      GF_SECURITY_ADMIN_PASSWORD: ${GRAFANA_PASSWORD:-admin}
     volumes:
       - ./observability/grafana.yml:/etc/grafana/provisioning/datasources/grafana.yml:Z
       - grafana_data:/var/lib/grafana:Z
@@ -121,9 +121,9 @@ services:
       PG_IDENTITY_USER:
       PG_IDENTITY_PASSWORD:
       SPRING_RABBITMQ_ADDRESSES: amqp://admin:admin@rabbitmq:5672/
-      SPRING_DATASOURCE_URL: jdbc:postgresql://identity_db:5432/${PG_IDENTITY_DATABASE}
-      SPRING_DATASOURCE_USERNAME: ${PG_IDENTITY_USER}
-      SPRING_DATASOURCE_PASSWORD: ${PG_IDENTITY_PASSWORD}
+      SPRING_DATASOURCE_URL: jdbc:postgresql://identity_db:5432/${PG_IDENTITY_DATABASE:-identity}
+      SPRING_DATASOURCE_USERNAME: ${PG_IDENTITY_USER:-identity}
+      SPRING_DATASOURCE_PASSWORD: ${PG_IDENTITY_PASSWORD:-identity}
       SPRING_DATA_REDIS_URL: redis://cache:6379
       ACTIVE_PROFILE: dev
 
@@ -142,9 +142,10 @@ services:
       PG_PRODUCT_USER:
       PG_PRODUCT_PASSWORD:
       SPRING_RABBITMQ_ADDRESSES: amqp://admin:admin@rabbitmq:5672/
-      SPRING_DATASOURCE_URL: jdbc:postgresql://product_db:5432/${PG_PRODUCT_DATABASE}
-      SPRING_DATASOURCE_USERNAME: ${PG_PRODUCT_USER}
-      SPRING_DATASOURCE_PASSWORD: ${PG_PRODUCT_PASSWORD}
+      SPRING_DATASOURCE_URL: jdbc:postgresql://product_db:5432/${PG_PRODUCT_DATABASE:-product}
+      SPRING_DATASOURCE_USERNAME: ${PG_PRODUCT_USER:-product}
+      SPRING_DATASOURCE_PASSWORD: ${PG_PRODUCT_PASSWORD:-product}
+      OPENAI_API_KEY:
       SPRING_DATA_REDIS_URL: redis://cache:6379
       ACTIVE_PROFILE: dev
 
@@ -163,9 +164,9 @@ services:
       PG_PRODUCT_USER:
       PG_PRODUCT_PASSWORD:
       SPRING_RABBITMQ_ADDRESSES: amqp://admin:admin@rabbitmq:5672/
-      SPRING_DATASOURCE_URL: jdbc:postgresql://order_db:5432/${PG_ORDER_DATABASE}
-      SPRING_DATASOURCE_USERNAME: ${PG_ORDER_USER}
-      SPRING_DATASOURCE_PASSWORD: ${PG_ORDER_PASSWORD}
+      SPRING_DATASOURCE_URL: jdbc:postgresql://order_db:5432/${PG_ORDER_DATABASE:-order}
+      SPRING_DATASOURCE_USERNAME: ${PG_ORDER_USER:-order}
+      SPRING_DATASOURCE_PASSWORD: ${PG_ORDER_PASSWORD:-order}
       SPRING_DATA_REDIS_URL: redis://cache:6379
       ACTIVE_PROFILE: dev
       GRAPH_HOPPER_API_KEY:
@@ -182,9 +183,9 @@ services:
       PG_NOTIFICATION_DATABASE:
       PG_NOTIFICATION_USER:
       PG_NOTIFICATION_PASSWORD:
-      SPRING_DATASOURCE_URL: jdbc:postgresql://notification_db:5432/${PG_NOTIFICATION_DATABASE}
-      SPRING_DATASOURCE_USERNAME: ${PG_NOTIFICATION_USER}
-      SPRING_DATASOURCE_PASSWORD: ${PG_NOTIFICATION_PASSWORD}
+      SPRING_DATASOURCE_URL: jdbc:postgresql://notification_db:5432/${PG_NOTIFICATION_DATABASE:-notification}
+      SPRING_DATASOURCE_USERNAME: ${PG_NOTIFICATION_USER:-notification}
+      SPRING_DATASOURCE_PASSWORD: ${PG_NOTIFICATION_PASSWORD:-notification}
       SPRING_RABBITMQ_ADDRESSES: amqp://admin:admin@rabbitmq:5672/
       SPRING_DATA_REDIS_URL: redis://cache:6379
       ACTIVE_PROFILE: dev
@@ -203,9 +204,9 @@ services:
       PG_PRODUCT_USER:
       PG_PRODUCT_PASSWORD:
       SPRING_RABBITMQ_ADDRESSES: amqp://admin:admin@rabbitmq:5672/
-      SPRING_DATASOURCE_URL: jdbc:postgresql://identity_db:5432/${PG_IDENTITY_DATABASE}
-      SPRING_DATASOURCE_USERNAME: ${PG_IDENTITY_USER}
-      SPRING_DATASOURCE_PASSWORD: ${PG_IDENTITY_PASSWORD}
+      SPRING_DATASOURCE_URL: jdbc:postgresql://identity_db:5432/${PG_IDENTITY_DATABASE:-payment}
+      SPRING_DATASOURCE_USERNAME: ${PG_IDENTITY_USER:-payment}
+      SPRING_DATASOURCE_PASSWORD: ${PG_IDENTITY_PASSWORD:-payment}
       SPRING_DATA_REDIS_URL: redis://cache:6379
       ACTIVE_PROFILE: dev
 

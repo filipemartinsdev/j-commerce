@@ -1,3 +1,5 @@
+CREATE EXTENSION IF NOT EXISTS vector;
+
 CREATE TABLE product_category (
     id          SERIAL PRIMARY KEY,
     name        VARCHAR(50) NOT NULL,
@@ -10,6 +12,7 @@ CREATE TABLE product (
     name        VARCHAR(255) NOT NULL,
     description TEXT,
     category_id INT REFERENCES product_category(id) NOT NULL,
+    embedding   VECTOR(1536),
     created_at  TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT CURRENT_TIMESTAMP,
     updated_at  TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT CURRENT_TIMESTAMP,
     is_active   BOOLEAN NOT NULL DEFAULT TRUE
@@ -17,6 +20,11 @@ CREATE TABLE product (
 
 CREATE INDEX product_category_id_active_idx
     ON product(category_id)
+    WHERE is_active IS TRUE;
+
+CREATE INDEX product_embedding_idx_hnsw
+    ON product
+    USING hnsw (embedding vector_cosine_ops)
     WHERE is_active IS TRUE;
 
 CREATE TABLE product_sku (

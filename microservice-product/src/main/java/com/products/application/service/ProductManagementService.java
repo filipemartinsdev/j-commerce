@@ -48,17 +48,27 @@ public class ProductManagementService {
         if (request.description().isPresent())
             product.setDescription(request.description().get());
 
-        product.setEmbedding(
-                embeddingModel.embed(getTextToEmbedding(request))
-        );
+        product.setEmbedding(getEmbedding(product));
 
         return productAdminMapper.toResponse(
                 productRepository.save(product)
         );
     }
 
-    private String getTextToEmbedding(CreateProductRequest request) {
-        return request.name() + ", " + request.description();
+    private float[] getEmbedding(Product product) {
+        String text = getTextToEmbedding(product);
+
+        try {
+            return embeddingModel.embed(text);
+        } catch (Exception e) {
+            String messageLog = "Could not get embedding for product with ID: "+product.getId();
+            log.error(messageLog, e);
+            throw new BadGatewayException();
+        }
+    }
+
+    private String getTextToEmbedding(Product product) {
+        return product.getName() + ". " + product.getDescription();
     }
 
 

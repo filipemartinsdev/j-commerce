@@ -24,6 +24,13 @@ spring:
           initial-interval: 2000ms
           multiplier: 2.0
 
+  ai:
+    openai:
+      api-key: ${OPENAI_API_KEY:test}
+      embedding:
+        options:
+          model: text-embedding-3-small
+
 management:
   endpoints:
     web:

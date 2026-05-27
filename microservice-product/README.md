@@ -49,7 +49,7 @@ Microservice for managing product catalogue, stock, pricing, shopping cart, wish
 | Method | Endpoint | Description | Query Parameters |
 |--------|----------|------------|----------------|
 | GET | /api/v1/categories | List product categories | `page`, `size`, `sort` |
-| GET | /api/v1/products | List products | `categoryId`, `page`, `size`, `sort` |
+| GET | /api/v1/products | List products | `categoryId`, `query` `page`, `size`, `sort` |
 | GET | /api/v1/products/{productId} | Get product details | - |
 | GET | /api/v1/wishlist | Get user wishlist | `page`, `size`, `sort` |
 | POST | /api/v1/wishlist | Add item to wishlist | - |

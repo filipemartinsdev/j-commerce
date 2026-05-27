@@ -9,11 +9,6 @@ http:
   body:
     type: json
     data: |-
-      // {
-      //   "email": "driver@gmail.com",
-      //   "password": "driver123"
-      // }
-
       {
         "email": "admin@gmail.com",
         "password": "admin123"

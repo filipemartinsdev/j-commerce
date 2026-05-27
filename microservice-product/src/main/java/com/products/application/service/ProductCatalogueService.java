@@ -134,4 +134,15 @@ public class ProductCatalogueService {
         );
     }
 
+//    TODO: unit tests
+    public PagedResponse<ProductSummaryCatalogueResponse> semanticSearchByCategoryId(
+            String query, Integer category, Pageable pageable
+    ) {
+        float[] vector = embeddingModel.embed(query);
+
+        return pagedResponseFactory.fromPage(
+                semanticProductCatalogueRepository.findAll(vector, category, pageable),
+                this::createResumeCatalogueResponse
+        );
+    }
 }

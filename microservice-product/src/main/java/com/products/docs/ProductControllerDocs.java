@@ -66,7 +66,7 @@ public interface ProductControllerDocs {
             )
     })
     ResponseEntity<StandardResponse<PagedResponse<ProductSummaryCatalogueResponse>>> getProducts(
-            Integer category, Pageable pageable
+            Integer category, String query, Pageable pageable
     );
 
 

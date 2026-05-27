@@ -15,14 +15,36 @@ public interface SemanticProductCatalogueViewRepository extends JpaRepository<Se
 
             value =
             """
-            SELECT * FROM semantic_product_catalogue p
+            SELECT * FROM semantic_product_catalogue_view p
             ORDER BY p.embedding <-> CAST(:query AS VECTOR)
             """,
 
             countQuery =
             """
-            SELECT COUNT(*) FROM semantic_product_catalogue p
+            SELECT COUNT(*) FROM semantic_product_catalogue_view p
             """
     )
     Page<SemanticProductCatalogueView> findAll(@Param("query") float[] query, Pageable pageable);
+
+    @Query(
+            nativeQuery = true,
+
+            value =
+                    """
+                    SELECT * FROM semantic_product_catalogue_view p
+                    WHERE p.category_id = :categoryId
+                    ORDER BY p.embedding <-> CAST(:query AS VECTOR)
+                    """,
+
+            countQuery =
+                    """
+                    SELECT COUNT(*) FROM semantic_product_catalogue_view p
+                    WHERE p.category_id = :categoryId
+                    """
+    )
+    Page<SemanticProductCatalogueView> findAll(
+            @Param("query") float[] query,
+            @Param("categoryId") Integer categoryId,
+            Pageable pageable
+    );
 }

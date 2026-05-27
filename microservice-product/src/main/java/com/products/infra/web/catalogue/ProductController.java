@@ -35,15 +35,24 @@ public class ProductController implements ProductControllerDocs {
                 );
     }
 
+//    TODO: integration tests for semantic search
     @GetMapping("/products")
     public ResponseEntity<StandardResponse<PagedResponse<ProductSummaryCatalogueResponse>>> getProducts(
-            @RequestParam(name = "categoryId", required = false, defaultValue = "-1") Integer category,
+            @RequestParam(name = "categoryId", required = false) Integer categoryId,
+            @RequestParam(name = "query", required = false) String query,
             Pageable pageable
     ) {
         PagedResponse<ProductSummaryCatalogueResponse> response;
 
-        if (category != -1)
-            response = productCatalogueService.getAllByCategoryId(category, pageable);
+        if (categoryId != null && query != null)
+            response = productCatalogueService.semanticSearchByCategoryId(query, categoryId, pageable);
+
+        else if (categoryId != null)
+            response = productCatalogueService.getAllByCategoryId(categoryId, pageable);
+
+        else if(query != null)
+            response = productCatalogueService.semanticSearch(query, pageable);
+
         else
             response = productCatalogueService.getAll(pageable);
 
@@ -57,15 +66,5 @@ public class ProductController implements ProductControllerDocs {
         return ResponseEntity
                 .status(HttpStatus.OK)
                 .body(StandardResponse.success(productCatalogueService.getProductSummaryByProductId(productId)));
-    }
-
-    @GetMapping("/products/search")
-    public ResponseEntity<StandardResponse<PagedResponse<ProductSummaryCatalogueResponse>>> getProductsBySearch(
-           @RequestParam(name = "query", required = true) String query,
-           Pageable pageable
-    ){
-        return ResponseEntity
-                .status(HttpStatus.OK)
-                .body(StandardResponse.success(productCatalogueService.semanticSearch(query, pageable)));
     }
 }

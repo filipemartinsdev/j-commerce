@@ -41,6 +41,10 @@ CREATE UNIQUE INDEX product_sku_active_uk
     ON product_sku(sku)
     WHERE is_active IS TRUE;
 
+CREATE INDEX product_sku_product_id_active_idx
+    ON product_sku(product_id)
+    WHERE is_active IS TRUE;
+
 CREATE TABLE product_price_type (
     id          INT PRIMARY KEY,
     name        VARCHAR(50) UNIQUE NOT NULL

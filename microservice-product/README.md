@@ -2,7 +2,7 @@
 
 # Product Microservice
 
-Microservice for managing product catalogue, stock, pricing, shopping cart, wishlist and product feedback.
+Microservice for managing product Catalogue, Stock, Pricing, Wishlist and Shopping Cart.
 
 ## Features
 

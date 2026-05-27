@@ -18,6 +18,8 @@ services:
   identity_db:
     image: postgres:17-alpine
     container_name: identity_db
+    ports:
+      - "5432:5432"
     environment:
       POSTGRES_DB: ${PG_IDENTITY_DATABASE:-identity}
       POSTGRES_USER: ${PG_IDENTITY_USER:-identity}
@@ -28,6 +30,8 @@ services:
   product_db:
     image: pgvector/pgvector:pg17-trixie
     container_name: product_db
+    ports:
+      - "5433:5432"
     environment:
       POSTGRES_DB: ${PG_PRODUCT_DATABASE:-product}
       POSTGRES_USER: ${PG_PRODUCT_USER:-product}
@@ -38,6 +42,8 @@ services:
   order_db:
     image: postgres:17-alpine
     container_name: order_db
+    ports:
+      - "5434:5432"
     environment:
       POSTGRES_DB: ${PG_ORDER_DATABASE:-order}
       POSTGRES_USER: ${PG_ORDER_USER:-order}
@@ -49,6 +55,8 @@ services:
   notification_db:
     image: postgres:17-alpine
     container_name: notification_db
+    ports:
+      - "5435:5432"
     environment:
       POSTGRES_DB: ${PG_NOTIFICATION_DATABASE:-notification}
       POSTGRES_USER: ${PG_NOTIFICATION_USER:-notification}
@@ -134,6 +142,7 @@ services:
       dockerfile: Dockerfile
     depends_on:
       - product_db
+      - rabbitmq
     restart: unless-stopped
     ports:
       - "8081:8080"

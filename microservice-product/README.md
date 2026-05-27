@@ -86,7 +86,7 @@ Microservice for managing product catalogue, stock, pricing, shopping cart, wish
 
 ## Database
 
-- PostgreSQL 17
+- PostgreSQL 17 + PgVector
 - Flyway for migrations
 
 ![product_db.png](../images/product_db.png)

@@ -8,25 +8,36 @@ http:
   url: https://localhost/product/admin/api/v1/products
   body:
     type: json
-    data: |+
+    data: |-
       // {
-      //   "name": "Guarda chuva 2.0",
-      //   "description": "O melhor guarda chuva para sua família",
-      //   "categoryId": 1
+      //   "name": "Monitor LG 27 pol gamer",
+      //   "description": "Monitor 27 polegadas LG, painel IPS, 144hz",
+      //   "categoryId": 2
       // }
 
       // {
-      //   "name": "Galocha braba",
-      //   "description": "Bota para andar na chuva",
-      //   "categoryId": 1
+      //   "name": "Capa de chuva",
+      //   "description": "Capa impermeável para não se molhar na chuva",
+      //   "categoryId": 11
+      // }
+
+      // {
+      //   "name": "Galocha",
+      //   "description": "Bota de borracha para não se molhar na chuva",
+      //   "categoryId": 11
+      // }
+
+      // {
+      //   "name": "Grampeador",
+      //   "description": "Grampeador para papel",
+      //   "categoryId": 20
       // }
 
       {
-        "name": "Monitor LG 27 pol gamer",
-        "description": "Monitor 27 polegadas LG, painel IPS, 144hz",
-        "categoryId": 3
+        "name": "Controle Dualshock 4",
+        "description": "Controle de PlayStation 4",
+        "categoryId": 2
       }
-
   auth: inherit
 
 settings:

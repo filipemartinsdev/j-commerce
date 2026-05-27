@@ -8,25 +8,12 @@ http:
   url: https://localhost/product/admin/api/v1/skus
   body:
     type: json
-    data: |+
-      // {
-      //   "productId": "d2374ed3-df6d-48ef-832f-171af8041ead",
-      //   "name": "Mouse Atack Shark x11 Black",
-      //   "SKU": "MS-AS-X11-BLK"
-      // }
-
-      // {
-      //   "productId": "cdc842dc-4806-4272-875c-d07569a973f4",
-      //   "name": "Guarda chuva preto",
-      //   "SKU": "GC-P"
-      // }
-
+    data: |-
       {
-        "productId": "57c12121-4525-4898-b1b8-ea40654b1a7a",
-        "name": "Monitor LG Gamer",
-        "SKU": "M-LG-27"
+        "productId": "5e54c48c-edb6-4f2d-ab29-6d46c8655c4d",
+        "name": "Controle de PS4",
+        "SKU": "C"
       }
-
   auth: inherit
 
 settings:

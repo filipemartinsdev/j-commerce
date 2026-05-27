@@ -27,7 +27,6 @@ E-Commerce platform
 ## Index
 
 1. [Stack](#general-stack)
-2. [Architecture](#achitecture)
 3. [How to execute](#how-to-execute)
 3. [Use Cases](#use-cases)
 4. [Architecture](#architecture)
@@ -64,9 +63,9 @@ SUM:                           584           5080            348          28923
 
 - Caddy Server
 - Java 21
-- Spring Framework
+- Spring Boot
 - Docker
-- PostgreSQL
+- PostgreSQL + PgVector
 - Redis
 - RabbitMQ
 - Prometheus
@@ -80,6 +79,8 @@ SUM:                           584           5080            348          28923
 
 - Docker
 - OpenSSL (for generate RSA key pair)
+- Graph Hopper API Key (for geolocation on _Order microservice_)
+- OpenAI API Key (for embedding on _Product microservice_)
 
 ### Running with Docker Compose
 
@@ -115,16 +116,20 @@ SUM:                           584           5080            348          28923
 
 The HTTPS will be automatically configured with Caddy, and services will be available at:
 
-| Service       | URL                      |
-|---------------|--------------------------|
-| Identity      | https://localhost/identity    |
-| Product       | https://localhost/product     |
-| Order         | https://localhost/order     |
-| Payment       | https://localhost/payment     |
-| Notification | https://localhost/notification    |
-| Grafana       | http://localhost:3000   |
-| Prometheus Panel   | http://localhost:9090   |
-| RabbitMQ Panel     | http://localhost:15672  |
+| Service               | URL                            |
+|-----------------------|--------------------------------|
+| Identity              | https://localhost/identity     |
+| Product               | https://localhost/product      |
+| Order                 | https://localhost/order        |
+| Payment               | https://localhost/payment      |
+| Notification          | https://localhost/notification |
+| Grafana               | http://localhost:3000          |
+| Prometheus Panel      | http://localhost:9090          |
+| RabbitMQ Panel        | http://localhost:15672         |
+| Identity Database     | localhost:5432                 |
+| Product Database      | localhost:5433                 |
+| Order Database        | localhost:5434                 |
+| Notification Database | localhost:5435                 |
 
 The Swagger UI for each microservice will be available at:
 
@@ -134,7 +139,6 @@ The Swagger UI for each microservice will be available at:
 | Product       | http://localhost:8081/swagger-ui/index.html |
 | Order         | http://localhost:8082/swagger-ui/index.html |
 | Notification  | http://localhost:8083/swagger-ui/index.html |
-
 
 ## Default Users
 
@@ -152,7 +156,7 @@ The Identity microservice creates default users via Flyway migration:
 
 ## VPS-ready application
 
-You can also use the `docker-compose.yaml` file for a VPS-ready application. However, you need to define the _domain_ in the `.env` file:
+You can also use the `docker-compose.yaml` file for a VPS-ready application. However, you need to define the _domain_ variable in the `.env` file:
 
 ````dotenv
 SERVER_DOMAIN=yourdomain.com
@@ -177,11 +181,11 @@ Services will be available at:
 
 ### Customer use cases
 
-![customer_use_cases.png](images/customer_use_cases.png)
+<img src="images/customer_use_cases.png" width="400pt">
 
 ### Management use cases
 
-![management_use_cases.png](images/management_use_cases.png)
+<img src="images/management_use_cases.png" width="400pt">
 
 
 ## Architecture

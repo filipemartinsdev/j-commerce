@@ -10,5 +10,5 @@ mvn clean test
 cd ../microservice-payment
 mvn clean test
 
-cd ../microservice-notification
+cd ../microservice-notification-v2
 mvn clean test

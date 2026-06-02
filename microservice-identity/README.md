@@ -4,6 +4,13 @@
 
 Microservice for authentication, user management and profile handling.
 
+## Stack
+- Java 21
+- Spring Boot 4.x
+- Spring Security
+- OpenAPI (Swagger)
+- PostgreSQL 17
+
 ## Features
 
 ### Authentication

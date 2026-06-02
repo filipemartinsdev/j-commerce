@@ -20,7 +20,8 @@ E-Commerce platform
 2. [Product](/microservice-product/README.md) - Product catalogue, stock level and wishlist.
 3. [Order](/microservice-order/README.md) - Orders life cycle and shopping cart.
 4. [Payment](/microservice-payment/README.md) - Payment management.
-5. [Notification](/microservice-notification/README.md) - User notifications management.
+5. [Notification (Deprecated)](/microservice-notification/README.md) - User notifications management.
+6. [Notification v2](/microservice-notification-v2/README.md) - User notifications management.
 
 ---
 
@@ -64,6 +65,7 @@ SUM:                           584           5080            348          28923
 - Caddy Server
 - Java 21
 - Spring Boot
+- Quarkus
 - Docker
 - PostgreSQL + PgVector
 - Redis
@@ -111,7 +113,7 @@ SUM:                           584           5080            348          28923
 3. **Start all microservices and infrastructure with docker**:
 
     ```bash
-    docker compose -f docker-compose-dev.yaml up -d --build
+    docker compose -f docker-compose.yaml up -d --build
     ```
 
 The HTTPS will be automatically configured with Caddy, and services will be available at:

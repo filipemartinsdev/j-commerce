@@ -4,6 +4,13 @@
 
 Microservice to handle order flow and shipping logistics operations.
 
+## Stack
+
+- Java 21
+- Spring Boot 4.x
+- OpenAPI(Swagger)
+- PostgreSQL 17 
+
 ## API Endpoints
 
 ### Application

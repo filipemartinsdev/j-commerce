@@ -2,13 +2,24 @@
 
 # Product Microservice
 
-Microservice for managing product Catalogue, Stock, Pricing, Wishlist and Shopping Cart.
+Microservice for managing product Catalogue, Stock, Pricing, Wishlist and Shopping Cart. This microservice uses Vector Database (PostgreSQL + PgVector) to perform Semantic Search on catalogue. 
+
+## Stack
+
+- Java 21
+- Spring Boot 4.x
+- OpenAPI(Swagger)
+- PostgreSQL 17 + PgVector
 
 ## Features
 
 ### Catalogue
+- Product catalogue
+- Product search by category and Semantic Search
 
-- Product management (CRUD)
+### Products
+
+- Product management
 - Product SKU management
 - Category management
 - Product search and filtering

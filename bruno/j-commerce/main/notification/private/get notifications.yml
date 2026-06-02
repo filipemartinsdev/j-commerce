@@ -5,7 +5,7 @@ info:
 
 http:
   method: GET
-  url: https://localhost/notification/api/v1/notifications
+  url: https://localhost/notification/api/v2/notifications
   auth: inherit
 
 settings:

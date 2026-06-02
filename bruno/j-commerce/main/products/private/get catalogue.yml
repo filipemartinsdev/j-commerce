@@ -5,14 +5,16 @@ info:
 
 http:
   method: GET
-  url: https://localhost/product/api/v1/products?categoryId=11&query=Roupa para proteger da chuva
+  url: https://localhost/product/api/v1/products
   params:
     - name: categoryId
       value: "11"
       type: query
+      disabled: true
     - name: query
       value: Roupa para proteger da chuva
       type: query
+      disabled: true
   auth: inherit
 
 settings:

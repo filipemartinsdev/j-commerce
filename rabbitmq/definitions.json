@@ -1,0 +1,245 @@
+{
+    "rabbit_version": "4.2.5",
+    "rabbitmq_version": "4.2.5",
+    "product_name": "RabbitMQ",
+    "product_version": "4.2.5",
+    "rabbitmq_definition_format": "cluster",
+    "original_cluster_name": "rabbit@rabbitmq-local",
+    "explanation": "Definitions of cluster 'rabbit@rabbitmq-local'",
+    "users": [
+        {
+            "name": "admin",
+            "password_hash": "hBm+XRSAoqbK9HHhxisJ8e6YK81s7HrLFIrBYoLYmTMF3vgS",
+            "hashing_algorithm": "rabbit_password_hashing_sha256",
+            "tags": [
+                "administrator"
+            ],
+            "limits": {}
+        }
+    ],
+    "vhosts": [
+        {
+            "name": "/",
+            "description": "Default virtual host",
+            "metadata": {
+                "description": "Default virtual host",
+                "tags": [],
+                "default_queue_type": "classic"
+            },
+            "tags": []
+        }
+    ],
+    "permissions": [
+        {
+            "user": "admin",
+            "vhost": "/",
+            "configure": ".*",
+            "write": ".*",
+            "read": ".*"
+        }
+    ],
+    "topic_permissions": [],
+    "parameters": [],
+    "global_parameters": [
+        {
+            "name": "cluster_tags",
+            "value": []
+        },
+        {
+            "name": "internal_cluster_id",
+            "value": "rabbitmq-cluster-id-itKfYe5F2tL6mU9RQ-Q5jQ"
+        }
+    ],
+    "policies": [],
+    "queues": [
+        {
+            "name": "order.confirm_order_payment",
+            "vhost": "/",
+            "durable": true,
+            "auto_delete": false,
+            "arguments": {
+                "x-queue-type": "classic"
+            }
+        },
+        {
+            "name": "payment.generate_payment",
+            "vhost": "/",
+            "durable": true,
+            "auto_delete": false,
+            "arguments": {
+                "x-queue-type": "classic"
+            }
+        },
+        {
+            "name": "payment.wait_pending_payment",
+            "vhost": "/",
+            "durable": true,
+            "auto_delete": false,
+            "arguments": {
+                "x-dead-letter-exchange": "",
+                "x-dead-letter-routing-key": "order.handle_payment_timeout",
+                "x-message-ttl": 86400,
+                "x-queue-type": "classic"
+            }
+        },
+        {
+            "name": "notification.notify_payment_generated",
+            "vhost": "/",
+            "durable": true,
+            "auto_delete": false,
+            "arguments": {
+                "x-queue-type": "classic"
+            }
+        },
+        {
+            "name": "product.refund_items",
+            "vhost": "/",
+            "durable": true,
+            "auto_delete": false,
+            "arguments": {
+                "x-queue-type": "classic"
+            }
+        },
+        {
+            "name": "order.handle_payment_timeout",
+            "vhost": "/",
+            "durable": true,
+            "auto_delete": false,
+            "arguments": {
+                "x-queue-type": "classic"
+            }
+        },
+        {
+            "name": "order.cancel_shipments",
+            "vhost": "/",
+            "durable": true,
+            "auto_delete": false,
+            "arguments": {
+                "x-queue-type": "classic"
+            }
+        },
+        {
+            "name": "notification.notify_cancelled_order",
+            "vhost": "/",
+            "durable": true,
+            "auto_delete": false,
+            "arguments": {
+                "x-queue-type": "classic"
+            }
+        },
+        {
+            "name": "order.create_shipping",
+            "vhost": "/",
+            "durable": true,
+            "auto_delete": false,
+            "arguments": {
+                "x-queue-type": "classic"
+            }
+        },
+        {
+            "name": "order.create_order",
+            "vhost": "/",
+            "durable": true,
+            "auto_delete": false,
+            "arguments": {
+                "x-queue-type": "classic"
+            }
+        },
+        {
+            "name": "notification.notify_payment_confirmed",
+            "vhost": "/",
+            "durable": true,
+            "auto_delete": false,
+            "arguments": {
+                "x-queue-type": "classic"
+            }
+        }
+    ],
+    "exchanges": [
+        {
+            "name": "order.cancelled.fanout",
+            "vhost": "/",
+            "type": "fanout",
+            "durable": true,
+            "auto_delete": false,
+            "internal": false,
+            "arguments": {}
+        },
+        {
+            "name": "payment.confirmed.fanout",
+            "vhost": "/",
+            "type": "fanout",
+            "durable": true,
+            "auto_delete": false,
+            "internal": false,
+            "arguments": {}
+        },
+        {
+            "name": "payment.generated.fanout",
+            "vhost": "/",
+            "type": "fanout",
+            "durable": true,
+            "auto_delete": false,
+            "internal": false,
+            "arguments": {}
+        }
+    ],
+    "bindings": [
+        {
+            "source": "payment.generated.fanout",
+            "vhost": "/",
+            "destination": "notification.notify_payment_generated",
+            "destination_type": "queue",
+            "routing_key": "",
+            "arguments": {}
+        },
+        {
+            "source": "order.cancelled.fanout",
+            "vhost": "/",
+            "destination": "order.cancel_shipments",
+            "destination_type": "queue",
+            "routing_key": "",
+            "arguments": {}
+        },
+        {
+            "source": "order.cancelled.fanout",
+            "vhost": "/",
+            "destination": "product.refund_items",
+            "destination_type": "queue",
+            "routing_key": "",
+            "arguments": {}
+        },
+        {
+            "source": "payment.confirmed.fanout",
+            "vhost": "/",
+            "destination": "order.confirm_order_payment",
+            "destination_type": "queue",
+            "routing_key": "",
+            "arguments": {}
+        },
+        {
+            "source": "payment.generated.fanout",
+            "vhost": "/",
+            "destination": "payment.wait_pending_payment",
+            "destination_type": "queue",
+            "routing_key": "",
+            "arguments": {}
+        },
+        {
+            "source": "order.cancelled.fanout",
+            "vhost": "/",
+            "destination": "notification.notify_cancelled_order",
+            "destination_type": "queue",
+            "routing_key": "",
+            "arguments": {}
+        },
+        {
+            "source": "payment.confirmed.fanout",
+            "vhost": "/",
+            "destination": "notification.notify_payment_confirmed",
+            "destination_type": "queue",
+            "routing_key": "",
+            "arguments": {}
+        }
+    ]
+}

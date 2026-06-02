@@ -8,53 +8,59 @@ services:
       - "80:80"
       - "443:443"
     volumes:
-      - ./caddy/Caddyfile:/etc/caddy/Caddyfile:Z
+      - ./caddy/dev.Caddyfile:/etc/caddy/Caddyfile:Z
       - caddy_data:/data
       - caddy_config:/config
     restart: unless-stopped
-    environment:
-      SERVER_DOMAIN:
 
 # ----- DATA ------
 
   identity_db:
     image: postgres:17-alpine
     container_name: identity_db
+    ports:
+      - "5432:5432"
     environment:
-      POSTGRES_DB: ${PG_IDENTITY_DATABASE}
-      POSTGRES_USER: ${PG_IDENTITY_USER}
-      POSTGRES_PASSWORD: ${PG_IDENTITY_PASSWORD}
-      GRAPH_HOPPER_API_KEY:
+      POSTGRES_DB: ${PG_IDENTITY_DATABASE:-identity}
+      POSTGRES_USER: ${PG_IDENTITY_USER:-identity}
+      POSTGRES_PASSWORD: ${PG_IDENTITY_PASSWORD:-identity}
     volumes:
       - identity_data:/var/lib/postgresql/data
 
   product_db:
-    image: postgres:17-alpine
+    image: pgvector/pgvector:pg17-trixie
     container_name: product_db
+    ports:
+      - "5433:5432"
     environment:
-      POSTGRES_DB: ${PG_PRODUCT_DATABASE}
-      POSTGRES_USER: ${PG_PRODUCT_USER}
-      POSTGRES_PASSWORD: ${PG_PRODUCT_PASSWORD}
+      POSTGRES_DB: ${PG_PRODUCT_DATABASE:-product}
+      POSTGRES_USER: ${PG_PRODUCT_USER:-product}
+      POSTGRES_PASSWORD: ${PG_PRODUCT_PASSWORD:-product}
     volumes:
       - product_data:/var/lib/postgresql/data
 
   order_db:
     image: postgres:17-alpine
     container_name: order_db
+    ports:
+      - "5434:5432"
     environment:
-      POSTGRES_DB: ${PG_ORDER_DATABASE}
-      POSTGRES_USER: ${PG_ORDER_USER}
-      POSTGRES_PASSWORD: ${PG_ORDER_PASSWORD}
+      POSTGRES_DB: ${PG_ORDER_DATABASE:-order}
+      POSTGRES_USER: ${PG_ORDER_USER:-order}
+      POSTGRES_PASSWORD: ${PG_ORDER_PASSWORD:-order}
+      GRAPH_HOPPER_API_KEY:
     volumes:
       - order_data:/var/lib/postgresql/data
 
   notification_db:
     image: postgres:17-alpine
     container_name: notification_db
+    ports:
+      - "5435:5432"
     environment:
-      POSTGRES_DB: ${PG_NOTIFICATION_DATABASE}
-      POSTGRES_USER: ${PG_NOTIFICATION_USER}
-      POSTGRES_PASSWORD: ${PG_NOTIFICATION_PASSWORD}
+      POSTGRES_DB: ${PG_NOTIFICATION_DATABASE:-notification}
+      POSTGRES_USER: ${PG_NOTIFICATION_USER:-notification}
+      POSTGRES_PASSWORD: ${PG_NOTIFICATION_PASSWORD:-notification}
     volumes:
       - notification_data:/var/lib/postgresql/data
 
@@ -71,11 +77,16 @@ services:
     container_name: rabbitmq
     image: rabbitmq:4-management-alpine
     hostname: rabbitmq-local
+    ports:
+      - "15672:15672"
+      - "5672:5672"
     volumes:
       - rabbitmq_data:/var/lib/rabbitmq
+      - ./rabbitmq/definitions.json:/etc/rabbitmq/definitions.json
+      - ./rabbitmq/rabbitmq.conf:/etc/rabbitmq/rabbitmq.conf
     environment:
-      RABBITMQ_DEFAULT_USER: ${RABBITMQ_USER}
-      RABBITMQ_DEFAULT_PASS: ${RABBITMQ_PASSWORD}
+      RABBITMQ_DEFAULT_USER: ${RABBITMQ_USER:-admin}
+      RABBITMQ_DEFAULT_PASS: ${RABBITMQ_PASSWORD:-admin}
 
 # ----- OBSERVABILITY ------
 
@@ -83,6 +94,8 @@ services:
     image: prom/prometheus:v3.1.0
     container_name: "prometheus"
     restart: unless-stopped
+    ports:
+      - "9090:9090"
     volumes:
       - ./observability/prometheus.yml:/etc/prometheus/prometheus.yml:Z
       - prometheus_data:/var/prometheus:Z
@@ -91,10 +104,11 @@ services:
     image: grafana/grafana-oss:11.5.0
     container_name: "grafana"
     restart: unless-stopped
+    ports:
+      - "3000:3000"
     environment:
-      GF_SECURITY_ADMIN_USER: ${GRAFANA_USER}
-      GF_SECURITY_ADMIN_PASSWORD: ${GRAFANA_PASSWORD}
-      GF_SERVER_HTTP_ADDR: "0.0.0.0"
+      GF_SECURITY_ADMIN_USER: ${GRAFANA_USER:-admin}
+      GF_SECURITY_ADMIN_PASSWORD: ${GRAFANA_PASSWORD:-admin}
     volumes:
       - ./observability/grafana.yml:/etc/grafana/provisioning/datasources/grafana.yml:Z
       - grafana_data:/var/lib/grafana:Z
@@ -108,17 +122,18 @@ services:
       context: microservice-identity/
       dockerfile: Dockerfile
     depends_on:
-      identity_db:
-        condition: service_started
+      - identity_db
     restart: unless-stopped
+    ports:
+      - "8080:8080"
     environment:
       PG_IDENTITY_DATABASE:
       PG_IDENTITY_USER:
       PG_IDENTITY_PASSWORD:
       SPRING_RABBITMQ_ADDRESSES: amqp://admin:admin@rabbitmq:5672/
-      SPRING_DATASOURCE_URL: jdbc:postgresql://identity_db:5432/${PG_IDENTITY_DATABASE}
-      SPRING_DATASOURCE_USERNAME: ${PG_IDENTITY_USER}
-      SPRING_DATASOURCE_PASSWORD: ${PG_IDENTITY_PASSWORD}
+      SPRING_DATASOURCE_URL: jdbc:postgresql://identity_db:5432/${PG_IDENTITY_DATABASE:-identity}
+      SPRING_DATASOURCE_USERNAME: ${PG_IDENTITY_USER:-identity}
+      SPRING_DATASOURCE_PASSWORD: ${PG_IDENTITY_PASSWORD:-identity}
       SPRING_DATA_REDIS_URL: redis://cache:6379
       ACTIVE_PROFILE: dev
 
@@ -128,17 +143,20 @@ services:
       context: microservice-product/
       dockerfile: Dockerfile
     depends_on:
-      product_db:
-        condition: service_started
+      - product_db
+      - rabbitmq
     restart: unless-stopped
+    ports:
+      - "8081:8080"
     environment:
       PG_PRODUCT_DATABASE:
       PG_PRODUCT_USER:
       PG_PRODUCT_PASSWORD:
       SPRING_RABBITMQ_ADDRESSES: amqp://admin:admin@rabbitmq:5672/
-      SPRING_DATASOURCE_URL: jdbc:postgresql://product_db:5432/${PG_PRODUCT_DATABASE}
-      SPRING_DATASOURCE_USERNAME: ${PG_PRODUCT_USER}
-      SPRING_DATASOURCE_PASSWORD: ${PG_PRODUCT_PASSWORD}
+      SPRING_DATASOURCE_URL: jdbc:postgresql://product_db:5432/${PG_PRODUCT_DATABASE:-product}
+      SPRING_DATASOURCE_USERNAME: ${PG_PRODUCT_USER:-product}
+      SPRING_DATASOURCE_PASSWORD: ${PG_PRODUCT_PASSWORD:-product}
+      OPENAI_API_KEY:
       SPRING_DATA_REDIS_URL: redis://cache:6379
       ACTIVE_PROFILE: dev
 
@@ -148,42 +166,66 @@ services:
       context: microservice-order/
       dockerfile: Dockerfile
     depends_on:
-      order_db:
-        condition: service_started
+      - product_db
     restart: unless-stopped
+    ports:
+      - "8082:8080"
     environment:
       PG_PRODUCT_DATABASE:
       PG_PRODUCT_USER:
       PG_PRODUCT_PASSWORD:
       SPRING_RABBITMQ_ADDRESSES: amqp://admin:admin@rabbitmq:5672/
-      SPRING_DATASOURCE_URL: jdbc:postgresql://order_db:5432/${PG_ORDER_DATABASE}
-      SPRING_DATASOURCE_USERNAME: ${PG_ORDER_USER}
-      SPRING_DATASOURCE_PASSWORD: ${PG_ORDER_PASSWORD}
+      SPRING_DATASOURCE_URL: jdbc:postgresql://order_db:5432/${PG_ORDER_DATABASE:-order}
+      SPRING_DATASOURCE_USERNAME: ${PG_ORDER_USER:-order}
+      SPRING_DATASOURCE_PASSWORD: ${PG_ORDER_PASSWORD:-order}
       SPRING_DATA_REDIS_URL: redis://cache:6379
       ACTIVE_PROFILE: dev
       GRAPH_HOPPER_API_KEY:
 
-  notification:
-    container_name: notification_service
+  notification-v2:
+    container_name: notification_service_v2
     build:
-      context: microservice-notification/
-      dockerfile: Dockerfile
+      context: microservice-notification-v2/
+      dockerfile: Dockerfile.jvm.build
     restart: unless-stopped
+    ports:
+      - "8083:8080"
     depends_on:
       notification_db:
         condition: service_started
+      rabbitmq:
+        condition: service_started
     environment:
-      PG_NOTIFICATION_DATABASE:
+      PG_NOTIFICATION_URL: jdbc:postgresql://notification_db:5432/postgres
       PG_NOTIFICATION_USER:
       PG_NOTIFICATION_PASSWORD:
-      SPRING_DATASOURCE_URL: jdbc:postgresql://notification_db:5432/${PG_NOTIFICATION_DATABASE}
-      SPRING_DATASOURCE_USERNAME: ${PG_NOTIFICATION_USER}
-      SPRING_DATASOURCE_PASSWORD: ${PG_NOTIFICATION_PASSWORD}
-      SPRING_RABBITMQ_ADDRESSES: amqp://admin:admin@rabbitmq:5672/
+      AUTH_PUBLIC_KEY_URL: http://identity:8080/.well-known/jwks.json
+      RABBITMQ_HOST: rabbitmq
+      RABBITMQ_PORT: 5672
+      RABBITMQ_USER: ${RABBITMQ_USER:-admin}
+      RABBITMQ_PASSWORD: ${RABBITMQ_PASSWORD:-admin}
 
-      SPRING_DATA_REDIS_URL: redis://cache:6379
-      ACTIVE_PROFILE: dev
-
+#  notification:
+#    container_name: notification_service
+#    build:
+#      context: microservice-notification/
+#      dockerfile: Dockerfile
+#    restart: unless-stopped
+#    depends_on:
+#      notification_db:
+#        condition: service_started
+#    ports:
+#      - "8083:8080"
+#    environment:
+#      PG_NOTIFICATION_DATABASE:
+#      PG_NOTIFICATION_USER:
+#      PG_NOTIFICATION_PASSWORD:
+#      SPRING_DATASOURCE_URL: jdbc:postgresql://notification_db:5432/${PG_NOTIFICATION_DATABASE:-notification}
+#      SPRING_DATASOURCE_USERNAME: ${PG_NOTIFICATION_USER:-notification}
+#      SPRING_DATASOURCE_PASSWORD: ${PG_NOTIFICATION_PASSWORD:-notification}
+#      SPRING_RABBITMQ_ADDRESSES: amqp://admin:admin@rabbitmq:5672/
+#      SPRING_DATA_REDIS_URL: redis://cache:6379
+#      ACTIVE_PROFILE: dev
 
   payment:
     container_name: payment_service
@@ -191,11 +233,16 @@ services:
       context: microservice-payment/
       dockerfile: Dockerfile
     restart: unless-stopped
+    ports:
+      - "8084:8080"
     environment:
       PG_PRODUCT_DATABASE:
       PG_PRODUCT_USER:
       PG_PRODUCT_PASSWORD:
       SPRING_RABBITMQ_ADDRESSES: amqp://admin:admin@rabbitmq:5672/
+      SPRING_DATASOURCE_URL: jdbc:postgresql://identity_db:5432/${PG_IDENTITY_DATABASE:-payment}
+      SPRING_DATASOURCE_USERNAME: ${PG_IDENTITY_USER:-payment}
+      SPRING_DATASOURCE_PASSWORD: ${PG_IDENTITY_PASSWORD:-payment}
       SPRING_DATA_REDIS_URL: redis://cache:6379
       ACTIVE_PROFILE: dev
 

@@ -38,7 +38,7 @@ localhost {
     }
 
     handle_path /notification/* {
-        reverse_proxy notification:8080
+        reverse_proxy notification-v2:8080
 
         rate_limit {
             zone dynamic_zone {

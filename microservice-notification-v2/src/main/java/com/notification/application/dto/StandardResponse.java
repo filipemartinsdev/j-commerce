@@ -4,9 +4,9 @@ import com.fasterxml.jackson.annotation.JsonInclude;
 
 @JsonInclude(JsonInclude.Include.NON_NULL)
 public class StandardResponse<T> {
-    private String status;
-    private String message;
-    private T data;
+    public String status;
+    public String message;
+    public T data;
 
     private StandardResponse() {}
 

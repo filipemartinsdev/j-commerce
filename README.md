@@ -135,12 +135,12 @@ The HTTPS will be automatically configured with Caddy, and services will be avai
 
 The Swagger UI for each microservice will be available at:
 
-| Service       | URL                      |
-|---------------|--------------------------|
+| Service       | URL                                         |
+|---------------|---------------------------------------------|
 | Identity      | http://localhost:8080/swagger-ui/index.html |
 | Product       | http://localhost:8081/swagger-ui/index.html |
 | Order         | http://localhost:8082/swagger-ui/index.html |
-| Notification  | http://localhost:8083/swagger-ui/index.html |
+| Notification  | http://localhost:8083/q/swagger-ui          |
 
 ## Default Users
 

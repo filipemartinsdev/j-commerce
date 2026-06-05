@@ -6,6 +6,8 @@
     <version>1.0.0</version>
     <packaging>quarkus</packaging>
 
+    <name>Notification Microservice</name>
+
     <properties>
         <compiler-plugin.version>3.15.0</compiler-plugin.version>
         <maven.compiler.release>21</maven.compiler.release>
@@ -38,6 +40,12 @@
     </dependencyManagement>
 
     <dependencies>
+        <dependency>
+            <groupId>io.github.filipemartinsdev</groupId>
+            <artifactId>responsekit-quarkus</artifactId>
+            <version>0.3.1</version>
+        </dependency>
+
         <dependency>
             <groupId>io.quarkus</groupId>
             <artifactId>quarkus-messaging-rabbitmq</artifactId>

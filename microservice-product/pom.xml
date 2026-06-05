@@ -10,8 +10,10 @@
 	</parent>
 	<groupId>com</groupId>
 	<artifactId>microservice-product</artifactId>
-	<version>0.0.1-SNAPSHOT</version>
-	<name/>
+	<version>1.0.0</version>
+
+	<name>Product Microservice</name>
+
 	<description/>
 	<url/>
 	<licenses>

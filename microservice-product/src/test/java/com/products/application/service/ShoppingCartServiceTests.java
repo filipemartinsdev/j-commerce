@@ -1,6 +1,5 @@
 package com.products.application.service;
 
-import com.products.application.dto.PagedResponse;
 import com.products.application.dto.catalogue.ConfirmShoppingCartRequest;
 import com.products.application.dto.catalogue.CreateShoppingCartItemRequest;
 import com.products.application.dto.catalogue.ShoppingCartItemResponse;
@@ -9,7 +8,6 @@ import com.products.application.exception.ProductOutOfStockException;
 import com.products.application.exception.ProductSKUNotFoundException;
 import com.products.application.exception.ShoppingCartItemAlreadyExistsException;
 import com.products.application.exception.ShoppingCartItemNotFoundException;
-import com.products.application.factory.PagedResponseFactory;
 import com.products.application.message.CreateOrderMessage;
 import com.products.application.service.mapper.ShoppingCartItemMapper;
 import com.products.domain.entity.ProductSKU;
@@ -18,6 +16,7 @@ import com.products.domain.entity.ShoppingCartItemSummaryView;
 import com.products.infra.persistence.ProductSKURepository;
 import com.products.infra.persistence.ShoppingCartItemSummaryViewRepository;
 import com.products.infra.persistence.ShoppingCartItemRepository;
+import io.github.responsekit.core.PagedResponse;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -32,6 +31,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 
 import java.math.BigDecimal;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
@@ -69,9 +69,6 @@ class ShoppingCartServiceTests {
 
     @Mock
     private SalesOrderClient salesOrderClient;
-
-    @Mock
-    private PagedResponseFactory<ShoppingCartItemResponse> pagedResponseFactory;
 
     @InjectMocks
     private ShoppingCartService shoppingCartService;
@@ -171,23 +168,21 @@ class ShoppingCartServiceTests {
                 entity.getUnits(), entity.getOriginalPrice(), entity.getCurrentPrice(), 20
         );
 
-        PagedResponse<ShoppingCartItemResponse> expectedResponse = PagedResponse.<ShoppingCartItemResponse>builder()
+        PagedResponse<ShoppingCartItemResponse> expectedResponse = PagedResponse
+                .content(List.of(response))
                 .page(0)
                 .size(10)
                 .isLast(true)
                 .totalElements(1L)
                 .totalPages(1)
-                .content(List.of(response))
                 .build();
 
         when(shoppingCartItemProductSKUSummaryRepository.findAllByUserId(userId, pageable)).thenReturn(page);
-        when(pagedResponseFactory.fromPage(any(), any())).thenReturn(expectedResponse);
 
         PagedResponse<ShoppingCartItemResponse> result = shoppingCartService.getAllItems(userId, pageable);
 
         assertNotNull(result);
-        assertEquals(1, result.content().size());
-        verify(pagedResponseFactory).fromPage(any(), any());
+        assertEquals(1, result.content.size());
     }
 
     @Test
@@ -197,8 +192,8 @@ class ShoppingCartServiceTests {
         Pageable pageable = PageRequest.of(0, 10);
         Page<ShoppingCartItemSummaryView> emptyPage = new PageImpl<>(List.of(), pageable, 0);
 
-        PagedResponse<ShoppingCartItemResponse> expectedResponse = PagedResponse.<ShoppingCartItemResponse>builder()
-                .content(new java.util.ArrayList<>())
+        PagedResponse<ShoppingCartItemResponse> expectedResponse = PagedResponse
+                .content(new ArrayList<ShoppingCartItemResponse>())
                 .size(10)
                 .page(0)
                 .isLast(true)
@@ -207,14 +202,12 @@ class ShoppingCartServiceTests {
                 .build();
 
         when(shoppingCartItemProductSKUSummaryRepository.findAllByUserId(userId, pageable)).thenReturn(emptyPage);
-        when(pagedResponseFactory.fromPage(any(), any())).thenReturn(expectedResponse);
 
         PagedResponse<ShoppingCartItemResponse> result = shoppingCartService.getAllItems(userId, pageable);
 
         assertNotNull(result);
-        assertTrue(result.content().isEmpty());
-        assertEquals(0, result.totalElements());
-        verify(pagedResponseFactory).fromPage(any(), any());
+        assertTrue(result.content.isEmpty());
+        assertEquals(0, result.totalElements);
     }
 
     @Test

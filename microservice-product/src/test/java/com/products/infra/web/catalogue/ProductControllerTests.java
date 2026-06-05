@@ -1,7 +1,5 @@
 package com.products.infra.web.catalogue;
 
-import tools.jackson.databind.ObjectMapper;
-import com.products.application.dto.PagedResponse;
 import com.products.application.dto.ProductCategoryResponse;
 import com.products.application.dto.StockStatus;
 import com.products.application.dto.catalogue.ProductCatalogueResponse;
@@ -12,6 +10,7 @@ import com.products.application.exception.ProductNotFoundException;
 import com.products.application.service.ProductCatalogueService;
 import com.products.application.service.ProductCategoryService;
 import com.products.config.SecurityConfig;
+import io.github.responsekit.core.PagedResponse;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -20,6 +19,7 @@ import org.springframework.context.annotation.Import;
 import org.springframework.security.test.context.support.WithMockUser;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.MockMvc;
+import tools.jackson.databind.ObjectMapper;
 
 import java.math.BigDecimal;
 import java.util.List;
@@ -27,7 +27,8 @@ import java.util.Map;
 import java.util.UUID;
 
 import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.Mockito.*;
+import static org.mockito.Mockito.doThrow;
+import static org.mockito.Mockito.when;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
@@ -45,13 +46,13 @@ public class ProductControllerTests {
     @WithMockUser(authorities = "SCOPE_USER")
     void getCategoriesTestCase1() throws Exception {
         ProductCategoryResponse productCategoryResponse = new ProductCategoryResponse(1, "testing");
-        PagedResponse<ProductCategoryResponse> pagedResponse = PagedResponse.<ProductCategoryResponse>builder()
+        PagedResponse<ProductCategoryResponse> pagedResponse = PagedResponse
+                .content(List.of(productCategoryResponse))
                 .page(0)
                 .size(20)
                 .totalElements(1L)
                 .totalPages(1)
                 .isLast(true)
-                .content(List.of(productCategoryResponse))
                 .build();
 
         when(productCategoryService.getAll(any()))
@@ -79,13 +80,13 @@ public class ProductControllerTests {
                 new ProductCategoryResponse(1, "testing"),
                 new ProductPriceCatalogueResponse(BigDecimal.ONE, BigDecimal.ONE, 0, "testing")
         );
-        PagedResponse<ProductSummaryCatalogueResponse> pagedResponse = PagedResponse.<ProductSummaryCatalogueResponse>builder()
+        PagedResponse<ProductSummaryCatalogueResponse> pagedResponse = PagedResponse
+                .content(List.of(productSummaryCatalogueResponse))
                 .page(0)
                 .size(20)
                 .isLast(true)
                 .totalElements(1L)
                 .totalPages(1)
-                .content(List.of(productSummaryCatalogueResponse))
                 .build();
 
         when(productCatalogueService.getAll(any())).thenReturn(pagedResponse);

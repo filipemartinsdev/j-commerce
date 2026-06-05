@@ -1,6 +1,5 @@
 package com.products.infra.web.admin;
 
-import com.products.application.dto.PagedResponse;
 import com.products.application.dto.admin.CreateProductSKURequest;
 import com.products.application.dto.admin.ProductSKUAdminResponse;
 import com.products.application.exception.ProductNotActiveException;
@@ -9,6 +8,7 @@ import com.products.application.exception.ProductSKUNotFoundException;
 import com.products.application.exception.SKUAlreadyInUseException;
 import com.products.application.service.ProductSKUManagementService;
 import com.products.config.SecurityConfig;
+import io.github.responsekit.core.PagedResponse;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -55,13 +55,13 @@ public class AdminProductSKUControllerTests {
                 true
         );
 
-        var expectedResponse = PagedResponse.<ProductSKUAdminResponse>builder()
+        var expectedResponse = PagedResponse
+                .content(List.of(skuResponse))
                 .page(0)
                 .size(20)
                 .totalElements(1L)
                 .totalPages(1)
                 .isLast(true)
-                .content(List.of(skuResponse))
                 .build();
 
 
@@ -93,13 +93,13 @@ public class AdminProductSKUControllerTests {
                 true
         );
 
-        var expectedResponse = PagedResponse.<ProductSKUAdminResponse>builder()
+        var expectedResponse = PagedResponse
+                .content(List.of(skuResponse))
                 .page(0)
                 .size(20)
                 .totalElements(1L)
                 .totalPages(1)
                 .isLast(true)
-                .content(List.of(skuResponse))
                 .build();
 
         when(adminProductSKUService.getAllProductSKUsByProductId(any(), any()))
@@ -130,13 +130,13 @@ public class AdminProductSKUControllerTests {
                 true
         );
 
-        var expectedResponse = PagedResponse.<ProductSKUAdminResponse>builder()
+        var expectedResponse = PagedResponse
+                .content(List.of(skuResponse))
                 .page(0)
                 .size(20)
                 .totalElements(1L)
                 .totalPages(1)
                 .isLast(true)
-                .content(List.of(skuResponse))
                 .build();
 
 

@@ -1,6 +1,5 @@
 package com.products.infra.web.catalogue;
 
-import com.products.application.dto.PagedResponse;
 import com.products.application.dto.catalogue.CreateWishlistItemRequest;
 import com.products.application.dto.catalogue.ProductPriceCatalogueResponse;
 import com.products.application.dto.catalogue.WishlistItemResponse;
@@ -9,6 +8,7 @@ import com.products.application.exception.WishlistItemAlreadyExistsException;
 import com.products.application.exception.WishlistItemNotFoundException;
 import com.products.application.service.WishlistService;
 import com.products.config.SecurityConfig;
+import io.github.responsekit.core.PagedResponse;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -54,13 +54,13 @@ public class WishlistControllerTests {
                 )
         );
 
-        var expectedResponse = PagedResponse.<WishlistItemResponse>builder()
+        var expectedResponse = PagedResponse
+                .content(List.of(itemResponse))
                 .page(0)
                 .size(20)
                 .totalElements(1L)
                 .totalPages(1)
                 .isLast(true)
-                .content(List.of(itemResponse))
                 .build();
 
         when(wishlistService.getAllItems(any(), any()))

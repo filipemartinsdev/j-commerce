@@ -1,6 +1,5 @@
 package com.products.application.service;
 
-import com.products.application.dto.PagedResponse;
 import com.products.application.dto.admin.CreateStockEntryRequest;
 import com.products.application.dto.admin.ProductStockResponse;
 import com.products.application.dto.admin.StockMovementResponse;
@@ -8,7 +7,6 @@ import com.products.application.dto.admin.StockMovementTypeResponse;
 import com.products.application.exception.ProductOutOfStockException;
 import com.products.application.exception.ProductSKUNotFoundException;
 import com.products.application.exception.ProductStockNotFoundException;
-import com.products.application.factory.PagedResponseFactory;
 import com.products.application.service.mapper.ProductStockMapper;
 import com.products.application.service.mapper.StockMovementMapper;
 import com.products.domain.entity.ProductSKU;
@@ -19,11 +17,12 @@ import com.products.infra.persistence.ProductSKURepository;
 import com.products.infra.persistence.ProductStockRepository;
 import com.products.infra.persistence.StockMovementRepository;
 import com.products.infra.persistence.StockMovementTypeRepository;
-import org.junit.jupiter.api.BeforeEach;
+import io.github.responsekit.core.PagedResponse;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.ArgumentCaptor;
+import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.Mockito;
 import org.mockito.junit.jupiter.MockitoExtension;
@@ -50,24 +49,10 @@ public class ProductStockManagementServiceTests {
     @Mock private StockMovementRepository stockMovementRepository;
     @Mock private StockMovementMapper stockMovementMapper;
     @Mock private ProductSKURepository productSKURepository;
-    @Mock private PagedResponseFactory<ProductStockResponse> pagedResponseFactoryProductStock;
-    @Mock private PagedResponseFactory<StockMovementResponse> pagedResponseFactoryStockMovement;
 
+    @InjectMocks
     private ProductStockManagementService productStockManagementService;
 
-    @BeforeEach
-    public void setUp() {
-        this.productStockManagementService = new ProductStockManagementService(
-                productStockRepository,
-                productStockMapper,
-                stockMovementTypeRepository,
-                stockMovementRepository,
-                stockMovementMapper,
-                productSKURepository,
-                pagedResponseFactoryProductStock,
-                pagedResponseFactoryStockMovement
-        );
-    }
 
     @Test @DisplayName("Should retrieve all active ProductStock successfully")
     void getAllTestCase1() {
@@ -93,17 +78,18 @@ public class ProductStockManagementServiceTests {
                 stock2.getId(), UUID.randomUUID(), UUID.randomUUID(), "Product2", "SKU2", 100, Instant.now()
         );
 
-        PagedResponse<ProductStockResponse> expectedResponse = PagedResponse.<ProductStockResponse>builder()
+        PagedResponse<ProductStockResponse> expectedResponse = PagedResponse
+                .content(List.of(response1, response2))
                 .page(0)
                 .size(10)
                 .isLast(true)
                 .totalElements(2L)
                 .totalPages(1)
-                .content(List.of(response1, response2))
                 .build();
 
         when(productStockRepository.findAllActive(pageable)).thenReturn(page);
-        when(pagedResponseFactoryProductStock.fromPage(any(), any())).thenReturn(expectedResponse);
+        when(productStockMapper.toResponse(stock1)).thenReturn(response1);
+        when(productStockMapper.toResponse(stock2)).thenReturn(response2);
 
         // When
         PagedResponse<ProductStockResponse> result = productStockManagementService.getAll(pageable);
@@ -112,8 +98,6 @@ public class ProductStockManagementServiceTests {
         assertEquals(expectedResponse, result);
         verify(productStockRepository)
                 .findAllActive(pageable);
-        verify(pagedResponseFactoryProductStock)
-                .fromPage(any(), any());
     }
 
     @Test @DisplayName("Should retrieve empty PagedResponse if not exists any active ProductStock")
@@ -122,8 +106,8 @@ public class ProductStockManagementServiceTests {
         Pageable pageable = PageRequest.of(0, 10);
         Page<ProductStock> emptyPage = new PageImpl<>(new ArrayList<>(), pageable, 0);
 
-        PagedResponse<ProductStockResponse> expectedResponse = PagedResponse.<ProductStockResponse>builder()
-                .content(new ArrayList<>())
+        PagedResponse<ProductStockResponse> expectedResponse = PagedResponse
+                .content(new ArrayList<ProductStockResponse>())
                 .size(10)
                 .page(0)
                 .isLast(true)
@@ -133,8 +117,6 @@ public class ProductStockManagementServiceTests {
 
         when(productStockRepository.findAllActive(pageable))
                 .thenReturn(emptyPage);
-        when(pagedResponseFactoryProductStock.fromPage(any(), any()))
-                .thenReturn(expectedResponse);
 
         // When
         PagedResponse<ProductStockResponse> result = productStockManagementService.getAll(pageable);
@@ -142,8 +124,7 @@ public class ProductStockManagementServiceTests {
         // Then
         verify(productStockRepository, Mockito.times(1))
                 .findAllActive(pageable);
-        verify(pagedResponseFactoryProductStock, Mockito.times(1))
-                .fromPage(any(), any());
+
         assertEquals(expectedResponse, result);
     }
 
@@ -164,17 +145,17 @@ public class ProductStockManagementServiceTests {
                 stock1.getId(), productId, UUID.randomUUID(), "Product1", "SKU1", 50, Instant.now()
         );
 
-        PagedResponse<ProductStockResponse> expectedResponse = PagedResponse.<ProductStockResponse>builder()
+        PagedResponse<ProductStockResponse> expectedResponse = PagedResponse
+                .content(List.of(response1))
                 .page(0)
                 .size(10)
                 .isLast(true)
                 .totalElements(1L)
                 .totalPages(1)
-                .content(List.of(response1))
                 .build();
 
         when(productStockRepository.findAllActiveByProductId(productId, pageable)).thenReturn(page);
-        when(pagedResponseFactoryProductStock.fromPage(any(), any())).thenReturn(expectedResponse);
+        when(productStockMapper.toResponse(stock1)).thenReturn(response1);
 
         // When
         PagedResponse<ProductStockResponse> result = productStockManagementService.getAllByProductId(productId, pageable);
@@ -183,8 +164,6 @@ public class ProductStockManagementServiceTests {
         assertEquals(expectedResponse, result);
         verify(productStockRepository)
                 .findAllActiveByProductId(productId, pageable);
-        verify(pagedResponseFactoryProductStock)
-                .fromPage(any(), any());
     }
 
     @Test @DisplayName("Should retrieve empty PagedResponse if not exists any active ProductStock by productSKUId")
@@ -194,8 +173,8 @@ public class ProductStockManagementServiceTests {
         Pageable pageable = PageRequest.of(0, 10);
         Page<ProductStock> emptyPage = new PageImpl<>(new ArrayList<>(), pageable, 0);
 
-        PagedResponse<ProductStockResponse> expectedResponse = PagedResponse.<ProductStockResponse>builder()
-                .content(new ArrayList<>())
+        PagedResponse<ProductStockResponse> expectedResponse = PagedResponse
+                .content(new ArrayList<ProductStockResponse>())
                 .size(10)
                 .page(0)
                 .isLast(true)
@@ -204,7 +183,6 @@ public class ProductStockManagementServiceTests {
                 .build();
 
         when(productStockRepository.findAllActiveByProductId(productId, pageable)).thenReturn(emptyPage);
-        when(pagedResponseFactoryProductStock.fromPage(any(), any())).thenReturn(expectedResponse);
 
         // When
         PagedResponse<ProductStockResponse> result = productStockManagementService.getAllByProductId(productId, pageable);
@@ -212,7 +190,6 @@ public class ProductStockManagementServiceTests {
         // Then
         assertEquals(expectedResponse, result);
         verify(productStockRepository).findAllActiveByProductId(productId, pageable);
-        verify(pagedResponseFactoryProductStock).fromPage(any(), any());
     }
 
     @Test @DisplayName("Should retrieve ProductStock by ID successfully")
@@ -388,17 +365,18 @@ public class ProductStockManagementServiceTests {
                 new StockMovementTypeResponse(2, "EXIT"), Instant.now(), UUID.randomUUID()
         );
 
-        PagedResponse<StockMovementResponse> expectedResponse = PagedResponse.<StockMovementResponse>builder()
+        PagedResponse<StockMovementResponse> expectedResponse = PagedResponse
+                .content(List.of(response1, response2))
                 .page(0)
                 .size(10)
                 .isLast(true)
                 .totalElements(2L)
                 .totalPages(1)
-                .content(List.of(response1, response2))
                 .build();
 
         when(stockMovementRepository.findAll(pageable)).thenReturn(page);
-        when(pagedResponseFactoryStockMovement.fromPage(any(), any())).thenReturn(expectedResponse);
+        when(stockMovementMapper.toResponse(movement1)).thenReturn(response1);
+        when(stockMovementMapper.toResponse(movement2)).thenReturn(response2);
 
         // When
         PagedResponse<StockMovementResponse> result = productStockManagementService.getAllMovements(pageable);
@@ -407,8 +385,6 @@ public class ProductStockManagementServiceTests {
         assertEquals(expectedResponse, result);
         verify(stockMovementRepository)
                 .findAll(pageable);
-        verify(pagedResponseFactoryStockMovement)
-                .fromPage(any(), any());
     }
 
     @Test @DisplayName("Should retrieve empty PagedResponse if not exists any StockMovement")
@@ -417,8 +393,8 @@ public class ProductStockManagementServiceTests {
         Pageable pageable = PageRequest.of(0, 10);
         Page<StockMovement> emptyPage = new PageImpl<>(new ArrayList<>(), pageable, 0);
 
-        PagedResponse<StockMovementResponse> expectedResponse = PagedResponse.<StockMovementResponse>builder()
-                .content(new ArrayList<>())
+        PagedResponse<StockMovementResponse> expectedResponse = PagedResponse
+                .content(new ArrayList<StockMovementResponse>())
                 .size(10)
                 .page(0)
                 .isLast(true)
@@ -427,7 +403,6 @@ public class ProductStockManagementServiceTests {
                 .build();
 
         when(stockMovementRepository.findAll(pageable)).thenReturn(emptyPage);
-        when(pagedResponseFactoryStockMovement.fromPage(any(), any())).thenReturn(expectedResponse);
 
         // When
         PagedResponse<StockMovementResponse> result = productStockManagementService.getAllMovements(pageable);
@@ -436,8 +411,6 @@ public class ProductStockManagementServiceTests {
         assertEquals(expectedResponse, result);
         verify(stockMovementRepository)
                 .findAll(pageable);
-        verify(pagedResponseFactoryStockMovement)
-                .fromPage(any(), any());
     }
 
     @Test @DisplayName("Should retrieve all StockMovent by productSKUId successfully")
@@ -457,19 +430,19 @@ public class ProductStockManagementServiceTests {
                 new StockMovementTypeResponse(1, "ENTRY"), Instant.now(), UUID.randomUUID()
         );
 
-        PagedResponse<StockMovementResponse> expectedResponse = PagedResponse.<StockMovementResponse>builder()
+        PagedResponse<StockMovementResponse> expectedResponse = PagedResponse
+                .content(List.of(response1))
                 .page(0)
                 .size(10)
                 .isLast(true)
                 .totalElements(1L)
                 .totalPages(1)
-                .content(List.of(response1))
                 .build();
 
         when(stockMovementRepository.findAllByProductSKU_id(productSKUId, pageable))
                 .thenReturn(page);
-        when(pagedResponseFactoryStockMovement.fromPage(any(), any()))
-                .thenReturn(expectedResponse);
+        when(stockMovementMapper.toResponse(movement1))
+                .thenReturn(response1);
 
         // When
         PagedResponse<StockMovementResponse> result = productStockManagementService.getAllMovementsByProductSKUId(productSKUId, pageable);
@@ -478,8 +451,6 @@ public class ProductStockManagementServiceTests {
         assertEquals(expectedResponse, result);
         verify(stockMovementRepository)
                 .findAllByProductSKU_id(productSKUId, pageable);
-        verify(pagedResponseFactoryStockMovement)
-                .fromPage(any(), any());
     }
 
     @Test @DisplayName("Should retrieve empty PagedResponse if not exists any StockMovement by productSKUId")
@@ -489,8 +460,8 @@ public class ProductStockManagementServiceTests {
         Pageable pageable = PageRequest.of(0, 10);
         Page<StockMovement> emptyPage = new PageImpl<>(new ArrayList<>(), pageable, 0);
 
-        PagedResponse<StockMovementResponse> expectedResponse = PagedResponse.<StockMovementResponse>builder()
-                .content(new ArrayList<>())
+        PagedResponse<StockMovementResponse> expectedResponse = PagedResponse
+                .content(new ArrayList<StockMovementResponse>())
                 .size(10)
                 .page(0)
                 .isLast(true)
@@ -500,8 +471,6 @@ public class ProductStockManagementServiceTests {
 
         when(stockMovementRepository.findAllByProductSKU_id(productSKUId, pageable))
                 .thenReturn(emptyPage);
-        when(pagedResponseFactoryStockMovement.fromPage(any(), any()))
-                .thenReturn(expectedResponse);
 
         // When
         PagedResponse<StockMovementResponse> result = productStockManagementService.getAllMovementsByProductSKUId(productSKUId, pageable);
@@ -510,8 +479,6 @@ public class ProductStockManagementServiceTests {
         assertEquals(expectedResponse, result);
         verify(stockMovementRepository)
                 .findAllByProductSKU_id(productSKUId, pageable);
-        verify(pagedResponseFactoryStockMovement)
-                .fromPage(any(), any());
     }
 
     @Test @DisplayName("Should mark ProductStock as inactive by productSKUId successfully")

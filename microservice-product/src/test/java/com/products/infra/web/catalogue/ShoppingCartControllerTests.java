@@ -1,12 +1,12 @@
 package com.products.infra.web.catalogue;
 
-import com.products.application.dto.PagedResponse;
 import com.products.application.dto.catalogue.ConfirmShoppingCartRequest;
 import com.products.application.dto.catalogue.CreateShoppingCartItemRequest;
 import com.products.application.dto.catalogue.ShoppingCartItemResponse;
 import com.products.application.exception.*;
 import com.products.application.service.ShoppingCartService;
 import com.products.config.SecurityConfig;
+import io.github.responsekit.core.PagedResponse;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -50,13 +50,13 @@ public class ShoppingCartControllerTests {
                 0
         );
 
-        var expectedResponse = PagedResponse.<ShoppingCartItemResponse>builder()
+        var expectedResponse = PagedResponse
+                .content(List.of(itemResponse))
                 .page(0)
                 .size(20)
                 .totalElements(1L)
                 .totalPages(1)
                 .isLast(true)
-                .content(List.of(itemResponse))
                 .build();
 
         when(shoppingCartService.getAllItems(any(), any()))

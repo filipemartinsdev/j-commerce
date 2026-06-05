@@ -1,18 +1,18 @@
 package com.products.application.service;
 
 import com.products.application.dto.catalogue.CreateWishlistItemRequest;
-import com.products.application.dto.PagedResponse;
 import com.products.application.dto.catalogue.WishlistItemResponse;
 import com.products.application.exception.ProductSKUNotFoundException;
 import com.products.application.exception.WishlistItemAlreadyExistsException;
 import com.products.application.exception.WishlistItemNotFoundException;
-import com.products.application.factory.PagedResponseFactory;
+import com.products.application.service.mapper.WishlistItemMapper;
 import com.products.domain.entity.ProductSKU;
 import com.products.domain.entity.WishlistItem;
 import com.products.domain.entity.WishlistItemSummaryView;
 import com.products.infra.persistence.ProductSKURepository;
 import com.products.infra.persistence.WishlistItemSummaryViewRepository;
 import com.products.infra.persistence.WishlistItemRepository;
+import io.github.responsekit.core.PagedResponse;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -25,6 +25,7 @@ import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 
 import java.math.BigDecimal;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
@@ -40,6 +41,9 @@ public class WishlistServiceTests {
     private WishlistItemRepository wishlistItemRepository;
 
     @Mock
+    private WishlistItemMapper wishlistItemMapper;
+
+    @Mock
     private ProductSKURepository productSKURepository;
 
     @Mock
@@ -47,9 +51,6 @@ public class WishlistServiceTests {
 
     @Mock
     private ProductDiscountCalculator productDiscountCalculator;
-
-    @Mock
-    private PagedResponseFactory<WishlistItemResponse> pagedResponseFactory;
 
     @InjectMocks
     private WishlistService wishlistService;
@@ -77,32 +78,25 @@ public class WishlistServiceTests {
                 null
         );
 
-        PagedResponse<WishlistItemResponse> expectedResponse = PagedResponse.<WishlistItemResponse>builder()
+        PagedResponse<WishlistItemResponse> expectedResponse = PagedResponse
+                .content(List.of(response))
                 .page(0)
                 .size(10)
                 .isLast(true)
                 .totalElements(1L)
                 .totalPages(1)
-                .content(List.of(response))
                 .build();
 
         when(wishlistItemProductSKUResumeRepository.findAllByUserId(userId, pageable))
                 .thenReturn(page);
-        when(pagedResponseFactory.fromPage(any(), any()))
-                .thenReturn(expectedResponse);
+        when(wishlistItemMapper.toResponse(entity)).thenReturn(response);
 
         PagedResponse<WishlistItemResponse> result = wishlistService.getAllItems(userId, pageable);
 
         assertNotNull(result);
-        assertEquals(0, result.page());
-        assertEquals(10, result.size());
-        assertEquals(1, result.totalPages());
-        assertEquals(1, result.totalElements());
-        assertTrue(result.isLast());
-        assertEquals(1, result.content().size());
+        assertEquals(expectedResponse, result);
 
         verify(wishlistItemProductSKUResumeRepository).findAllByUserId(userId, pageable);
-        verify(pagedResponseFactory).fromPage(any(), any());
     }
 
     @Test
@@ -113,8 +107,8 @@ public class WishlistServiceTests {
 
         Page<WishlistItemSummaryView> emptyPage = new PageImpl<>(List.of(), pageable, 0);
 
-        PagedResponse<WishlistItemResponse> expectedResponse = PagedResponse.<WishlistItemResponse>builder()
-                .content(new java.util.ArrayList<>())
+        PagedResponse<WishlistItemResponse> expectedResponse = PagedResponse
+                .content(new ArrayList<WishlistItemResponse>())
                 .size(10)
                 .page(0)
                 .isLast(true)
@@ -124,21 +118,18 @@ public class WishlistServiceTests {
 
         when(wishlistItemProductSKUResumeRepository.findAllByUserId(userId, pageable))
                 .thenReturn(emptyPage);
-        when(pagedResponseFactory.fromPage(any(), any()))
-                .thenReturn(expectedResponse);
 
         PagedResponse<WishlistItemResponse> result = wishlistService.getAllItems(userId, pageable);
 
         assertNotNull(result);
-        assertEquals(0, result.page());
-        assertEquals(10, result.size());
-        assertEquals(0, result.totalPages());
-        assertEquals(0, result.totalElements());
-        assertTrue(result.isLast());
-        assertTrue(result.content().isEmpty());
+        assertEquals(0, result.page);
+        assertEquals(10, result.size);
+        assertEquals(0, result.totalPages);
+        assertEquals(0, result.totalElements);
+        assertTrue(result.isLast);
+        assertTrue(result.content.isEmpty());
 
         verify(wishlistItemProductSKUResumeRepository).findAllByUserId(userId, pageable);
-        verify(pagedResponseFactory).fromPage(any(), any());
     }
 
     @Test

@@ -1,15 +1,14 @@
 package com.products.infra.web.admin;
 
-import com.products.application.dto.PagedResponse;
 import com.products.application.dto.PriceTypeResponse;
 import com.products.application.dto.admin.CreateProductSKUPrice;
 import com.products.application.dto.admin.ProductSKUPriceResponse;
-import com.products.application.dto.admin.UpdateProductSKUPriceRequest;
 import com.products.application.exception.ProductSKUNotFoundException;
 import com.products.application.exception.ProductSKUPriceNotFoundException;
 import com.products.application.exception.ProductSKUWithoutBasePriceException;
 import com.products.application.service.ProductPriceManagementService;
 import com.products.config.SecurityConfig;
+import io.github.responsekit.core.PagedResponse;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -30,7 +29,8 @@ import java.util.UUID;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.*;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 @WebMvcTest(AdminPriceController.class)
 @Import(SecurityConfig.class)
@@ -54,13 +54,13 @@ public class AdminPriceControllerTests {
                 Instant.now()
         );
 
-        var expectedResponse = PagedResponse.<ProductSKUPriceResponse>builder()
+        var expectedResponse = PagedResponse
+                .content(List.of(priceResponse))
                 .page(0)
                 .size(20)
                 .totalElements(1L)
                 .totalPages(1)
                 .isLast(true)
-                .content(List.of(priceResponse))
                 .build();
 
         when(productPriceService.getAllPrices(any()))
@@ -90,13 +90,13 @@ public class AdminPriceControllerTests {
                 Instant.now()
         );
 
-        var expectedResponse = PagedResponse.<ProductSKUPriceResponse>builder()
+        var expectedResponse = PagedResponse
+                .content(List.of(priceResponse))
                 .page(0)
                 .size(20)
                 .totalElements(1L)
                 .totalPages(1)
                 .isLast(true)
-                .content(List.of(priceResponse))
                 .build();
 
         when(productPriceService.getAllPricesByProductSKUId(any(), any()))

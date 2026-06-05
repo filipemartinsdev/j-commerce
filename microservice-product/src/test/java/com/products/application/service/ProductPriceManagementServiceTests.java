@@ -1,6 +1,5 @@
 package com.products.application.service;
 
-import com.products.application.dto.PagedResponse;
 import com.products.application.dto.PriceTypeResponse;
 import com.products.application.dto.admin.CreateProductSKUPrice;
 import com.products.application.dto.admin.ProductSKUPriceResponse;
@@ -9,7 +8,6 @@ import com.products.application.exception.InvalidProductPriceTypeException;
 import com.products.application.exception.ProductSKUNotFoundException;
 import com.products.application.exception.ProductSKUPriceNotFoundException;
 import com.products.application.exception.ProductSKUWithoutBasePriceException;
-import com.products.application.factory.PagedResponseFactory;
 import com.products.application.service.mapper.ProductSKUPriceMapper;
 import com.products.domain.entity.PriceType;
 import com.products.domain.entity.ProductSKU;
@@ -17,6 +15,7 @@ import com.products.domain.entity.ProductSKUPrice;
 import com.products.infra.persistence.PriceTypeRepository;
 import com.products.infra.persistence.ProductSKUPriceRepository;
 import com.products.infra.persistence.ProductSKURepository;
+import io.github.responsekit.core.PagedResponse;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -30,10 +29,7 @@ import org.springframework.data.domain.Pageable;
 
 import java.math.BigDecimal;
 import java.time.Instant;
-import java.util.Collections;
-import java.util.List;
-import java.util.Optional;
-import java.util.UUID;
+import java.util.*;
 
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.*;
@@ -51,9 +47,6 @@ public class ProductPriceManagementServiceTests {
 
     @Mock
     private PriceTypeRepository priceTypeRepository;
-
-    @Mock
-    private PagedResponseFactory<ProductSKUPriceResponse> pagedResponseFactory;
 
     @InjectMocks
     private ProductPriceManagementService productPriceManagementService;
@@ -84,33 +77,30 @@ public class ProductPriceManagementServiceTests {
                 new PriceTypeResponse(2, "Discount"), Instant.now(), null, Instant.now()
         );
 
-        PagedResponse<ProductSKUPriceResponse> expectedResponse = PagedResponse.<ProductSKUPriceResponse>builder()
+        PagedResponse<ProductSKUPriceResponse> expectedResponse = PagedResponse
+                .content(List.of(response1, response2))
                 .page(0)
                 .size(10)
                 .isLast(true)
                 .totalElements(2L)
                 .totalPages(1)
-                .content(List.of(response1, response2))
                 .build();
 
         when(productSKUPriceRepository.findAllActive(pageable))
                 .thenReturn(page);
-        when(pagedResponseFactory.fromPage(any(), any()))
-                .thenReturn(expectedResponse);
 
         // When
         PagedResponse<ProductSKUPriceResponse> result = productPriceManagementService.getAllPrices(pageable);
 
         // Then
         assertNotNull(result);
-        assertEquals(0, result.page());
-        assertEquals(10, result.size());
-        assertEquals(2, result.totalElements());
-        assertEquals(1, result.totalPages());
-        assertTrue(result.isLast());
-        assertEquals(2, result.content().size());
+        assertEquals(0, result.page);
+        assertEquals(10, result.size);
+        assertEquals(2, result.totalElements);
+        assertEquals(1, result.totalPages);
+        assertTrue(result.isLast);
+        assertEquals(2, result.content.size());
         verify(productSKUPriceRepository).findAllActive(pageable);
-        verify(pagedResponseFactory).fromPage(any(), any());
     }
 
     @Test @DisplayName("Should retrieve empty PagedResponse if not exists any active ProductSKUPrice")
@@ -119,8 +109,8 @@ public class ProductPriceManagementServiceTests {
         Pageable pageable = PageRequest.of(0, 10);
         Page<ProductSKUPrice> emptyPage = new PageImpl<>(Collections.emptyList(), pageable, 0);
 
-        PagedResponse<ProductSKUPriceResponse> expectedResponse = PagedResponse.<ProductSKUPriceResponse>builder()
-                .content(new java.util.ArrayList<>())
+        PagedResponse<ProductSKUPriceResponse> expectedResponse = PagedResponse
+                .content(new ArrayList<ProductSKUPriceResponse>())
                 .size(10)
                 .page(0)
                 .isLast(true)
@@ -130,18 +120,15 @@ public class ProductPriceManagementServiceTests {
 
         when(productSKUPriceRepository.findAllActive(pageable))
                 .thenReturn(emptyPage);
-        when(pagedResponseFactory.fromPage(any(), any()))
-                .thenReturn(expectedResponse);
 
         // When
         PagedResponse<ProductSKUPriceResponse> result = productPriceManagementService.getAllPrices(pageable);
 
         // Then
         assertNotNull(result);
-        assertEquals(0, result.totalElements());
-        assertTrue(result.content().isEmpty());
+        assertEquals(0, result.totalElements);
+        assertTrue(result.content.isEmpty());
         verify(productSKUPriceRepository).findAllActive(pageable);
-        verify(pagedResponseFactory).fromPage(any(), any());
     }
 
     @Test @DisplayName("Should retrieve all active ProductSKUPrice for ProductSKU successfully")
@@ -171,29 +158,26 @@ public class ProductPriceManagementServiceTests {
                 new PriceTypeResponse(2, "Premium"), Instant.now(), null, Instant.now()
         );
 
-        PagedResponse<ProductSKUPriceResponse> expectedResponse = PagedResponse.<ProductSKUPriceResponse>builder()
+        PagedResponse<ProductSKUPriceResponse> expectedResponse = PagedResponse
+                .content(List.of(response1, response2))
                 .page(0)
                 .size(10)
                 .isLast(true)
                 .totalElements(2L)
                 .totalPages(1)
-                .content(List.of(response1, response2))
                 .build();
 
         when(productSKUPriceRepository.findAllActiveByProductSKUId(productSKUId, pageable))
                 .thenReturn(page);
-        when(pagedResponseFactory.fromPage(any(), any()))
-                .thenReturn(expectedResponse);
 
         // When
         PagedResponse<ProductSKUPriceResponse> result = productPriceManagementService.getAllPricesByProductSKUId(productSKUId, pageable);
 
         // Then
         assertNotNull(result);
-        assertEquals(2, result.content().size());
-        assertEquals(2, result.totalElements());
+        assertEquals(2, result.content.size());
+        assertEquals(2, result.totalElements);
         verify(productSKUPriceRepository).findAllActiveByProductSKUId(productSKUId, pageable);
-        verify(pagedResponseFactory).fromPage(any(), any());
     }
 
     @Test @DisplayName("Should throw ProductSKUNotFoundException if ProductSKU not exists by ID")
@@ -220,8 +204,8 @@ public class ProductPriceManagementServiceTests {
         Pageable pageable = PageRequest.of(0, 10);
         Page<ProductSKUPrice> emptyPage = new PageImpl<>(Collections.emptyList(), pageable, 0);
 
-        PagedResponse<ProductSKUPriceResponse> expectedResponse = PagedResponse.<ProductSKUPriceResponse>builder()
-                .content(new java.util.ArrayList<>())
+        PagedResponse<ProductSKUPriceResponse> expectedResponse = PagedResponse
+                .content(new ArrayList<ProductSKUPriceResponse>())
                 .size(10)
                 .page(0)
                 .isLast(true)
@@ -231,18 +215,15 @@ public class ProductPriceManagementServiceTests {
 
         when(productSKUPriceRepository.findAllActiveByProductSKUId(productSKUId, pageable))
                 .thenReturn(emptyPage);
-        when(pagedResponseFactory.fromPage(any(), any()))
-                .thenReturn(expectedResponse);
 
         // When
         PagedResponse<ProductSKUPriceResponse> result = productPriceManagementService.getAllPricesByProductSKUId(productSKUId, pageable);
 
         // Then
         assertNotNull(result);
-        assertEquals(0, result.totalElements());
-        assertTrue(result.content().isEmpty());
+        assertEquals(0, result.totalElements);
+        assertTrue(result.content.isEmpty());
         verify(productSKUPriceRepository).findAllActiveByProductSKUId(productSKUId, pageable);
-        verify(pagedResponseFactory).fromPage(any(), any());
     }
 
     @Test @DisplayName("Should create ProductSKUPrice successfully if everything is OK")

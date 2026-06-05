@@ -1,12 +1,11 @@
 package com.products.application.service;
 
-import com.products.application.dto.PagedResponse;
 import com.products.application.dto.ProductCategoryResponse;
 import com.products.application.exception.ProductCategoryNotFoundException;
-import com.products.application.factory.PagedResponseFactory;
 import com.products.application.service.mapper.ProductCategoryMapper;
 import com.products.domain.entity.ProductCategory;
 import com.products.infra.persistence.ProductCategoryRepository;
+import io.github.responsekit.core.PagedResponse;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -18,6 +17,7 @@ import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
@@ -31,7 +31,6 @@ import static org.mockito.Mockito.when;
 public class ProductCategoryServiceTests {
     @Mock private ProductCategoryMapper productCategoryMapper;
     @Mock private ProductCategoryRepository productCategoryRepository;
-    @Mock private PagedResponseFactory<ProductCategoryResponse> pagedResponseFactory;
 
     @InjectMocks private ProductCategoryService productCategoryService;
 
@@ -95,27 +94,25 @@ public class ProductCategoryServiceTests {
         ProductCategoryResponse response1 = new ProductCategoryResponse(1, "Electronics");
         ProductCategoryResponse response2 = new ProductCategoryResponse(2, "Clothing");
 
-        PagedResponse<ProductCategoryResponse> expectedResponse = PagedResponse.<ProductCategoryResponse>builder()
+        PagedResponse<ProductCategoryResponse> expectedResponse = PagedResponse
+                .content(List.of(response1, response2))
                 .page(0)
                 .size(10)
                 .isLast(true)
                 .totalElements(2L)
                 .totalPages(1)
-                .content(List.of(response1, response2))
                 .build();
 
         when(productCategoryRepository.findAll(pageable)).thenReturn(page);
-        when(pagedResponseFactory.fromPage(any(), any())).thenReturn(expectedResponse);
 
         // When
         PagedResponse<ProductCategoryResponse> result = productCategoryService.getAll(pageable);
 
         // Then
         assertNotNull(result);
-        assertEquals(2, result.totalElements());
-        assertEquals(2, result.content().size());
+        assertEquals(2, result.totalElements);
+        assertEquals(2, result.content.size());
         verify(productCategoryRepository).findAll(pageable);
-        verify(pagedResponseFactory).fromPage(any(), any());
     }
 
     @Test @DisplayName("Should retrieve empty PagedResponse if not exists any active ProductCategory")
@@ -124,8 +121,8 @@ public class ProductCategoryServiceTests {
         Pageable pageable = PageRequest.of(0, 10);
         Page<ProductCategory> emptyPage = new PageImpl<>(Collections.emptyList(), pageable, 0);
 
-        PagedResponse<ProductCategoryResponse> expectedResponse = PagedResponse.<ProductCategoryResponse>builder()
-                .content(new java.util.ArrayList<>())
+        PagedResponse<ProductCategoryResponse> expectedResponse = PagedResponse
+                .content(new ArrayList<ProductCategoryResponse>())
                 .size(10)
                 .page(0)
                 .isLast(true)
@@ -134,16 +131,14 @@ public class ProductCategoryServiceTests {
                 .build();
 
         when(productCategoryRepository.findAll(pageable)).thenReturn(emptyPage);
-        when(pagedResponseFactory.fromPage(any(), any())).thenReturn(expectedResponse);
 
         // When
         PagedResponse<ProductCategoryResponse> result = productCategoryService.getAll(pageable);
 
         // Then
         assertNotNull(result);
-        assertEquals(0, result.totalElements());
-        assertTrue(result.content().isEmpty());
+        assertEquals(0, result.totalElements);
+        assertTrue(result.content.isEmpty());
         verify(productCategoryRepository).findAll(pageable);
-        verify(pagedResponseFactory).fromPage(any(), any());
     }
 }

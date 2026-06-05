@@ -1,6 +1,5 @@
 package com.products.infra.web.admin;
 
-import com.products.application.dto.PagedResponse;
 import com.products.application.dto.ProductCategoryResponse;
 import com.products.application.dto.admin.CreateProductRequest;
 import com.products.application.dto.admin.ProductAdminResponse;
@@ -9,6 +8,7 @@ import com.products.application.exception.InvalidProductCategoryException;
 import com.products.application.exception.ProductNotFoundException;
 import com.products.application.service.ProductManagementService;
 import com.products.config.SecurityConfig;
+import io.github.responsekit.core.PagedResponse;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -50,13 +50,13 @@ public class AdminProductControllerTests {
                 null
         );
 
-        var expectedResponse = PagedResponse.<ProductAdminResponse>builder()
+        var expectedResponse = PagedResponse
+                .content(List.of(productResponse))
                 .page(0)
                 .size(20)
                 .totalElements(1L)
                 .totalPages(1)
                 .isLast(true)
-                .content(List.of(productResponse))
                 .build();
 
         when(adminProductService.getAllProducts(any()))
@@ -84,13 +84,13 @@ public class AdminProductControllerTests {
                 null
         );
 
-        var expectedResponse = PagedResponse.<ProductAdminResponse>builder()
+        var expectedResponse = PagedResponse
+                .content(List.of(productResponse))
                 .page(0)
                 .size(20)
                 .totalElements(1L)
                 .totalPages(1)
                 .isLast(true)
-                .content(List.of(productResponse))
                 .build();
 
         when(adminProductService.getAllProductsByCategoryId(any(), any()))

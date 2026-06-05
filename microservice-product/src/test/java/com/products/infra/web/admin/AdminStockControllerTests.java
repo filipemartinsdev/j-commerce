@@ -1,6 +1,5 @@
 package com.products.infra.web.admin;
 
-import com.products.application.dto.PagedResponse;
 import com.products.application.dto.admin.CreateStockEntryRequest;
 import com.products.application.dto.admin.ProductStockResponse;
 import com.products.application.dto.admin.StockMovementResponse;
@@ -11,12 +10,14 @@ import com.products.application.service.StockMovementTypeService;
 import com.products.application.service.mapper.StockMovementTypeMapper;
 import com.products.config.SecurityConfig;
 import com.products.infra.persistence.StockMovementTypeRepository;
+import io.github.responsekit.core.PagedResponse;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.webmvc.test.autoconfigure.WebMvcTest;
 import org.springframework.context.annotation.Import;
 import org.springframework.http.MediaType;
+import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.test.context.support.WithMockUser;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.MockMvc;
@@ -30,10 +31,10 @@ import java.util.UUID;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.*;
 import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.jwt;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
-
-import org.springframework.security.core.authority.SimpleGrantedAuthority;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 @WebMvcTest(AdminStockController.class)
 @Import(SecurityConfig.class)
@@ -59,13 +60,13 @@ public class AdminStockControllerTests {
                 Instant.now()
         );
 
-        var expectedResponse = PagedResponse.<ProductStockResponse>builder()
+        var expectedResponse = PagedResponse
+                .content(List.of(stockResponse))
                 .page(0)
                 .size(20)
                 .totalElements(1L)
                 .totalPages(1)
                 .isLast(true)
-                .content(List.of(stockResponse))
                 .build();
 
         when(adminProductStockService.getAll(any()))
@@ -94,13 +95,13 @@ public class AdminStockControllerTests {
                 Instant.now()
         );
 
-        var expectedResponse = PagedResponse.<ProductStockResponse>builder()
+        var expectedResponse = PagedResponse
+                .content(List.of(stockResponse))
                 .page(0)
                 .size(20)
                 .totalElements(1L)
                 .totalPages(1)
                 .isLast(true)
-                .content(List.of(stockResponse))
                 .build();
 
         when(adminProductStockService.getAllByProductId(any(), any()))
@@ -218,13 +219,13 @@ public class AdminStockControllerTests {
                 UUID.randomUUID()
         );
 
-        var expectedResponse = PagedResponse.<StockMovementResponse>builder()
+        var expectedResponse = PagedResponse
+                .content(List.of(movementResponse))
                 .page(0)
                 .size(20)
                 .totalElements(1L)
                 .totalPages(1)
                 .isLast(true)
-                .content(List.of(movementResponse))
                 .build();
 
         when(adminProductStockService.getAllMovements(any()))
@@ -253,13 +254,13 @@ public class AdminStockControllerTests {
                 UUID.randomUUID()
         );
 
-        var expectedResponse = PagedResponse.<StockMovementResponse>builder()
+        var expectedResponse = PagedResponse
+                .content(List.of(movementResponse))
                 .page(0)
                 .size(20)
                 .totalElements(1L)
                 .totalPages(1)
                 .isLast(true)
-                .content(List.of(movementResponse))
                 .build();
 
         when(adminProductStockService.getAllMovementsByProductSKUId(any(), any()))

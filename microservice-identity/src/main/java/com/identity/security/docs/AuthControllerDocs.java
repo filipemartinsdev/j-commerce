@@ -1,11 +1,11 @@
 package com.identity.security.docs;
 
 
-import com.identity.common.dto.StandardResponse;
 import com.identity.security.application.dto.LoginRequest;
 import com.identity.security.application.dto.LoginResponse;
 import com.identity.security.application.dto.RefreshRequest;
 import com.identity.security.application.dto.RegisterRequest;
+import io.github.responsekit.core.StandardResponse;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.Schema;

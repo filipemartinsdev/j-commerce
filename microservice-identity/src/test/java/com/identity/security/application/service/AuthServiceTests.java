@@ -1,8 +1,6 @@
 package com.identity.security.application.service;
 
-import com.identity.common.dto.PagedResponse;
 import com.identity.common.event.UserCredentialsCreatedEvent;
-import com.identity.common.factory.PagedResponseFactory;
 import com.identity.security.application.dto.*;
 import com.identity.security.application.exception.ForbiddenOperationException;
 import com.identity.security.application.exception.UserAlreadyExistsException;
@@ -14,6 +12,8 @@ import com.identity.security.domain.entity.UserCredentials;
 import com.identity.security.infra.persistence.RefreshTokenRepository;
 import com.identity.security.infra.persistence.RoleRepository;
 import com.identity.security.infra.persistence.UserCredentialsRepository;
+import io.github.responsekit.core.PagedResponse;
+import io.github.responsekit.spring.PagedResponseFactory;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -71,9 +71,6 @@ public class AuthServiceTests {
 
     @Mock
     private RoleRepository roleRepository;
-
-    @Mock
-    private PagedResponseFactory<UserCredentialsResponse> pagedResponseFactory;
 
     @InjectMocks
     private AuthService authService;
@@ -415,21 +412,23 @@ public class AuthServiceTests {
                 Instant.now()
         );
 
-        var contentExpected = List.of(response1, response2);
+        List<UserCredentialsResponse> contentExpected = List.of(response1, response2);
 
-        PagedResponse<UserCredentialsResponse> expectedPagedResponse = PagedResponse.<UserCredentialsResponse>builder()
+        PagedResponse<UserCredentialsResponse> expectedPagedResponse = PagedResponse
+                .content(contentExpected)
                 .page(0)
                 .size(10)
                 .isLast(true)
                 .totalPages(1)
                 .totalElements(2L)
-                .content(contentExpected)
                 .build();
 
         when(userCredentialsRepository.findAll(pageable))
                 .thenReturn(page);
-        when(pagedResponseFactory.fromPage(any(), any()))
-                .thenReturn(expectedPagedResponse);
+        when(userCredentialsMapper.toResponse(user1))
+                .thenReturn(response1);
+        when(userCredentialsMapper.toResponse(user2))
+                .thenReturn(response2);
 
         PagedResponse<UserCredentialsResponse> result = authService.getAllUsers(pageable);
 
@@ -449,19 +448,17 @@ public class AuthServiceTests {
                 0
         );
 
-        PagedResponse<UserCredentialsResponse> expectedPagedResponse = PagedResponse.<UserCredentialsResponse>builder()
+        PagedResponse<UserCredentialsResponse> expectedPagedResponse = PagedResponse
+                .content(new ArrayList<UserCredentialsResponse>())
                 .page(0)
                 .size(10)
                 .isLast(true)
-                .totalPages(1)
+                .totalPages(0)
                 .totalElements(0L)
-                .content(new ArrayList<>())
                 .build();
 
         when(userCredentialsRepository.findAll(pageable))
                 .thenReturn(emptyPage);
-        when(pagedResponseFactory.fromPage(any(), any()))
-                .thenReturn(expectedPagedResponse);
 
         PagedResponse<UserCredentialsResponse> result = authService.getAllUsers(pageable);
 

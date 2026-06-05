@@ -1,12 +1,12 @@
 package com.identity.security.infra.web;
 
-import com.identity.common.dto.StandardResponse;
 import com.identity.security.application.dto.LoginRequest;
 import com.identity.security.application.dto.LoginResponse;
 import com.identity.security.application.dto.RefreshRequest;
 import com.identity.security.application.dto.RegisterRequest;
 import com.identity.security.application.service.AuthService;
 import com.identity.security.docs.AuthControllerDocs;
+import io.github.responsekit.core.StandardResponse;
 import jakarta.validation.Valid;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -37,7 +37,7 @@ public class AuthController implements AuthControllerDocs {
                 .body(
                         StandardResponse.success(
                                 authService.login(request)
-                        )
+                        ).build()
                 );
     }
 
@@ -48,7 +48,7 @@ public class AuthController implements AuthControllerDocs {
                 .body(
                         StandardResponse.success(
                                 authService.refresh(request)
-                        )
+                        ).build()
                 );
     }
 }

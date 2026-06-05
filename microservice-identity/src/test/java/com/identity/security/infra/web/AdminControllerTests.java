@@ -1,13 +1,11 @@
 package com.identity.security.infra.web;
 
-import com.identity.common.dto.PagedResponse;
-import com.identity.common.dto.StandardResponse;
 import com.identity.config.SecurityConfig;
-import com.identity.profile.application.dto.UserProfileResponse;
 import com.identity.security.application.dto.UserCredentialsResponse;
 import com.identity.security.application.exception.UserNotFoundException;
 import com.identity.security.application.service.AuthService;
 import com.identity.security.domain.entity.Role;
+import io.github.responsekit.core.PagedResponse;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -130,12 +128,7 @@ public class AdminControllerTests {
         UUID userId = UUID.randomUUID();
         Instant userCreatedAt = Instant.now();
 
-        PagedResponse<UserCredentialsResponse> authServiceResponse = PagedResponse.<UserCredentialsResponse>builder()
-                .page(0)
-                .size(20)
-                .totalPages(1)
-                .totalElements(1L)
-                .isLast(true)
+        PagedResponse<UserCredentialsResponse> authServiceResponse = PagedResponse
                 .content(List.of(
                         new UserCredentialsResponse(
                                 userId,
@@ -146,6 +139,11 @@ public class AdminControllerTests {
                                 userCreatedAt
                         )
                 ))
+                .page(0)
+                .size(20)
+                .totalPages(1)
+                .totalElements(1L)
+                .isLast(true)
                 .build();
 
         String expectedResponse = """

@@ -1,12 +1,12 @@
 package com.identity.security.infra.web;
 
-import com.identity.common.dto.PagedResponse;
-import com.identity.common.dto.StandardResponse;
 import com.identity.security.application.dto.UpdateUserRole;
 import com.identity.security.application.dto.UserCredentialsResponse;
 import com.identity.security.application.service.AuthService;
 import com.identity.security.application.service.mapper.UserCredentialsMapper;
 import com.identity.security.docs.AdminControllerDocs;
+import io.github.responsekit.core.PagedResponse;
+import io.github.responsekit.core.StandardResponse;
 import jakarta.validation.Valid;
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
@@ -37,17 +37,21 @@ public class AdminController implements AdminControllerDocs {
     public ResponseEntity<StandardResponse<PagedResponse<UserCredentialsResponse>>> getAllUsers(Pageable pageable) {
         return ResponseEntity
                 .status(HttpStatus.OK)
-                .body(StandardResponse.success(
-                        authService.getAllUsers(pageable)
-                ));
+                .body(
+                        StandardResponse
+                                .success(authService.getAllUsers(pageable))
+                                .build()
+                );
     }
 
     @GetMapping("/users/{userId}")
     public ResponseEntity<StandardResponse<UserCredentialsResponse>> getUserById(@PathVariable UUID userId) {
         return ResponseEntity
                 .status(HttpStatus.OK)
-                .body(StandardResponse.success(
-                        authService.getUserById(userId)
-                ));
+                .body(
+                        StandardResponse
+                                .success(authService.getUserById(userId))
+                                .build()
+                );
     }
 }

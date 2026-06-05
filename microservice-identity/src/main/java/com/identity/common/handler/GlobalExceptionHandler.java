@@ -1,12 +1,12 @@
 package com.identity.common.handler;
 
-import com.identity.common.dto.StandardResponse;
 import com.identity.common.exception.InvalidEntityMapperException;
 import com.identity.common.exception.NullResponsePageException;
 import com.identity.profile.application.exception.UserProfileNotFoundException;
 import com.identity.security.application.exception.ForbiddenOperationException;
 import com.identity.security.application.exception.UserAlreadyExistsException;
 import com.identity.security.application.exception.UserNotFoundException;
+import io.github.responsekit.core.StandardResponse;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -24,42 +24,42 @@ public class GlobalExceptionHandler {
 
         return ResponseEntity
                 .status(HttpStatus.INTERNAL_SERVER_ERROR)
-                .body(StandardResponse.error(exception.getMessage()));
+                .body(StandardResponse.error().message(exception.getMessage()).build());
     }
 
     @ExceptionHandler(BadJwtException.class)
     public ResponseEntity<StandardResponse<Void>> handleBadJwt(BadJwtException exception){
         return ResponseEntity
                 .status(HttpStatus.BAD_REQUEST)
-                .body(StandardResponse.fail(exception.getMessage()));
+                .body(StandardResponse.fail().message(exception.getMessage()).build());
     }
 
     @ExceptionHandler(UserNotFoundException.class)
     public ResponseEntity<StandardResponse<Void>> handleUserNotFound(UserNotFoundException exception){
         return ResponseEntity
                 .status(HttpStatus.NOT_FOUND)
-                .body(StandardResponse.fail(exception.getMessage()));
+                .body(StandardResponse.fail().message(exception.getMessage()).build());
     }
 
     @ExceptionHandler(UserAlreadyExistsException.class)
     public ResponseEntity<StandardResponse<Void>> handleUserAlreadyExists(UserAlreadyExistsException exception){
         return ResponseEntity
                 .status(HttpStatus.BAD_REQUEST)
-                .body(StandardResponse.fail(exception.getMessage()));
+                .body(StandardResponse.fail().message(exception.getMessage()).build());
     }
 
     @ExceptionHandler(UserProfileNotFoundException.class)
     public ResponseEntity<StandardResponse<Void>> handleUserProfileNotFound(UserProfileNotFoundException exception){
         return ResponseEntity
                 .status(HttpStatus.NOT_FOUND)
-                .body(StandardResponse.fail(exception.getMessage()));
+                .body(StandardResponse.fail().message(exception.getMessage()).build());
     }
 
     @ExceptionHandler(ForbiddenOperationException.class)
     public ResponseEntity<StandardResponse<Void>> handleForbiddenOperation(ForbiddenOperationException exception){
         return ResponseEntity
                 .status(HttpStatus.FORBIDDEN)
-                .body(StandardResponse.fail(exception.getMessage()));
+                .body(StandardResponse.fail().message(exception.getMessage()).build());
     }
 
     @ExceptionHandler(InvalidEntityMapperException.class)
@@ -67,7 +67,7 @@ public class GlobalExceptionHandler {
         log.error(exception.getMessage(), exception);
         return ResponseEntity
                 .status(HttpStatus.INTERNAL_SERVER_ERROR)
-                .body(StandardResponse.error(exception.getMessage()));
+                .body(StandardResponse.error().message(exception.getMessage()).build());
     }
 
     @ExceptionHandler(NullResponsePageException.class)
@@ -75,6 +75,6 @@ public class GlobalExceptionHandler {
         log.error(exception.getMessage(), exception);
         return ResponseEntity
                 .status(HttpStatus.INTERNAL_SERVER_ERROR)
-                .body(StandardResponse.error(exception.getMessage()));
+                .body(StandardResponse.error().message(exception.getMessage()).build());
     }
 }

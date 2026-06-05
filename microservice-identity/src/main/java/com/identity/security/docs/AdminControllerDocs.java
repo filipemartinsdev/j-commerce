@@ -1,9 +1,9 @@
 package com.identity.security.docs;
 
-import com.identity.common.dto.PagedResponse;
-import com.identity.common.dto.StandardResponse;
 import com.identity.security.application.dto.UpdateUserRole;
 import com.identity.security.application.dto.UserCredentialsResponse;
+import io.github.responsekit.core.PagedResponse;
+import io.github.responsekit.core.StandardResponse;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.Schema;

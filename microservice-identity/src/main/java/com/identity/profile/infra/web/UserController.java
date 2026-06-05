@@ -1,9 +1,9 @@
 package com.identity.profile.infra.web;
 
-import com.identity.common.dto.StandardResponse;
 import com.identity.profile.application.dto.UserProfileResponse;
 import com.identity.profile.application.service.UserProfileService;
 import com.identity.profile.docs.UserControllerDocs;
+import io.github.responsekit.core.StandardResponse;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
@@ -28,9 +28,11 @@ public class UserController implements UserControllerDocs {
         UUID authenticatedUserId = UUID.fromString(authenticatedJWT.getSubject());
 
         return ResponseEntity
-            .status(HttpStatus.OK)
-            .body(StandardResponse.success(
-                    userProfileService.getUserById(authenticatedUserId))
-            );
+                .status(HttpStatus.OK)
+                .body(
+                        StandardResponse
+                                .success(userProfileService.getUserById(authenticatedUserId))
+                                .build()
+                );
     }
 }

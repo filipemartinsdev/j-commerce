@@ -1,6 +1,5 @@
 package com.orders.application.service;
 
-import com.orders.application.dto.PagedResponse;
 import com.orders.application.dto.SalesOrderResponse;
 import com.orders.application.dto.SalesOrderSummaryResponse;
 import com.orders.application.exception.*;
@@ -11,6 +10,7 @@ import static com.orders.application.message.CreateOrderMessage.OrderItem;
 import com.orders.application.service.mapper.SalesOrderMapper;
 import com.orders.domain.entity.*;
 import com.orders.infra.persistence.*;
+import io.github.responsekit.core.PagedResponse;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
@@ -87,16 +87,16 @@ public class SalesOrderService {
     public PagedResponse<SalesOrderResponse> getAllByUserId(UUID userId, Pageable pageable) {
         Page<SalesOrder> page = salesOrderRepository.findAllByUserId(userId, pageable);
 
-        return PagedResponse.<SalesOrderResponse>builder()
+        return PagedResponse
+                .content(page.getContent().stream()
+                        .map(salesOrderMapper::toResponse)
+                        .toList()
+                )
                 .page(page.getNumber())
                 .size(page.getSize())
                 .isLast(page.isLast())
                 .totalPages(page.getTotalPages())
                 .totalElements(page.getTotalElements())
-                .content(page.getContent().stream()
-                        .map(salesOrderMapper::toResponse)
-                        .toList()
-                )
                 .build();
     }
 

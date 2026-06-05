@@ -1,10 +1,11 @@
 package com.orders.infra.web;
 
-import com.orders.application.dto.PagedResponse;
 import com.orders.application.dto.StorageAddressRequest;
 import com.orders.application.dto.StorageAddressResponse;
 import com.orders.application.service.StorageAddressService;
 import com.orders.config.SecurityConfig;
+import io.github.responsekit.core.PagedResponse;
+import io.github.responsekit.core.StandardResponse;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -14,10 +15,10 @@ import org.springframework.http.MediaType;
 import org.springframework.security.test.context.support.WithMockUser;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.MockMvc;
+import tools.jackson.databind.ObjectMapper;
 
 import java.time.Instant;
 import java.util.List;
-import java.util.Map;
 import java.util.Optional;
 import java.util.UUID;
 
@@ -25,9 +26,8 @@ import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.doNothing;
 import static org.mockito.Mockito.when;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
-
-import tools.jackson.databind.ObjectMapper;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 @WebMvcTest(AdminStorageAddressController.class)
 @Import(SecurityConfig.class)
@@ -55,13 +55,15 @@ public class AdminStorageAddressControllerTests {
                 Instant.now()
         );
 
-        var pagedResponse = PagedResponse.<StorageAddressResponse>builder()
+        PagedResponse<StorageAddressResponse> pagedResponse = PagedResponse
+                .content(List.of(response))
                 .page(0).size(20).totalElements(1L).totalPages(1)
-                .isLast(true).content(List.of(response)).build();
+                .isLast(true)
+                .build();
 
         when(storageAddressService.getAll(any())).thenReturn(pagedResponse);
 
-        String expectedJSON = objectMapper.writeValueAsString(pagedResponse);
+        String expectedJSON = objectMapper.writeValueAsString(StandardResponse.success(pagedResponse).build());
 
         mockMvc.perform(get("/admin/api/v1/storage-addresses"))
                 .andExpect(status().isOk())
@@ -101,7 +103,7 @@ public class AdminStorageAddressControllerTests {
 
         when(storageAddressService.getById(addressId)).thenReturn(response);
 
-        String expectedJSON = objectMapper.writeValueAsString(response);
+        String expectedJSON = objectMapper.writeValueAsString(StandardResponse.success(response).build());
 
         mockMvc.perform(get("/admin/api/v1/storage-addresses/{id}", addressId))
                 .andExpect(status().isOk())
@@ -159,7 +161,7 @@ public class AdminStorageAddressControllerTests {
         when(storageAddressService.create(any(StorageAddressRequest.class))).thenReturn(response);
 
         String requestBody = objectMapper.writeValueAsString(request);
-        String expectedJSON = objectMapper.writeValueAsString(response);
+        String expectedJSON = objectMapper.writeValueAsString(StandardResponse.success(response).build());
 
         mockMvc.perform(post("/admin/api/v1/storage-addresses")
                         .content(requestBody)

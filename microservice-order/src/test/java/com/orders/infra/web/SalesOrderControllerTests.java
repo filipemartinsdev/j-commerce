@@ -4,6 +4,7 @@ import com.orders.config.SecurityConfig;
 import com.orders.application.dto.*;
 import com.orders.application.exception.*;
 import com.orders.application.service.SalesOrderService;
+import io.github.responsekit.core.PagedResponse;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -58,13 +59,13 @@ public class SalesOrderControllerTests {
                 new BigDecimal("100.00")
         );
 
-        var pagedResponse = PagedResponse.<SalesOrderResponse>builder()
+        var pagedResponse = PagedResponse
+                .content(List.of(response))
                 .page(0)
                 .size(20)
                 .totalElements(1L)
                 .totalPages(1)
                 .isLast(true)
-                .content(List.of(response))
                 .build();
 
         when(salesOrderService.getAllByUserId(eq(userId), any()))

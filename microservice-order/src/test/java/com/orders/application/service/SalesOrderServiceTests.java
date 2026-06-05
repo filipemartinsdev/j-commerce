@@ -1,6 +1,5 @@
 package com.orders.application.service;
 
-import com.orders.application.dto.PagedResponse;
 import com.orders.application.dto.SalesOrderResponse;
 import com.orders.application.dto.SalesOrderSummaryResponse;
 import com.orders.application.exception.CantCancelSalesOrderException;
@@ -10,19 +9,10 @@ import com.orders.application.message.CreateOrderMessage;
 import com.orders.application.message.CreateShippingMessage;
 import com.orders.application.message.GeneratePaymentMessage;
 import com.orders.application.service.mapper.SalesOrderMapper;
-import com.orders.domain.entity.DeliveryAddress;
-import com.orders.domain.entity.SalesOrder;
-import com.orders.domain.entity.SalesOrderItem;
-import com.orders.domain.entity.SalesOrderStatus;
-import com.orders.domain.entity.Shipping;
-import com.orders.domain.entity.ShippingStatus;
-import com.orders.infra.persistence.DeliveryAddressRepository;
-import com.orders.infra.persistence.SalesOrderItemRepository;
+import com.orders.domain.entity.*;
 import com.orders.infra.persistence.SalesOrderRepository;
 import com.orders.infra.persistence.SalesOrderStatusRepository;
-import com.orders.infra.persistence.ShippingRepository;
-import com.orders.infra.persistence.ShippingStatusRepository;
-import org.springframework.data.domain.Pageable;
+import io.github.responsekit.core.PagedResponse;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -32,6 +22,7 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 
 import java.math.BigDecimal;
 import java.time.Instant;
@@ -161,8 +152,8 @@ public class SalesOrderServiceTests {
         PagedResponse<SalesOrderResponse> result = salesOrderService.getAllByUserId(userId, pageable);
 
         assertNotNull(result);
-        assertEquals(1, result.totalElements());
-        assertEquals("PENDING", result.content().get(0).status());
+        assertEquals(1, result.totalElements);
+        assertEquals("PENDING", result.content.get(0).status());
         verify(salesOrderRepository).findAllByUserId(userId, pageable);
     }
 
@@ -180,8 +171,8 @@ public class SalesOrderServiceTests {
         PagedResponse<SalesOrderResponse> result = salesOrderService.getAllByUserId(userId, pageable);
 
         assertNotNull(result);
-        assertEquals(0, result.totalElements());
-        assertTrue(result.content().isEmpty());
+        assertEquals(0, result.totalElements);
+        assertTrue(result.content.isEmpty());
         verify(salesOrderRepository).findAllByUserId(userId, pageable);
     }
 

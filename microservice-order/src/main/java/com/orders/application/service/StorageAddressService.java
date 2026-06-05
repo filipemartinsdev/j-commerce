@@ -1,19 +1,16 @@
 package com.orders.application.service;
 
-import com.orders.application.dto.AddressByCoordinatesResponse;
-import com.orders.application.dto.PagedResponse;
 import com.orders.application.dto.StorageAddressRequest;
 import com.orders.application.dto.StorageAddressResponse;
-import com.orders.application.exception.InvalidDeliveryAddressCoordinatesException;
 import com.orders.application.exception.InvalidStorageAddressException;
 import com.orders.application.exception.StorageAddressNotFoundException;
-import com.orders.application.factory.PagedResponseFactory;
 import com.orders.application.service.mapper.StorageAddressMapper;
 import com.orders.domain.entity.StorageAddress;
 import com.orders.infra.persistence.StorageAddressRepository;
+import io.github.responsekit.core.PagedResponse;
+import io.github.responsekit.spring.PagedResponseFactory;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
-import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 
 import java.util.UUID;
@@ -21,13 +18,11 @@ import java.util.UUID;
 @Service
 public class StorageAddressService {
     private final StorageAddressRepository storageAddressRepository;
-    private final PagedResponseFactory<StorageAddressResponse> pagedResponseFactory;
     private final StorageAddressMapper storageAddressMapper;
     private final GeocodingService geocodingService;
 
-    public StorageAddressService(StorageAddressRepository storageAddressRepository, PagedResponseFactory<StorageAddressResponse> pagedResponseFactory, StorageAddressMapper storageAddressMapper, GeocodingService geocodingService) {
+    public StorageAddressService(StorageAddressRepository storageAddressRepository, StorageAddressMapper storageAddressMapper, GeocodingService geocodingService) {
         this.storageAddressRepository = storageAddressRepository;
-        this.pagedResponseFactory = pagedResponseFactory;
         this.storageAddressMapper = storageAddressMapper;
         this.geocodingService = geocodingService;
     }
@@ -46,7 +41,7 @@ public class StorageAddressService {
     public PagedResponse<StorageAddressResponse> getAll(Pageable pageable) {
         Page<StorageAddress> page = storageAddressRepository.findAllActive(pageable);
 
-        return pagedResponseFactory.fromPage(page, storageAddressMapper::toResponse);
+        return PagedResponseFactory.fromPage(page, storageAddressMapper::toResponse);
     }
 
     public StorageAddressResponse create(StorageAddressRequest request) {

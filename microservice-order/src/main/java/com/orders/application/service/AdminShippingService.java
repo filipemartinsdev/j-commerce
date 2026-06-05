@@ -1,10 +1,8 @@
 package com.orders.application.service;
 
-import com.orders.application.dto.PagedResponse;
 import com.orders.application.dto.ShippingRequest;
 import com.orders.application.dto.ShippingResponse;
 import com.orders.application.exception.*;
-import com.orders.application.factory.PagedResponseFactory;
 import com.orders.application.message.CreateShippingMessage;
 import com.orders.application.service.mapper.ShippingMapper;
 import com.orders.domain.entity.*;
@@ -12,6 +10,8 @@ import com.orders.infra.persistence.DeliveryAddressRepository;
 import com.orders.infra.persistence.SalesOrderRepository;
 import com.orders.infra.persistence.ShippingRepository;
 import com.orders.infra.persistence.ShippingStatusRepository;
+import io.github.responsekit.core.PagedResponse;
+import io.github.responsekit.spring.PagedResponseFactory;
 import jakarta.transaction.Transactional;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
@@ -22,16 +22,14 @@ import java.util.UUID;
 public class AdminShippingService {
     private final ShippingRepository shippingRepository;
     private final ShippingStatusRepository shippingStatusRepository;
-    private final PagedResponseFactory<ShippingResponse> pagedResponseFactory;
     private final ShippingMapper shippingMapper;
     private final SalesOrderRepository salesOrderRepository;
     private final DeliveryAddressRepository deliveryAddressRepository;
     private final DeliveryDateCalculator deliveryDateCalculator;
 
-    public AdminShippingService(ShippingRepository shippingRepository, ShippingStatusRepository shippingStatusRepository, PagedResponseFactory<ShippingResponse> pagedResponseFactory, ShippingMapper shippingMapper, SalesOrderRepository salesOrderRepository, DeliveryAddressRepository deliveryAddressRepository, DeliveryDateCalculator deliveryDateCalculator) {
+    public AdminShippingService(ShippingRepository shippingRepository, ShippingStatusRepository shippingStatusRepository, ShippingMapper shippingMapper, SalesOrderRepository salesOrderRepository, DeliveryAddressRepository deliveryAddressRepository, DeliveryDateCalculator deliveryDateCalculator) {
         this.shippingRepository = shippingRepository;
         this.shippingStatusRepository = shippingStatusRepository;
-        this.pagedResponseFactory = pagedResponseFactory;
         this.shippingMapper = shippingMapper;
         this.salesOrderRepository = salesOrderRepository;
         this.deliveryAddressRepository = deliveryAddressRepository;
@@ -113,14 +111,14 @@ public class AdminShippingService {
     }
 
     public PagedResponse<ShippingResponse> getAll(Pageable pageable) {
-        return pagedResponseFactory.fromPage(
+        return PagedResponseFactory.fromPage(
                 shippingRepository.findAll(pageable),
                 shippingMapper::toResponse
         );
     }
 
     public PagedResponse<ShippingResponse> getAllBySalesOrderId(UUID salesOrderId, Pageable pageable) {
-        return pagedResponseFactory.fromPage(
+        return PagedResponseFactory.fromPage(
                 shippingRepository.findAllBySalesOrderId(salesOrderId, pageable),
                 shippingMapper::toResponse
         );

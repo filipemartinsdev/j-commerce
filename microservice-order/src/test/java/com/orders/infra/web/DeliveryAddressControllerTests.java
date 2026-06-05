@@ -1,18 +1,22 @@
 package com.orders.infra.web;
 
-import com.orders.config.SecurityConfig;
-import com.orders.application.dto.*;
-import com.orders.application.exception.*;
+import com.orders.application.dto.CreateDeliveryAddressRequest;
+import com.orders.application.dto.DeliveryAddressResponse;
+import com.orders.application.dto.UpdateDeliveryAddressRequest;
+import com.orders.application.exception.DeliveryAddressNotFoundException;
 import com.orders.application.service.DeliveryAddressService;
+import com.orders.config.SecurityConfig;
+import io.github.responsekit.core.PagedResponse;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.webmvc.test.autoconfigure.WebMvcTest;
 import org.springframework.context.annotation.Import;
 import org.springframework.http.MediaType;
-import org.springframework.security.test.context.support.WithMockUser;
+import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.MockMvc;
+import tools.jackson.databind.ObjectMapper;
 
 import java.time.Instant;
 import java.util.List;
@@ -25,10 +29,8 @@ import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.*;
 import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.jwt;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
-
-import org.springframework.security.core.authority.SimpleGrantedAuthority;
-import tools.jackson.databind.ObjectMapper;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 @WebMvcTest(DeliveryAddressController.class)
 @Import(SecurityConfig.class)
@@ -63,13 +65,13 @@ public class DeliveryAddressControllerTests {
                 Instant.now()
         );
 
-        var pagedResponse = PagedResponse.<DeliveryAddressResponse>builder()
+        var pagedResponse = PagedResponse
+                .content(List.of(response))
                 .page(0)
                 .size(20)
                 .totalElements(1L)
                 .totalPages(1)
                 .isLast(true)
-                .content(List.of(response))
                 .build();
 
         when(deliveryAddressService.getAllByUserId(eq(userId), any()))

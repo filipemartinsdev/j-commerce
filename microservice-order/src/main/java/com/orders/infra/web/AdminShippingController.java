@@ -1,9 +1,9 @@
 package com.orders.infra.web;
 
-import com.orders.application.dto.PagedResponse;
 import com.orders.application.dto.ShippingResponse;
-import com.orders.application.dto.StandardResponse;
 import com.orders.application.service.AdminShippingService;
+import io.github.responsekit.core.PagedResponse;
+import io.github.responsekit.core.StandardResponse;
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -37,7 +37,7 @@ public class AdminShippingController {
 
         return ResponseEntity
                 .status(HttpStatus.OK)
-                .body(StandardResponse.success(response));
+                .body(StandardResponse.success(response).build());
     }
 
     @PostMapping("/{id}")
@@ -47,7 +47,7 @@ public class AdminShippingController {
         adminShippingService.dispatchShipping(id);
 
         return ResponseEntity.ok(
-                StandardResponse.success()
+                StandardResponse.success().build()
         );
     }
 
@@ -61,7 +61,7 @@ public class AdminShippingController {
         adminShippingService.startShipping(id, authenticatedUserId);
 
         return ResponseEntity.ok(
-                StandardResponse.success()
+                StandardResponse.success().build()
         );
     }
 
@@ -72,7 +72,7 @@ public class AdminShippingController {
         adminShippingService.finishShipping(id);
 
         return ResponseEntity.ok(
-                StandardResponse.success()
+                StandardResponse.success().build()
         );
     }
 
@@ -83,7 +83,7 @@ public class AdminShippingController {
         adminShippingService.cancelShipping(id);
 
         return ResponseEntity.ok(
-                StandardResponse.success()
+                StandardResponse.success().build()
         );
     }
 }

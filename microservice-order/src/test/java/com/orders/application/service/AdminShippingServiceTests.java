@@ -1,17 +1,15 @@
 package com.orders.application.service;
 
-import com.orders.application.dto.PagedResponse;
 import com.orders.application.dto.ShippingResponse;
 import com.orders.application.exception.*;
-import com.orders.application.factory.PagedResponseFactory;
 import com.orders.application.message.CreateShippingMessage;
 import com.orders.application.service.mapper.ShippingMapper;
-import com.orders.domain.entity.DeliveryAddress;
 import com.orders.domain.entity.*;
 import com.orders.infra.persistence.DeliveryAddressRepository;
 import com.orders.infra.persistence.SalesOrderRepository;
 import com.orders.infra.persistence.ShippingRepository;
 import com.orders.infra.persistence.ShippingStatusRepository;
+import io.github.responsekit.core.PagedResponse;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -36,7 +34,6 @@ import static org.mockito.Mockito.*;
 public class AdminShippingServiceTests {
     @Mock private ShippingRepository shippingRepository;
     @Mock private ShippingStatusRepository shippingStatusRepository;
-    @Mock private PagedResponseFactory<ShippingResponse> pagedResponseFactory;
     @Mock private ShippingMapper shippingMapper;
     @Mock private SalesOrderRepository salesOrderRepository;
     @Mock private DeliveryAddressRepository deliveryAddressRepository;
@@ -282,16 +279,18 @@ public class AdminShippingServiceTests {
 
         when(shippingRepository.findAll(pageable)).thenReturn(page);
 
-        var pagedResponse = PagedResponse.<ShippingResponse>builder()
+        var pagedResponse = PagedResponse
+                .content(List.of(shippingResponse))
                 .page(0).size(10).totalElements(1L).totalPages(1)
-                .isLast(true).content(List.of(shippingResponse)).build();
+                .isLast(true)
+                .build();
 
-        when(pagedResponseFactory.fromPage(any(), any())).thenReturn(pagedResponse);
+        when(shippingMapper.toResponse(any())).thenReturn(shippingResponse);
 
         PagedResponse<ShippingResponse> result = adminShippingService.getAll(pageable);
 
         assertNotNull(result);
-        assertEquals(1, result.totalElements());
+        assertEquals(1, result.totalElements);
         verify(shippingRepository).findAll(pageable);
     }
 
@@ -301,18 +300,19 @@ public class AdminShippingServiceTests {
 
         Page<Shipping> emptyPage = new PageImpl<>(List.of(), pageable, 0);
 
-        var pagedResponse = PagedResponse.<ShippingResponse>builder()
+        var pagedResponse = PagedResponse
+                .content(List.of())
                 .page(0).size(10).totalElements(0L).totalPages(0)
-                .isLast(true).content(List.of()).build();
+                .isLast(true)
+                .build();
 
         when(shippingRepository.findAll(pageable)).thenReturn(emptyPage);
-        when(pagedResponseFactory.fromPage(any(), any())).thenReturn(pagedResponse);
 
         PagedResponse<ShippingResponse> result = adminShippingService.getAll(pageable);
 
         assertNotNull(result);
-        assertEquals(0, result.totalElements());
-        assertTrue(result.content().isEmpty());
+        assertEquals(0, result.totalElements);
+        assertTrue(result.content.isEmpty());
         verify(shippingRepository).findAll(pageable);
     }
 
@@ -348,17 +348,17 @@ public class AdminShippingServiceTests {
 
         Page<Shipping> page = new PageImpl<>(List.of(shipping), pageable, 1);
 
-        var pagedResponse = PagedResponse.<ShippingResponse>builder()
+        var pagedResponse = PagedResponse
+                .content(List.of(shippingResponse))
                 .page(0).size(10).totalElements(1L).totalPages(1)
-                .isLast(true).content(List.of(shippingResponse)).build();
+                .isLast(true).build();
 
         when(shippingRepository.findAllBySalesOrderId(salesOrderId, pageable)).thenReturn(page);
-        when(pagedResponseFactory.fromPage(any(), any())).thenReturn(pagedResponse);
 
         PagedResponse<ShippingResponse> result = adminShippingService.getAllBySalesOrderId(salesOrderId, pageable);
 
         assertNotNull(result);
-        assertEquals(1, result.totalElements());
+        assertEquals(1, result.totalElements);
         verify(shippingRepository).findAllBySalesOrderId(salesOrderId, pageable);
     }
 
@@ -369,19 +369,19 @@ public class AdminShippingServiceTests {
 
         Page<Shipping> emptyPage = new PageImpl<>(List.of(), pageable, 0);
 
-        var pagedResponse = PagedResponse.<ShippingResponse>builder()
+        var pagedResponse = PagedResponse
+                .content(List.of())
                 .page(0).size(10).totalElements(0L).totalPages(0)
-                .isLast(true).content(List.of()).build();
+                .isLast(true).build();
 
         when(shippingRepository.findAllBySalesOrderId(salesOrderId, pageable))
                 .thenReturn(emptyPage);
-        when(pagedResponseFactory.fromPage(any(), any())).thenReturn(pagedResponse);
 
         PagedResponse<ShippingResponse> result = adminShippingService.getAllBySalesOrderId(salesOrderId, pageable);
 
         assertNotNull(result);
-        assertEquals(0, result.totalElements());
-        assertTrue(result.content().isEmpty());
+        assertEquals(0, result.totalElements);
+        assertTrue(result.content.isEmpty());
     }
 
     @Test @DisplayName("Should return empty PagedResponse if not exists any shipping by sales order")
@@ -391,19 +391,19 @@ public class AdminShippingServiceTests {
 
         Page<Shipping> emptyPage = new PageImpl<>(List.of(), pageable, 0);
 
-        var pagedResponse = PagedResponse.<ShippingResponse>builder()
+        var pagedResponse = PagedResponse
+                .content(List.of())
                 .page(0).size(10).totalElements(0L).totalPages(0)
-                .isLast(true).content(List.of()).build();
+                .isLast(true).build();
 
         when(shippingRepository.findAllBySalesOrderId(salesOrderId, pageable))
                 .thenReturn(emptyPage);
-        when(pagedResponseFactory.fromPage(any(), any())).thenReturn(pagedResponse);
 
         PagedResponse<ShippingResponse> result = adminShippingService.getAllBySalesOrderId(salesOrderId, pageable);
 
         assertNotNull(result);
-        assertEquals(0, result.totalElements());
-        assertTrue(result.content().isEmpty());
+        assertEquals(0, result.totalElements);
+        assertTrue(result.content.isEmpty());
     }
 
     @Test @DisplayName("Should dispatch shipping successfully")

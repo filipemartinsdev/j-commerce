@@ -1,24 +1,28 @@
 package com.orders.application.service;
 
-import com.orders.application.dto.*;
-import com.orders.application.exception.*;
-import com.orders.application.factory.PagedResponseFactory;
+import com.orders.application.dto.CreateDeliveryAddressRequest;
+import com.orders.application.dto.DeliveryAddressResponse;
+import com.orders.application.dto.UpdateDeliveryAddressRequest;
+import com.orders.application.exception.DeliveryAddressNotFoundException;
+import com.orders.application.exception.InvalidDeliveryAddressCoordinatesException;
+import com.orders.application.exception.InvalidDeliveryAddressException;
 import com.orders.application.service.mapper.DeliveryAddressMapper;
 import com.orders.domain.entity.DeliveryAddress;
 import com.orders.infra.persistence.DeliveryAddressRepository;
+import io.github.responsekit.core.PagedResponse;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
-import org.mockito.Mockito;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.data.domain.Page;
-import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 
 import java.time.Instant;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
@@ -31,7 +35,6 @@ import static org.mockito.Mockito.*;
 public class DeliveryAddressServiceTests {
     @Mock private DeliveryAddressRepository deliveryAddressRepository;
     @Mock private DeliveryAddressMapper deliveryAddressMapper;
-    @Mock private PagedResponseFactory<DeliveryAddressResponse> pagedResponseFactory;
     @Mock private GeocodingService geocodingService;
 
     @InjectMocks private DeliveryAddressService deliveryAddressService;
@@ -58,18 +61,18 @@ public class DeliveryAddressServiceTests {
                 entity.getId(), "12345678", "Test Street", "123", null,
                 "Test Neighborhood", "Test City", "SP", null, null, Instant.now());
 
-        PagedResponse<DeliveryAddressResponse> pagedResponse = PagedResponse.<DeliveryAddressResponse>builder()
+        PagedResponse<DeliveryAddressResponse> pagedResponse = PagedResponse
+                .content(List.of(response))
                 .page(0).size(10).totalElements(1L).totalPages(1)
-                .isLast(true).content(List.of(response)).build();
+                .isLast(true).build();
 
         when(deliveryAddressRepository.findAllActiveByUserId(userId, pageable)).thenReturn(page);
-        when(pagedResponseFactory.fromPage(eq(page), any())).thenReturn(pagedResponse);
 
         PagedResponse<DeliveryAddressResponse> result = deliveryAddressService.getAllByUserId(userId, pageable);
 
         assertNotNull(result);
-        assertEquals(1, result.totalElements());
-        assertEquals(1, result.content().size());
+        assertEquals(1, result.totalElements);
+        assertEquals(1, result.content.size());
     }
 
     @Test @DisplayName("Should return empty PagedResponse if not exists any address")
@@ -79,18 +82,18 @@ public class DeliveryAddressServiceTests {
 
         Page<DeliveryAddress> emptyPage = new PageImpl<>(List.of(), pageable, 0);
 
-        PagedResponse<DeliveryAddressResponse> pagedResponse = PagedResponse.<DeliveryAddressResponse>builder()
+        PagedResponse<DeliveryAddressResponse> pagedResponse = PagedResponse
+                .content(new ArrayList<DeliveryAddressResponse>())
                 .page(0).size(10).totalElements(0L).totalPages(0)
-                .isLast(true).content(List.of()).build();
+                .isLast(true).build();
 
         when(deliveryAddressRepository.findAllActiveByUserId(userId, pageable)).thenReturn(emptyPage);
-        when(pagedResponseFactory.fromPage(eq(emptyPage), any())).thenReturn(pagedResponse);
 
         PagedResponse<DeliveryAddressResponse> result = deliveryAddressService.getAllByUserId(userId, pageable);
 
         assertNotNull(result);
-        assertEquals(0, result.totalElements());
-        assertTrue(result.content().isEmpty());
+        assertEquals(0, result.totalElements);
+        assertTrue(result.content.isEmpty());
     }
 
     @Test @DisplayName("Should create address successfully")

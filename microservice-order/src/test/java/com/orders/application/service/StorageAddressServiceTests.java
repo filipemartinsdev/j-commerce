@@ -2,13 +2,12 @@ package com.orders.application.service;
 
 import com.orders.application.dto.StorageAddressRequest;
 import com.orders.application.dto.StorageAddressResponse;
-import com.orders.application.dto.PagedResponse;
 import com.orders.application.exception.InvalidStorageAddressException;
 import com.orders.application.exception.StorageAddressNotFoundException;
-import com.orders.application.factory.PagedResponseFactory;
 import com.orders.application.service.mapper.StorageAddressMapper;
 import com.orders.domain.entity.StorageAddress;
 import com.orders.infra.persistence.StorageAddressRepository;
+import io.github.responsekit.core.PagedResponse;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -21,6 +20,7 @@ import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.PageRequest;
 
 import java.time.Instant;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
@@ -32,7 +32,6 @@ import static org.mockito.Mockito.*;
 @ExtendWith(MockitoExtension.class)
 public class StorageAddressServiceTests {
     @Mock private StorageAddressRepository storageAddressRepository;
-    @Mock private PagedResponseFactory<StorageAddressResponse> pagedResponseFactory;
     @Mock private StorageAddressMapper storageAddressMapper;
     @Mock private GeocodingService geocodingService;
 
@@ -83,17 +82,17 @@ public class StorageAddressServiceTests {
                 entity.getId(), "12345678", "Test Street", "Complement",
                 "Neighborhood", "City", "SP", null, null, Instant.now());
 
-        PagedResponse<StorageAddressResponse> pagedResponse = PagedResponse.<StorageAddressResponse>builder()
+        PagedResponse<StorageAddressResponse> pagedResponse = PagedResponse
+                .content(List.of(response))
                 .page(0).size(10).totalElements(1L).totalPages(1)
-                .isLast(true).content(List.of(response)).build();
+                .isLast(true).build();
 
         when(storageAddressRepository.findAllActive(pageable)).thenReturn(page);
-        when(pagedResponseFactory.fromPage(eq(page), any())).thenReturn(pagedResponse);
 
         PagedResponse<StorageAddressResponse> result = storageAddressService.getAll(pageable);
 
         assertNotNull(result);
-        assertEquals(1, result.totalElements());
+        assertEquals(1, result.totalElements);
     }
 
     @Test @DisplayName("Should return empty PagedResponse if not exists any active StorageAddress")
@@ -102,18 +101,19 @@ public class StorageAddressServiceTests {
 
         Page<StorageAddress> emptyPage = new PageImpl<>(List.of(), pageable, 0);
 
-        PagedResponse<StorageAddressResponse> pagedResponse = PagedResponse.<StorageAddressResponse>builder()
+        PagedResponse<StorageAddressResponse> pagedResponse = PagedResponse
+                .content(new ArrayList<StorageAddressResponse>())
                 .page(0).size(10).totalElements(0L).totalPages(0)
-                .isLast(true).content(List.of()).build();
+                .isLast(true)
+                .build();
 
         when(storageAddressRepository.findAllActive(pageable)).thenReturn(emptyPage);
-        when(pagedResponseFactory.fromPage(eq(emptyPage), any())).thenReturn(pagedResponse);
 
         PagedResponse<StorageAddressResponse> result = storageAddressService.getAll(pageable);
 
         assertNotNull(result);
-        assertEquals(0, result.totalElements());
-        assertTrue(result.content().isEmpty());
+        assertEquals(0, result.totalElements);
+        assertTrue(result.content.isEmpty());
     }
 
     @Test @DisplayName("Should create new StorageAddress successfully")

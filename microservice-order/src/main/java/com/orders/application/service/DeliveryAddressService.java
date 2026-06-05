@@ -1,17 +1,20 @@
 package com.orders.application.service;
 
-import com.orders.application.dto.*;
-import com.orders.application.exception.*;
-import com.orders.application.factory.PagedResponseFactory;
+import com.orders.application.dto.CreateDeliveryAddressRequest;
+import com.orders.application.dto.DeliveryAddressResponse;
+import com.orders.application.dto.UpdateDeliveryAddressRequest;
+import com.orders.application.exception.DeliveryAddressNotFoundException;
+import com.orders.application.exception.InvalidDeliveryAddressCoordinatesException;
+import com.orders.application.exception.InvalidDeliveryAddressException;
 import com.orders.application.service.mapper.DeliveryAddressMapper;
 import com.orders.domain.entity.DeliveryAddress;
 import com.orders.infra.persistence.DeliveryAddressRepository;
+import io.github.responsekit.core.PagedResponse;
+import io.github.responsekit.spring.PagedResponseFactory;
 import jakarta.validation.Valid;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
-import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 
 import java.util.Optional;
@@ -22,20 +25,18 @@ import java.util.UUID;
 public class DeliveryAddressService {
     private final DeliveryAddressRepository deliveryAddressRepository;
     private final DeliveryAddressMapper deliveryAddressMapper;
-    private final PagedResponseFactory<DeliveryAddressResponse> pagedResponseFactory;
     private final GeocodingService geocodingService;
 
-    public DeliveryAddressService(DeliveryAddressRepository deliveryAddressRepository, DeliveryAddressMapper deliveryAddressMapper, PagedResponseFactory<DeliveryAddressResponse> pagedResponseFactory, GeocodingService geocodingService) {
+    public DeliveryAddressService(DeliveryAddressRepository deliveryAddressRepository, DeliveryAddressMapper deliveryAddressMapper, GeocodingService geocodingService) {
         this.deliveryAddressRepository = deliveryAddressRepository;
         this.deliveryAddressMapper = deliveryAddressMapper;
-        this.pagedResponseFactory = pagedResponseFactory;
         this.geocodingService = geocodingService;
     }
 
     public PagedResponse<DeliveryAddressResponse> getAllByUserId(UUID userId, Pageable pageable) {
         Page<DeliveryAddress> page = deliveryAddressRepository.findAllActiveByUserId(userId, pageable);
 
-        return pagedResponseFactory.fromPage(page, deliveryAddressMapper::toResponse);
+        return PagedResponseFactory.fromPage(page, deliveryAddressMapper::toResponse);
     }
 
     public DeliveryAddressResponse createByUserId(CreateDeliveryAddressRequest request, UUID userId) {

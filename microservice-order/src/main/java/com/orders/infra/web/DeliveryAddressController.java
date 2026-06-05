@@ -3,7 +3,8 @@ package com.orders.infra.web;
 import com.orders.application.dto.*;
 import com.orders.application.service.DeliveryAddressService;
 import com.orders.docs.DeliveryAddressControllerDocs;
-import com.orders.domain.entity.DeliveryAddress;
+import io.github.responsekit.core.PagedResponse;
+import io.github.responsekit.core.StandardResponse;
 import jakarta.validation.Valid;
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
@@ -34,7 +35,7 @@ public class DeliveryAddressController implements DeliveryAddressControllerDocs 
                 .status(HttpStatus.OK)
                 .body(StandardResponse.success(deliveryAddressService.getAllByUserId(
                         authenticatedUserId, pageable
-                )));
+                )).build());
     }
 
     @GetMapping("/{id}")
@@ -48,7 +49,7 @@ public class DeliveryAddressController implements DeliveryAddressControllerDocs 
                 .status(HttpStatus.OK)
                 .body(StandardResponse.success(
                         deliveryAddressService.getById(id, authenticatedUserId)
-                ));
+                ).build());
     }
 
     @PostMapping
@@ -67,7 +68,7 @@ public class DeliveryAddressController implements DeliveryAddressControllerDocs 
 
         return ResponseEntity
                 .status(HttpStatus.CREATED)
-                .body(StandardResponse.success(response));
+                .body(StandardResponse.success(response).build());
     }
 
     @DeleteMapping("/{id}")
@@ -96,6 +97,6 @@ public class DeliveryAddressController implements DeliveryAddressControllerDocs 
                 .status(HttpStatus.CREATED)
                 .body(StandardResponse.success(
                         deliveryAddressService.updateById(id, authenticatedUserId, request)
-                ));
+                ).build());
     }
 }

@@ -3,6 +3,8 @@ package com.orders.infra.web;
 import com.orders.application.dto.*;
 import com.orders.application.service.SalesOrderService;
 import com.orders.docs.SalesOrderControllerDocs;
+import io.github.responsekit.core.PagedResponse;
+import io.github.responsekit.core.StandardResponse;
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -30,7 +32,7 @@ public class SalesOrderController implements SalesOrderControllerDocs {
 
         return ResponseEntity
                 .status(HttpStatus.OK)
-                .body(StandardResponse.success(salesOrderService.getAllByUserId(authenticatedUserId, pageable)));
+                .body(StandardResponse.success(salesOrderService.getAllByUserId(authenticatedUserId, pageable)).build());
     }
 
     @GetMapping("/{id}")
@@ -42,7 +44,7 @@ public class SalesOrderController implements SalesOrderControllerDocs {
 
         return ResponseEntity
                 .status(HttpStatus.OK)
-                .body(StandardResponse.success(salesOrderService.getSummaryById(id, authenticatedUserId)));
+                .body(StandardResponse.success(salesOrderService.getSummaryById(id, authenticatedUserId)).build());
     }
 
     @DeleteMapping("/{id}")

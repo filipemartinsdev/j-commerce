@@ -1,11 +1,6 @@
 package com.orders.application.service;
 
-import com.orders.application.dto.RouteRequest;
-import com.orders.application.dto.RouteResponse;
-import com.orders.application.exception.InvalidRouteResponseException;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.beans.factory.annotation.Value;
-import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Component;
 
 import java.time.Instant;

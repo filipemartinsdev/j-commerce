@@ -2,9 +2,9 @@ package com.orders.docs;
 
 import com.orders.application.dto.CreateDeliveryAddressRequest;
 import com.orders.application.dto.DeliveryAddressResponse;
-import com.orders.application.dto.PagedResponse;
-import com.orders.application.dto.StandardResponse;
 import com.orders.application.dto.UpdateDeliveryAddressRequest;
+import io.github.responsekit.core.PagedResponse;
+import io.github.responsekit.core.StandardResponse;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.Schema;

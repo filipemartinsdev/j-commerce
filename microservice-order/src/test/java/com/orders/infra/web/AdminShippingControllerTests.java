@@ -1,9 +1,9 @@
 package com.orders.infra.web;
 
-import com.orders.application.dto.PagedResponse;
 import com.orders.application.dto.ShippingResponse;
 import com.orders.application.service.AdminShippingService;
 import com.orders.config.SecurityConfig;
+import io.github.responsekit.core.PagedResponse;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -53,9 +53,10 @@ public class AdminShippingControllerTests {
                 Instant.now()
         );
 
-        var pagedResponse = PagedResponse.<ShippingResponse>builder()
+        var pagedResponse = PagedResponse
+                .content(List.of(response))
                 .page(0).size(20).totalElements(1L).totalPages(1)
-                .isLast(true).content(List.of(response)).build();
+                .isLast(true).build();
 
         when(adminShippingService.getAll(any())).thenReturn(pagedResponse);
 

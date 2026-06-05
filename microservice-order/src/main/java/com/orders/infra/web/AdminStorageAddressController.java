@@ -1,9 +1,10 @@
 package com.orders.infra.web;
 
-import com.orders.application.dto.PagedResponse;
 import com.orders.application.dto.StorageAddressRequest;
 import com.orders.application.dto.StorageAddressResponse;
 import com.orders.application.service.StorageAddressService;
+import io.github.responsekit.core.PagedResponse;
+import io.github.responsekit.core.StandardResponse;
 import jakarta.validation.Valid;
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
@@ -23,23 +24,23 @@ public class AdminStorageAddressController {
     }
 
     @GetMapping
-    public ResponseEntity<PagedResponse<StorageAddressResponse>> getAllAddresses(Pageable pageable) {
+    public ResponseEntity<StandardResponse<PagedResponse<StorageAddressResponse>>> getAllAddresses(Pageable pageable) {
         return ResponseEntity
                 .status(HttpStatus.OK)
-                .body(storageAddressService.getAll(pageable));
+                .body(StandardResponse.success(storageAddressService.getAll(pageable)).build());
     }
 
     @GetMapping("/{id}")
-    public ResponseEntity<StorageAddressResponse> getById(
+    public ResponseEntity<StandardResponse<StorageAddressResponse>> getById(
             @PathVariable UUID id
     ) {
         return ResponseEntity
                 .status(HttpStatus.OK)
-                .body(storageAddressService.getById(id));
+                .body(StandardResponse.success(storageAddressService.getById(id)).build());
     }
 
     @PostMapping
-    public ResponseEntity<StorageAddressResponse> create(
+    public ResponseEntity<StandardResponse<StorageAddressResponse>> create(
             @Valid @RequestBody StorageAddressRequest request,
             @RequestParam(defaultValue = "false") Boolean byCoordinates
     ) {
@@ -52,7 +53,7 @@ public class AdminStorageAddressController {
 
         return ResponseEntity
                 .status(HttpStatus.CREATED)
-                .body(response);
+                .body(StandardResponse.success(response).build());
     }
 
     @DeleteMapping("/{id}")

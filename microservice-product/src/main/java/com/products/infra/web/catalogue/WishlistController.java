@@ -1,11 +1,11 @@
 package com.products.infra.web.catalogue;
 
 import com.products.application.dto.catalogue.CreateWishlistItemRequest;
-import com.products.application.dto.PagedResponse;
-import com.products.application.dto.StandardResponse;
 import com.products.application.dto.catalogue.WishlistItemResponse;
 import com.products.application.service.WishlistService;
 import com.products.docs.WishlistControllerDocs;
+import io.github.responsekit.core.PagedResponse;
+import io.github.responsekit.core.StandardResponse;
 import jakarta.validation.Valid;
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
@@ -36,7 +36,7 @@ public class WishlistController implements WishlistControllerDocs {
                 .status(HttpStatus.OK)
                 .body(StandardResponse.success(
                         wishlistService.getAllItems(authenticatedUserId, pageable)
-                ));
+                ).build());
     }
 
 

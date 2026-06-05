@@ -1,9 +1,9 @@
 package com.products.docs;
 
-import com.products.application.dto.PagedResponse;
-import com.products.application.dto.StandardResponse;
 import com.products.application.dto.catalogue.CreateWishlistItemRequest;
 import com.products.application.dto.catalogue.WishlistItemResponse;
+import io.github.responsekit.core.PagedResponse;
+import io.github.responsekit.core.StandardResponse;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.Schema;
@@ -11,13 +11,9 @@ import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import io.swagger.v3.oas.annotations.tags.Tag;
-import jakarta.validation.Valid;
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.security.oauth2.jwt.Jwt;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.RequestBody;
 
 import java.util.UUID;
 

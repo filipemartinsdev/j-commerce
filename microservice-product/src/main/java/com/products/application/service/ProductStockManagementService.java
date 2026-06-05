@@ -1,13 +1,11 @@
 package com.products.application.service;
 
-import com.products.application.dto.PagedResponse;
 import com.products.application.dto.admin.CreateStockEntryRequest;
 import com.products.application.dto.admin.ProductStockResponse;
 import com.products.application.dto.admin.StockMovementResponse;
 import com.products.application.exception.ProductOutOfStockException;
 import com.products.application.exception.ProductSKUNotFoundException;
 import com.products.application.exception.ProductStockNotFoundException;
-import com.products.application.factory.PagedResponseFactory;
 import com.products.application.message.RefundItemsMessage;
 import com.products.application.service.mapper.ProductStockMapper;
 import com.products.application.service.mapper.StockMovementMapper;
@@ -16,6 +14,8 @@ import com.products.domain.entity.ProductStock;
 import com.products.domain.entity.StockMovement;
 import com.products.domain.entity.StockMovementType;
 import com.products.infra.persistence.*;
+import io.github.responsekit.core.PagedResponse;
+import io.github.responsekit.spring.PagedResponseFactory;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
@@ -31,30 +31,26 @@ public class ProductStockManagementService {
     private final StockMovementRepository stockMovementRepository;
     private final StockMovementMapper stockMovementMapper;
     private final ProductSKURepository productSKURepository;
-    private final PagedResponseFactory<ProductStockResponse> pagedResponseFactoryProductStock;
-    private final PagedResponseFactory<StockMovementResponse> pagedResponseFactoryStockMovement;
 
-    public ProductStockManagementService(ProductStockRepository productStockRepository, ProductStockMapper productStockMapper, StockMovementTypeRepository stockMovementTypeRepository, StockMovementRepository stockMovementRepository, StockMovementMapper stockMovementMapper, ProductSKURepository productSKURepository, PagedResponseFactory<ProductStockResponse> pagedResponseFactoryProductStock, PagedResponseFactory<StockMovementResponse> pagedResponseFactoryStockMovement) {
+    public ProductStockManagementService(ProductStockRepository productStockRepository, ProductStockMapper productStockMapper, StockMovementTypeRepository stockMovementTypeRepository, StockMovementRepository stockMovementRepository, StockMovementMapper stockMovementMapper, ProductSKURepository productSKURepository) {
         this.productStockRepository = productStockRepository;
         this.productStockMapper = productStockMapper;
         this.stockMovementTypeRepository = stockMovementTypeRepository;
         this.stockMovementRepository = stockMovementRepository;
         this.stockMovementMapper = stockMovementMapper;
         this.productSKURepository = productSKURepository;
-        this.pagedResponseFactoryProductStock = pagedResponseFactoryProductStock;
-        this.pagedResponseFactoryStockMovement = pagedResponseFactoryStockMovement;
     }
 
     public PagedResponse<ProductStockResponse> getAll(Pageable pageable){
         Page<ProductStock> page = productStockRepository.findAllActive(pageable);
 
-        return pagedResponseFactoryProductStock.fromPage(page, productStockMapper::toResponse);
+        return PagedResponseFactory.fromPage(page, productStockMapper::toResponse);
     }
 
     public PagedResponse<ProductStockResponse> getAllByProductId(UUID productId, Pageable pageable){
         Page<ProductStock> page = productStockRepository.findAllActiveByProductId(productId, pageable);
 
-        return pagedResponseFactoryProductStock.fromPage(page, productStockMapper::toResponse);
+        return PagedResponseFactory.fromPage(page, productStockMapper::toResponse);
     }
 
     public ProductStockResponse getById(UUID id) {
@@ -93,13 +89,13 @@ public class ProductStockManagementService {
     public PagedResponse<StockMovementResponse> getAllMovements(Pageable pageable) {
         Page<StockMovement> page = stockMovementRepository.findAll(pageable);
 
-        return pagedResponseFactoryStockMovement.fromPage(page, stockMovementMapper::toResponse);
+        return PagedResponseFactory.fromPage(page, stockMovementMapper::toResponse);
     }
 
     public PagedResponse<StockMovementResponse> getAllMovementsByProductSKUId(UUID productSKUId, Pageable pageable) {
         Page<StockMovement> page = stockMovementRepository.findAllByProductSKU_id(productSKUId, pageable);
 
-        return pagedResponseFactoryStockMovement.fromPage(page, stockMovementMapper::toResponse);
+        return PagedResponseFactory.fromPage(page, stockMovementMapper::toResponse);
     }
 
     public void deleteByProductSKUId(UUID productSKUId) {

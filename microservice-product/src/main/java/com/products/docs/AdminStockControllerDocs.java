@@ -1,11 +1,11 @@
 package com.products.docs;
 
-import com.products.application.dto.PagedResponse;
-import com.products.application.dto.StandardResponse;
 import com.products.application.dto.admin.CreateStockEntryRequest;
 import com.products.application.dto.admin.ProductStockResponse;
 import com.products.application.dto.admin.StockMovementResponse;
 import com.products.application.dto.admin.StockMovementTypeResponse;
+import io.github.responsekit.core.PagedResponse;
+import io.github.responsekit.core.StandardResponse;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.Schema;
@@ -18,7 +18,6 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.security.oauth2.jwt.Jwt;
-import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestParam;
 

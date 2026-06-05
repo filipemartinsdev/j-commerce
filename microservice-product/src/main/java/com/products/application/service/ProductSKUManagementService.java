@@ -1,6 +1,5 @@
 package com.products.application.service;
 
-import com.products.application.dto.PagedResponse;
 import com.products.application.dto.admin.CreateProductSKURequest;
 import com.products.application.dto.admin.ProductSKUAdminResponse;
 import com.products.application.dto.admin.UpdateProductSKURequest;
@@ -10,12 +9,13 @@ import com.products.application.exception.ProductNotActiveException;
 import com.products.application.exception.ProductNotFoundException;
 import com.products.application.exception.ProductSKUNotFoundException;
 import com.products.application.exception.SKUAlreadyInUseException;
-import com.products.application.factory.PagedResponseFactory;
 import com.products.application.service.mapper.ProductSKUAdminMapper;
 import com.products.domain.entity.Product;
 import com.products.domain.entity.ProductSKU;
 import com.products.infra.persistence.ProductRepository;
 import com.products.infra.persistence.ProductSKURepository;
+import io.github.responsekit.core.PagedResponse;
+import io.github.responsekit.spring.PagedResponseFactory;
 import jakarta.transaction.Transactional;
 import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.data.domain.Page;
@@ -30,14 +30,12 @@ public class ProductSKUManagementService {
     private final ProductSKURepository productSKURepository;
     private final ApplicationEventPublisher applicationEventPublisher;
     private final ProductSKUAdminMapper productSKUAdminMapper;
-    private final PagedResponseFactory<ProductSKUAdminResponse> pagedResponseFactory;
 
-    public ProductSKUManagementService(ProductRepository productRepository, ProductSKURepository productSKURepository, ApplicationEventPublisher applicationEventPublisher, ProductSKUAdminMapper productSKUAdminMapper, PagedResponseFactory<ProductSKUAdminResponse> pagedResponseFactory) {
+    public ProductSKUManagementService(ProductRepository productRepository, ProductSKURepository productSKURepository, ApplicationEventPublisher applicationEventPublisher, ProductSKUAdminMapper productSKUAdminMapper) {
         this.productRepository = productRepository;
         this.productSKURepository = productSKURepository;
         this.applicationEventPublisher = applicationEventPublisher;
         this.productSKUAdminMapper = productSKUAdminMapper;
-        this.pagedResponseFactory = pagedResponseFactory;
     }
 
     @Transactional
@@ -87,13 +85,13 @@ public class ProductSKUManagementService {
     public PagedResponse<ProductSKUAdminResponse> getAllProductSKUs(Pageable pageable) {
         Page<ProductSKU> page = productSKURepository.findAllActive(pageable);
 
-        return pagedResponseFactory.fromPage(page, productSKUAdminMapper::toResponse);
+        return PagedResponseFactory.fromPage(page, productSKUAdminMapper::toResponse);
     }
 
     public PagedResponse<ProductSKUAdminResponse> getAllProductSKUsByProductId(UUID productId, Pageable pageable){
         Page<ProductSKU> page = productSKURepository.findAllActiveByProductId(productId, pageable);
 
-        return pagedResponseFactory.fromPage(page, productSKUAdminMapper::toResponse);
+        return PagedResponseFactory.fromPage(page, productSKUAdminMapper::toResponse);
     }
 
     public ProductSKUAdminResponse getProductSKUById(UUID productSKUId){

@@ -1,12 +1,12 @@
 package com.products.infra.web.catalogue;
 
-import com.products.application.dto.PagedResponse;
-import com.products.application.dto.StandardResponse;
 import com.products.application.dto.catalogue.ConfirmShoppingCartRequest;
 import com.products.application.dto.catalogue.CreateShoppingCartItemRequest;
 import com.products.application.dto.catalogue.ShoppingCartItemResponse;
 import com.products.application.service.ShoppingCartService;
 import com.products.docs.ShoppingCartControllerDocs;
+import io.github.responsekit.core.PagedResponse;
+import io.github.responsekit.core.StandardResponse;
 import jakarta.validation.Valid;
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
@@ -36,7 +36,7 @@ public class ShoppingCartController implements ShoppingCartControllerDocs {
                 .status(HttpStatus.OK)
                 .body(StandardResponse.success(
                         shoppingCartService.getAllItems(authenticatedUserId, pageable)
-                ));
+                ).build());
     }
 
     @PostMapping

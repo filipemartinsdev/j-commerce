@@ -31,7 +31,14 @@
 	<properties>
 		<java.version>21</java.version>
 	</properties>
+
 	<dependencies>
+		<dependency>
+			<groupId>io.github.filipemartinsdev</groupId>
+			<artifactId>responsekit-spring</artifactId>
+			<version>0.3.3</version>
+		</dependency>
+
 		<dependency>
 			<groupId>org.hibernate.orm</groupId>
 			<artifactId>hibernate-vector</artifactId>

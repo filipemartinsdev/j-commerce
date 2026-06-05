@@ -1,10 +1,10 @@
 package com.products.infra.web.admin;
 
-import com.products.application.dto.PagedResponse;
-import com.products.application.dto.StandardResponse;
 import com.products.application.dto.admin.*;
 import com.products.application.service.ProductManagementService;
 import com.products.docs.AdminProductControllerDocs;
+import io.github.responsekit.core.PagedResponse;
+import io.github.responsekit.core.StandardResponse;
 import jakarta.validation.Valid;
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
@@ -36,7 +36,7 @@ public class AdminProductController implements AdminProductControllerDocs {
 
         return ResponseEntity
                 .status(HttpStatus.OK)
-                .body(StandardResponse.success(pagedResponse));
+                .body(StandardResponse.success(pagedResponse).build());
     }
 
     @GetMapping("/products/{productId}")
@@ -45,7 +45,7 @@ public class AdminProductController implements AdminProductControllerDocs {
                 .status(HttpStatus.OK)
                 .body(StandardResponse.success(
                         adminProductService.getProductById(productId)
-                ));
+                ).build());
     }
 
     @PostMapping("/products")
@@ -54,7 +54,7 @@ public class AdminProductController implements AdminProductControllerDocs {
                 .status(HttpStatus.CREATED)
                 .body(StandardResponse.success(
                         adminProductService.createProduct(request)
-                ));
+                ).build());
     }
 
     @PatchMapping("/products/{productId}")
@@ -66,7 +66,7 @@ public class AdminProductController implements AdminProductControllerDocs {
                 .status(HttpStatus.OK)
                 .body(StandardResponse.success(
                         adminProductService.updateProduct(productId, request)
-                ));
+                ).build());
     }
 
     @DeleteMapping("/products/{productId}")

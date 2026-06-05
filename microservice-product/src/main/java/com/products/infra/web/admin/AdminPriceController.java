@@ -1,12 +1,12 @@
 package com.products.infra.web.admin;
 
-import com.products.application.dto.PagedResponse;
 import com.products.application.dto.admin.CreateProductSKUPrice;
 import com.products.application.dto.admin.ProductSKUPriceResponse;
-import com.products.application.dto.StandardResponse;
 import com.products.application.dto.admin.UpdateProductSKUPriceRequest;
 import com.products.application.service.ProductPriceManagementService;
 import com.products.docs.AdminPriceControllerDocs;
+import io.github.responsekit.core.PagedResponse;
+import io.github.responsekit.core.StandardResponse;
 import jakarta.validation.Valid;
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
@@ -38,7 +38,7 @@ public class AdminPriceController implements AdminPriceControllerDocs {
 
         return ResponseEntity
                 .status(HttpStatus.OK)
-                .body(StandardResponse.success(response));
+                .body(StandardResponse.success(response).build());
     }
 
     @PostMapping
@@ -47,7 +47,7 @@ public class AdminPriceController implements AdminPriceControllerDocs {
     ){
         return ResponseEntity
                 .status(HttpStatus.OK)
-                .body(StandardResponse.success(productPriceService.create(request)));
+                .body(StandardResponse.success(productPriceService.create(request)).build());
     }
 
     @PatchMapping("/{priceId}")
@@ -57,7 +57,7 @@ public class AdminPriceController implements AdminPriceControllerDocs {
     ){
         return ResponseEntity
                 .status(HttpStatus.OK)
-                .body(StandardResponse.success(productPriceService.update(priceId, request)));
+                .body(StandardResponse.success(productPriceService.update(priceId, request)).build());
     }
 
     @DeleteMapping("/{priceId}")

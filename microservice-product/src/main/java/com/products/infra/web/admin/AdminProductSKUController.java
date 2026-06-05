@@ -1,12 +1,12 @@
 package com.products.infra.web.admin;
 
-import com.products.application.dto.PagedResponse;
-import com.products.application.dto.StandardResponse;
 import com.products.application.dto.admin.CreateProductSKURequest;
 import com.products.application.dto.admin.ProductSKUAdminResponse;
 import com.products.application.dto.admin.UpdateProductSKURequest;
 import com.products.application.service.ProductSKUManagementService;
 import com.products.docs.AdminProductSKUControllerDocs;
+import io.github.responsekit.core.PagedResponse;
+import io.github.responsekit.core.StandardResponse;
 import jakarta.validation.Valid;
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
@@ -40,7 +40,7 @@ public class AdminProductSKUController implements AdminProductSKUControllerDocs 
 
         return ResponseEntity
                 .status(HttpStatus.OK)
-                .body(StandardResponse.success(response));
+                .body(StandardResponse.success(response).build());
     }
 
     @GetMapping("/skus/{skuId}")
@@ -51,7 +51,7 @@ public class AdminProductSKUController implements AdminProductSKUControllerDocs 
                 .status(HttpStatus.OK)
                 .body(StandardResponse.success(
                         adminProductSKUService.getProductSKUById(skuId)
-                ));
+                ).build());
     }
 
     @PostMapping("/skus")
@@ -65,7 +65,7 @@ public class AdminProductSKUController implements AdminProductSKUControllerDocs 
                 .status(HttpStatus.CREATED)
                 .body(StandardResponse.success(
                         adminProductSKUService.createProductSKU(request, authenticatedUserId)
-                ));
+                ).build());
     }
 
     @PatchMapping("/skus/{skuId}")
@@ -77,7 +77,7 @@ public class AdminProductSKUController implements AdminProductSKUControllerDocs 
                 .status(HttpStatus.OK)
                 .body(StandardResponse.success(
                         adminProductSKUService.updateProductSKU(skuId, request)
-                ));
+                ).build());
     }
 
     @DeleteMapping("/skus/{productSKUId}")

@@ -1,10 +1,10 @@
 package com.products.docs;
 
-import com.products.application.dto.PagedResponse;
-import com.products.application.dto.StandardResponse;
 import com.products.application.dto.admin.CreateProductRequest;
 import com.products.application.dto.admin.ProductAdminResponse;
 import com.products.application.dto.admin.UpdateProductRequest;
+import io.github.responsekit.core.PagedResponse;
+import io.github.responsekit.core.StandardResponse;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.Schema;

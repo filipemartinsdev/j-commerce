@@ -1,18 +1,18 @@
 package com.products.infra.web.catalogue;
 
-import com.products.application.dto.*;
-import com.products.application.dto.catalogue.ProductSummaryCatalogueResponse;
+import com.products.application.dto.ProductCategoryResponse;
 import com.products.application.dto.catalogue.ProductCatalogueResponse;
+import com.products.application.dto.catalogue.ProductSummaryCatalogueResponse;
 import com.products.application.service.ProductCatalogueService;
 import com.products.application.service.ProductCategoryService;
 import com.products.docs.ProductControllerDocs;
-import org.springframework.data.domain.Page;
+import io.github.responsekit.core.PagedResponse;
+import io.github.responsekit.core.StandardResponse;
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
-import java.util.List;
 import java.util.UUID;
 
 @RestController
@@ -31,7 +31,7 @@ public class ProductController implements ProductControllerDocs {
         return ResponseEntity
                 .status(HttpStatus.OK)
                 .body(
-                        StandardResponse.success(productCategoryService.getAll(pageable))
+                        StandardResponse.success(productCategoryService.getAll(pageable)).build()
                 );
     }
 
@@ -58,13 +58,13 @@ public class ProductController implements ProductControllerDocs {
 
         return ResponseEntity
                 .status(HttpStatus.OK)
-                .body(StandardResponse.success(response));
+                .body(StandardResponse.success(response).build());
     }
 
     @GetMapping("/products/{productId}")
     public ResponseEntity<StandardResponse<ProductCatalogueResponse>> getProductById(@PathVariable UUID productId) {
         return ResponseEntity
                 .status(HttpStatus.OK)
-                .body(StandardResponse.success(productCatalogueService.getProductSummaryByProductId(productId)));
+                .body(StandardResponse.success(productCatalogueService.getProductSummaryByProductId(productId)).build());
     }
 }

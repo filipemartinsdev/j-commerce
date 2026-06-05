@@ -1,7 +1,5 @@
 package com.products.infra.web.admin;
 
-import com.products.application.dto.PagedResponse;
-import com.products.application.dto.StandardResponse;
 import com.products.application.dto.admin.CreateStockEntryRequest;
 import com.products.application.dto.admin.ProductStockResponse;
 import com.products.application.dto.admin.StockMovementResponse;
@@ -11,6 +9,8 @@ import com.products.application.service.StockMovementTypeService;
 import com.products.application.service.mapper.StockMovementTypeMapper;
 import com.products.docs.AdminStockControllerDocs;
 import com.products.infra.persistence.StockMovementTypeRepository;
+import io.github.responsekit.core.PagedResponse;
+import io.github.responsekit.core.StandardResponse;
 import jakarta.validation.Valid;
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
@@ -51,7 +51,7 @@ public class AdminStockController implements AdminStockControllerDocs {
 
         return ResponseEntity
                 .status(HttpStatus.OK)
-                .body(StandardResponse.success(response));
+                .body(StandardResponse.success(response).build());
     }
 
     @PostMapping("/entries")
@@ -81,7 +81,7 @@ public class AdminStockController implements AdminStockControllerDocs {
 
         return ResponseEntity
                 .status(HttpStatus.OK)
-                .body(StandardResponse.success(response));
+                .body(StandardResponse.success(response).build());
     }
 
     @GetMapping("/movements/types")
@@ -90,6 +90,6 @@ public class AdminStockController implements AdminStockControllerDocs {
                 .status(HttpStatus.OK)
                 .body(StandardResponse.success(
                         stockMovementTypeService.getAll()
-                ));
+                ).build());
     }
 }

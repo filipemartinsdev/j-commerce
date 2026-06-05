@@ -5,11 +5,12 @@ import com.products.application.dto.catalogue.ProductPriceCatalogueResponse;
 import com.products.application.dto.catalogue.ProductSummaryCatalogueResponse;
 import com.products.application.dto.catalogue.ProductCatalogueResponse;
 import com.products.application.exception.ProductNotFoundException;
-import com.products.application.factory.PagedResponseFactory;
 import com.products.application.service.mapper.ProductCategoryMapper;
 import com.products.application.service.mapper.ProductSKUCatalogueMapper;
 import com.products.domain.entity.*;
 import com.products.infra.persistence.*;
+import io.github.responsekit.core.PagedResponse;
+import io.github.responsekit.spring.PagedResponseFactory;
 import org.springframework.ai.embedding.EmbeddingModel;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -27,11 +28,10 @@ public class ProductCatalogueService {
     private final ProductCatalogueSummaryViewRepository productCatalogueSummaryViewRepository;
     private final ProductSKUCatalogueMapper productSKUSummaryCatalogueMapper;
     private final ProductDiscountCalculator productDiscountCalculator;
-    private final PagedResponseFactory<ProductSummaryCatalogueResponse> pagedResponseFactory;
     private final SemanticProductCatalogueViewRepository semanticProductCatalogueRepository;
     private final EmbeddingModel embeddingModel;
 
-    public ProductCatalogueService(ProductCatalogueViewRepository productCatalogueResumeRepository, ProductCategoryRepository productCategoryRepository, ProductCategoryMapper productCategoryMapper, ProductRepository productRepository, ProductCatalogueSummaryViewRepository productCatalogueSummaryViewRepository, ProductSKUCatalogueMapper productSKUSummaryCatalogueMapper, ProductDiscountCalculator productDiscountCalculator, PagedResponseFactory<ProductSummaryCatalogueResponse> pagedResponseFactory, SemanticProductCatalogueViewRepository semanticProductCatalogueRepository, EmbeddingModel embeddingModel) {
+    public ProductCatalogueService(ProductCatalogueViewRepository productCatalogueResumeRepository, ProductCategoryRepository productCategoryRepository, ProductCategoryMapper productCategoryMapper, ProductRepository productRepository, ProductCatalogueSummaryViewRepository productCatalogueSummaryViewRepository, ProductSKUCatalogueMapper productSKUSummaryCatalogueMapper, ProductDiscountCalculator productDiscountCalculator, SemanticProductCatalogueViewRepository semanticProductCatalogueRepository, EmbeddingModel embeddingModel) {
         this.productCatalogueResumeRepository = productCatalogueResumeRepository;
         this.productCategoryRepository = productCategoryRepository;
         this.productCategoryMapper = productCategoryMapper;
@@ -39,7 +39,6 @@ public class ProductCatalogueService {
         this.productCatalogueSummaryViewRepository = productCatalogueSummaryViewRepository;
         this.productSKUSummaryCatalogueMapper = productSKUSummaryCatalogueMapper;
         this.productDiscountCalculator = productDiscountCalculator;
-        this.pagedResponseFactory = pagedResponseFactory;
         this.semanticProductCatalogueRepository = semanticProductCatalogueRepository;
         this.embeddingModel = embeddingModel;
     }
@@ -47,7 +46,7 @@ public class ProductCatalogueService {
     public PagedResponse<ProductSummaryCatalogueResponse> getAll(Pageable pageable) {
         Page<ProductCatalogueView> page = productCatalogueResumeRepository.findAll(pageable);
 
-        return pagedResponseFactory.fromPage(page, this::createResumeCatalogueResponse);
+        return PagedResponseFactory.fromPage(page, this::createResumeCatalogueResponse);
     }
 
     private ProductSummaryCatalogueResponse createResumeCatalogueResponse(ProductCatalogueView entity) {
@@ -78,7 +77,7 @@ public class ProductCatalogueService {
     public PagedResponse<ProductSummaryCatalogueResponse> getAllByCategoryId(Integer categoryId, Pageable pageable) {
         Page<ProductCatalogueView> page = productCatalogueResumeRepository.findAllByCategoryId(categoryId, pageable);
 
-        return pagedResponseFactory.fromPage(page, this::createResumeCatalogueResponse);
+        return PagedResponseFactory.fromPage(page, this::createResumeCatalogueResponse);
     }
 
     public ProductCatalogueResponse getProductSummaryByProductId(UUID productId) {
@@ -104,7 +103,7 @@ public class ProductCatalogueService {
     public PagedResponse<ProductSummaryCatalogueResponse> semanticSearch(String query, Pageable pageable) {
         float[] vector = embeddingModel.embed(query);
 
-        return pagedResponseFactory.fromPage(
+        return PagedResponseFactory.fromPage(
                 semanticProductCatalogueRepository.findAll(vector, pageable),
                 this::createResumeCatalogueResponse
         );
@@ -140,7 +139,7 @@ public class ProductCatalogueService {
     ) {
         float[] vector = embeddingModel.embed(query);
 
-        return pagedResponseFactory.fromPage(
+        return PagedResponseFactory.fromPage(
                 semanticProductCatalogueRepository.findAll(vector, category, pageable),
                 this::createResumeCatalogueResponse
         );

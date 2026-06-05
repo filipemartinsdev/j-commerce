@@ -5,7 +5,7 @@ info:
 
 http:
   method: POST
-  url: https://localhost/notification/api/v1/notifications/a13316f8-b8b5-4523-89c1-e29ead9c5a38/read
+  url: https://localhost/notification/api/v2/notifications/a13316f8-b8b5-4523-89c1-e29ead9c5a38/read
   auth: inherit
 
 settings:

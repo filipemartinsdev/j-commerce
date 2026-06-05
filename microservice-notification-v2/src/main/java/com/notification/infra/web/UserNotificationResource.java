@@ -1,7 +1,7 @@
 package com.notification.infra.web;
 
-
 import com.notification.application.service.UserNotificationService;
+import io.github.responsekit.core.StandardResponse;
 import io.quarkus.security.Authenticated;
 import jakarta.ws.rs.*;
 import jakarta.ws.rs.core.MediaType;
@@ -29,9 +29,12 @@ public class UserNotificationResource {
     ) {
         UUID userId = UUID.fromString(jwt.getSubject());
 
-        return Response
-                .ok(userNotificationService.getAllByUserId(userId, page, size))
-                .build();
+        return Response.ok(
+                StandardResponse.success(
+                        userNotificationService.getAllByUserId(userId, page, size)
+                ).build()
+        )
+        .build();
     }
 
     @POST @Path("/{id}/view")
@@ -40,6 +43,8 @@ public class UserNotificationResource {
         UUID userId = UUID.fromString(jwt.getSubject());
         userNotificationService.view(id, userId);
 
-        return Response.ok().build();
+        return Response.ok(
+                StandardResponse.success()
+        ).build();
     }
 }

@@ -1,11 +1,11 @@
 package com.notification.application.service;
 
-import com.notification.application.dto.PagedResponse;
 import com.notification.application.dto.UserNotificationResponse;
 import com.notification.application.exception.UserNotificationHasAlreadyBeenViewedException;
-import com.notification.application.factory.PagedResponseFactory;
 import com.notification.application.service.mapper.UserNotificationMapper;
 import com.notification.domain.entity.UserNotification;
+import io.github.responsekit.core.PagedResponse;
+import io.github.responsekit.quarkus.PagedResponseFactory;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.ws.rs.BadRequestException;
 
@@ -13,16 +13,14 @@ import java.util.UUID;
 
 @ApplicationScoped
 public class UserNotificationService {
-    private final PagedResponseFactory pagedResponseFactory;
     private final UserNotificationMapper userNotificationMapper;
 
-    public UserNotificationService(PagedResponseFactory pagedResponseFactory, UserNotificationMapper userNotificationMapper) {
-        this.pagedResponseFactory = pagedResponseFactory;
+    public UserNotificationService(UserNotificationMapper userNotificationMapper) {
         this.userNotificationMapper = userNotificationMapper;
     }
 
     public PagedResponse<UserNotificationResponse> getAllByUserId(UUID userId, int page, int size) {
-        return pagedResponseFactory.create(
+        return PagedResponseFactory.fromQuery(
                 UserNotification.findAllByUserId(userId, page, size),
                 userNotificationMapper::toResponse
         );

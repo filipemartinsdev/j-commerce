@@ -11,10 +11,26 @@
 <p>  Microservice-based <br>
 E-Commerce platform
 
+<br> <br>
+
 ![Static Badge](https://img.shields.io/badge/Java-21-red?logo=openjdk)
 ![Static Badge](https://img.shields.io/badge/Maven-3.9-orange?logo=apachemaven)
 ![Static Badge](https://img.shields.io/badge/Spring_Boot-4.0-green?logo=springboot)
 ![Static Badge](https://img.shields.io/badge/Quarkus-3.5-4695EB?logo=quarkus)
+![Static Badge](https://img.shields.io/badge/Caddy-2.11-1F88C0?logo=caddy)
+![Static Badge](https://img.shields.io/badge/PostgreSQL-17-0D96F6?logo=postgresql&logoColor=0D96F6)
+
+![Static Badge](https://img.shields.io/badge/Redis-7.4-FF4438?logo=redis)
+![Static Badge](https://img.shields.io/badge/RabbitMQ-4-FF6600?logo=rabbitmq)
+![Static Badge](https://img.shields.io/badge/Grafana-11.5-F46800?logo=grafana)
+![Static Badge](https://img.shields.io/badge/Prometheus-3.1-E6522C?logo=prometheus)
+
+
+
+
+
+
+
 
 
 </div>

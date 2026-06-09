@@ -7,6 +7,8 @@ import jakarta.ws.rs.*;
 import jakarta.ws.rs.core.MediaType;
 import jakarta.ws.rs.core.Response;
 import org.eclipse.microprofile.jwt.JsonWebToken;
+import org.jboss.resteasy.reactive.RestPath;
+import org.jboss.resteasy.reactive.RestQuery;
 
 import java.util.UUID;
 
@@ -24,8 +26,8 @@ public class UserNotificationResource {
     @GET
     @Authenticated
     public Response getUserNotifications(
-            @QueryParam("page") @DefaultValue("0") int page,
-            @QueryParam("size") @DefaultValue("20") int size
+            @RestQuery @DefaultValue("0") int page,
+            @RestQuery @DefaultValue("20") int size
     ) {
         UUID userId = UUID.fromString(jwt.getSubject());
 
@@ -39,7 +41,7 @@ public class UserNotificationResource {
 
     @POST @Path("/{id}/view")
     @Authenticated
-    public Response viewUserNotification(@PathParam("id") UUID id) {
+    public Response viewUserNotification(@RestPath UUID id) {
         UUID userId = UUID.fromString(jwt.getSubject());
         userNotificationService.view(id, userId);
 

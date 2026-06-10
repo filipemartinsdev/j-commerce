@@ -40,7 +40,6 @@ public class SalesOrderService {
             throw new CantCreateSalesOrderException("Cant create order because items is empty");
 
         SalesOrder order = registerNewOrder(message.userId(), message.items());
-//        registerShipping(message.deliveryAddressId(), order);
 
         messageBrokerProducer.produceGeneratePayment(
                 new GeneratePaymentMessage(order.getId(), message.userId(), getTotalAmount(order))

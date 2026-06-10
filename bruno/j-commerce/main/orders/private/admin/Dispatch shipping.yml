@@ -1,14 +1,14 @@
 info:
   name: Dispatch shipping
   type: http
-  seq: 4
+  seq: 6
 
 http:
   method: POST
   url: https://localhost/order/admin/api/v1/shippings/:id
   params:
     - name: id
-      value: 846318ca-8440-4be0-9a33-f7258f5b797f
+      value: 5a943493-745c-4876-957f-b5c68e40d5a4
       type: path
   auth: inherit
 

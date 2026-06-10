@@ -5,7 +5,17 @@ info:
 
 http:
   method: GET
-  url: https://localhost/order/api/v1/sales-orders
+  url: https://localhost/order/api/v1/sales-orders?page=&size=&sort=createdAt,DESC
+  params:
+    - name: page
+      value: ""
+      type: query
+    - name: size
+      value: ""
+      type: query
+    - name: sort
+      value: createdAt,DESC
+      type: query
   body:
     type: json
     data: ""

@@ -1,14 +1,14 @@
 info:
   name: Check-out shipping
   type: http
-  seq: 6
+  seq: 8
 
 http:
   method: POST
   url: https://localhost/order/admin/api/v1/shippings/:id/check-out
   params:
     - name: id
-      value: 846318ca-8440-4be0-9a33-f7258f5b797f
+      value: 369719ca-63aa-4497-b973-ffd4ac9776f2
       type: path
   auth: inherit
 

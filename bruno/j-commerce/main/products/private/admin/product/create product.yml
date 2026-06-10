@@ -33,11 +33,11 @@ http:
       //   "categoryId": 20
       // }
 
-      {
-        "name": "Controle Dualshock 4",
-        "description": "Controle de PlayStation 4",
-        "categoryId": 2
-      }
+      // {
+      //   "name": "Controle Dualshock 4",
+      //   "description": "Controle de PlayStation 4",
+      //   "categoryId": 2
+      // }
   auth: inherit
 
 settings:

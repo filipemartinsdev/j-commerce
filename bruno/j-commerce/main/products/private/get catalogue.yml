@@ -8,7 +8,7 @@ http:
   url: https://localhost/product/api/v1/products
   params:
     - name: categoryId
-      value: "11"
+      value: "2"
       type: query
       disabled: true
     - name: query

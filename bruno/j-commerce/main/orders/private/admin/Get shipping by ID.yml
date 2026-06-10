@@ -1,18 +1,15 @@
 info:
-  name: get order by ID
+  name: Get shipping by ID
   type: http
   seq: 5
 
 http:
   method: GET
-  url: https://localhost/order/api/v1/sales-orders/:id
+  url: https://localhost/order/admin/api/v1/shippings/:id
   params:
     - name: id
-      value: 1045fdf3-2717-4d7b-8ffe-b1fce90d402e
+      value: 5dd4d559-854b-4baa-93ec-fb1e9b1f70d2
       type: path
-  body:
-    type: json
-    data: ""
   auth: inherit
 
 settings:

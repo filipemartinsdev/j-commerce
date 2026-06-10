@@ -1,7 +1,7 @@
 info:
   name: Get shippings
   type: http
-  seq: 3
+  seq: 4
 
 http:
   method: GET

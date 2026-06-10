@@ -17,6 +17,9 @@ public class MessageBrokerProducer {
     }
 
     public void produce(CreateOrderMessage message) {
-        rabbitTemplate.convertAndSend("", CREATE_ORDER_QUEUE_NAME, message);
+        rabbitTemplate.convertAndSend("", CREATE_ORDER_QUEUE_NAME, message, msg -> {
+            msg.getMessageProperties().setContentEncoding(null);
+            return msg;
+        });
     }
 }

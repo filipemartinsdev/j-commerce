@@ -7,6 +7,7 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.amqp.core.MessagePostProcessor;
 import org.springframework.amqp.rabbit.core.RabbitTemplate;
 import org.springframework.test.util.ReflectionTestUtils;
 
@@ -14,6 +15,7 @@ import java.math.BigDecimal;
 import java.util.List;
 import java.util.UUID;
 
+import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.*;
 
 @ExtendWith(MockitoExtension.class)
@@ -44,7 +46,7 @@ class MessageBrokerProducerTests {
 
         messageBrokerProducer.produce(message);
 
-        verify(rabbitTemplate).convertAndSend("", "test-queue", message);
+        verify(rabbitTemplate).convertAndSend(eq(""), eq("test-queue"), eq(message), any(MessagePostProcessor.class));
     }
 
     @Test
@@ -60,7 +62,7 @@ class MessageBrokerProducerTests {
 
         messageBrokerProducer.produce(message);
 
-        verify(rabbitTemplate).convertAndSend("", "test-queue", message);
+        verify(rabbitTemplate).convertAndSend(eq(""), eq("test-queue"), eq(message), any(MessagePostProcessor.class));
     }
 
     @Test
@@ -82,7 +84,7 @@ class MessageBrokerProducerTests {
 
         messageBrokerProducer.produce(message);
 
-        verify(rabbitTemplate).convertAndSend("", "order-queue", message);
+        verify(rabbitTemplate).convertAndSend(eq(""), eq("order-queue"), eq(message), any(MessagePostProcessor.class));
     }
 
     @Test
@@ -104,6 +106,6 @@ class MessageBrokerProducerTests {
 
         messageBrokerProducer.produce(message);
 
-        verify(rabbitTemplate).convertAndSend("", "high-value-queue", message);
+        verify(rabbitTemplate).convertAndSend(eq(""), eq("high-value-queue"), eq(message), any(MessagePostProcessor.class));
     }
 }

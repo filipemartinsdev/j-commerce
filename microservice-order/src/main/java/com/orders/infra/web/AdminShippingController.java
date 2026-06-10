@@ -40,6 +40,17 @@ public class AdminShippingController {
                 .body(StandardResponse.success(response).build());
     }
 
+    @GetMapping("/{id}")
+    public ResponseEntity<StandardResponse<ShippingResponse>> getById(
+            @PathVariable UUID id
+    ){
+        return ResponseEntity.ok(
+                StandardResponse
+                        .success(adminShippingService.getById(id))
+                        .build()
+        );
+    }
+
     @PostMapping("/{id}")
     public ResponseEntity<StandardResponse<Void>> dispatchShipping(
             @PathVariable UUID id

@@ -4,6 +4,7 @@ import com.orders.application.dto.ShippingRequest;
 import com.orders.application.dto.ShippingResponse;
 import com.orders.application.exception.*;
 import com.orders.application.message.CreateShippingMessage;
+import com.orders.application.message.NotifyShippingDispatchedMessage;
 import com.orders.application.service.mapper.ShippingMapper;
 import com.orders.domain.entity.*;
 import com.orders.infra.persistence.DeliveryAddressRepository;
@@ -13,6 +14,7 @@ import com.orders.infra.persistence.ShippingStatusRepository;
 import io.github.responsekit.core.PagedResponse;
 import io.github.responsekit.spring.PagedResponseFactory;
 import jakarta.transaction.Transactional;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
@@ -26,14 +28,16 @@ public class AdminShippingService {
     private final SalesOrderRepository salesOrderRepository;
     private final DeliveryAddressRepository deliveryAddressRepository;
     private final DeliveryDateCalculator deliveryDateCalculator;
+    private final MessageBrokerProducer messageBrokerProducer;
 
-    public AdminShippingService(ShippingRepository shippingRepository, ShippingStatusRepository shippingStatusRepository, ShippingMapper shippingMapper, SalesOrderRepository salesOrderRepository, DeliveryAddressRepository deliveryAddressRepository, DeliveryDateCalculator deliveryDateCalculator) {
+    public AdminShippingService(ShippingRepository shippingRepository, ShippingStatusRepository shippingStatusRepository, ShippingMapper shippingMapper, SalesOrderRepository salesOrderRepository, DeliveryAddressRepository deliveryAddressRepository, DeliveryDateCalculator deliveryDateCalculator, MessageBrokerProducer messageBrokerProducer) {
         this.shippingRepository = shippingRepository;
         this.shippingStatusRepository = shippingStatusRepository;
         this.shippingMapper = shippingMapper;
         this.salesOrderRepository = salesOrderRepository;
         this.deliveryAddressRepository = deliveryAddressRepository;
         this.deliveryDateCalculator = deliveryDateCalculator;
+        this.messageBrokerProducer = messageBrokerProducer;
     }
 
     public void createShippingFromMessage(CreateShippingMessage message) {
@@ -124,6 +128,7 @@ public class AdminShippingService {
         );
     }
 
+    @Transactional
     public void dispatchShipping(UUID id) {
         Shipping shipping = shippingRepository.findById(id)
                 .orElseThrow(() -> new ShippingNotFoundException("Shipping not found by ID: " + id));
@@ -135,9 +140,14 @@ public class AdminShippingService {
             throw new CantDispatchShippingException("Order hasn't been confirmed yet");
 
         updateShippingStatusToDispatched(shipping);
+
+        messageBrokerProducer.produceNotifyShippingDispatched(
+                new NotifyShippingDispatchedMessage(
+                        shipping.getSalesOrder().getUserId(), salesOrderRepository.getSalesOrderValue(shipping.getSalesOrder().getId())
+                )
+        );
     }
 
-//    TODO: create startShipping message to notify the event
     public void startShipping(UUID id, UUID driverId) {
         Shipping shipping = shippingRepository.findById(id)
                 .orElseThrow(() -> new ShippingNotFoundException("Shipping not found by ID: " + id));
@@ -180,5 +190,12 @@ public class AdminShippingService {
                 shippingStatusRepository.getReferenceById(ShippingStatus.Value.DISPATCHED.getId())
         );
         shippingRepository.save(shipping);
+    }
+
+    public ShippingResponse getById(UUID id) {
+        return shippingMapper.toResponse(
+                shippingRepository.findById(id)
+                        .orElseThrow(() -> new ShippingNotFoundException("Shipping not found by ID: " + id))
+        );
     }
 }

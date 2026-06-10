@@ -66,5 +66,8 @@ broker:
     notifyCancelledOrder:
       name: notification.notify_cancelled_order
 
+    notifyShippingDispatched:
+      name: notification.notify_shipping_dispatched
+
 graphHopperClient:
   apiKey: ${GRAPH_HOPPER_API_KEY:test}

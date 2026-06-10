@@ -1,5 +1,7 @@
 package com.orders.application.service;
 
+import com.orders.application.exception.CantCalculateDeliveryDateException;
+import com.orders.application.exception.StorageAddressNotFoundException;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
 
@@ -18,7 +20,12 @@ public class DeliveryDateCalculatorImpl implements DeliveryDateCalculator {
 
     @Override
     public Instant getDeliveryDate(Double lat, Double lon) {
-        Double[] shoppingPoint = storageAddressService.getMainStorageAddressPoint();
+        Double[] shoppingPoint;
+        try {
+            shoppingPoint = storageAddressService.getMainStorageAddressPoint();
+        } catch (StorageAddressNotFoundException e){
+            throw new CantCalculateDeliveryDateException("Not exists any active Storage Address");
+        }
 
         var pointA = new RouteService.Point(shoppingPoint[0], shoppingPoint[1]);
         var pointB = new RouteService.Point(lat, lon);

@@ -65,21 +65,24 @@ E-Commerce platform
 -------------------------------------------------------------------------------
 Language                     files          blank        comment           code
 -------------------------------------------------------------------------------
-Java                           355           3887            243          18381
-XML                             51             45              0           4241
-Markdown                        15            643              0           2016
-YAML                            97            285             39           1916
-Maven                            5             41              5            975
-SQL                             13            113              9            816
+Java                           338           3647            227          17374
+XML                             53             57              0           4574
+Markdown                        16            696              0           2149
+YAML                            95            264             77           2045
+Maven                            6             59              4           1017
+SQL                             14            107             11            701
+DOS Batch                        2             48              0            330
+JSON                             1              0              0            305
 Bourne Shell                     2             36             52            221
-DOS Batch                        1             24              0            165
-Text                            37              0              0            148
+Text                            39              1              0            160
+Properties                       4             19              0             61
+Dockerfile                       6             21            204             53
 INI                              4              0              0             23
-Dockerfile                       2              6              0             15
-Properties                       2              0              0              6
+NAnt script                      1             10              0             20
 -------------------------------------------------------------------------------
-SUM:                           584           5080            348          28923
+SUM:                           581           4965            575          29033
 -------------------------------------------------------------------------------
+
 ````
 
 ## General Stack
@@ -135,7 +138,7 @@ SUM:                           584           5080            348          28923
 3. **Start all microservices and infrastructure with docker**:
 
     ```bash
-    docker compose -f docker-compose.yaml up -d --build
+    docker compose up -d --build
     ```
 
 The HTTPS will be automatically configured with Caddy, and services will be available at:
@@ -319,17 +322,18 @@ The entire order flow is based on asynchronous communication, using **Spring AMQ
 
 ### Queues
 
-| Name                                    | Description                                       |
-|-----------------------------------------|---------------------------------------------------|
-| `order.create_order`                    | Create an order from shopping cart                |
-| `order.handle_payment_timeout`          | Cancel order when payment expires                 |
-| `order.confirm_order_payment`           | Confirm payment of order                          |
-| `payment.generate_payment`              | Generate payment for order                        |
-| `payment.wait_pending_payment`          | Set TTL of 1 day for payment                      |
-| `notification.notify_payment_generated` | Notify the user that a payment has been generated |
-| `notification.notify_payment_confirmed` | Notify the user that payment has been made        |
-| `order.create_shipping`                 | Create shipping for order                         |
-| `order.cancel_shipments`                | Cancel shipments from order                       |
+| Name                                      | Description                                       |
+|-------------------------------------------|---------------------------------------------------|
+| `order.create_order`                      | Create an order from shopping cart                |
+| `order.handle_payment_timeout`            | Cancel order when payment expires                 |
+| `order.confirm_order_payment`             | Confirm payment of order                          |
+| `payment.generate_payment`                | Generate payment for order                        |
+| `payment.wait_pending_payment`            | Set TTL of 1 day for payment                      |
+| `notification.notify_payment_generated`   | Notify the user that a payment has been generated |
+| `notification.notify_payment_confirmed`   | Notify the user that payment has been made        |
+| `notification.notify_shipping_dispatched` | Notify the user that shipping has been dispatched |
+| `order.create_shipping`                   | Create shipping for order                         |
+| `order.cancel_shipments`                  | Cancel shipments from order                       |
 
 
 ![messaging_exchange_default.png](images/messaging_exchange_default.png)

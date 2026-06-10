@@ -51,6 +51,10 @@ public class GeocodingServiceImpl implements GeocodingService {
                 "json"
         ).getBody();
 
+        if (response == null){
+            throw new InvalidGeocodingResponseException("Null geocoding response");
+        }
+
         return parseNominatimResponseToAddress(response);
     }
 
@@ -61,7 +65,7 @@ public class GeocodingServiceImpl implements GeocodingService {
             city = response.address().city();
         else if (response.address().municipality() != null)
             city = response.address().municipality();
-        else if (response.address().state() != null)
+        else if (response.address().stateDistrict() != null)
             city = response.address().stateDistrict();
         else
             throw new InvalidReverseGeocodingResponseException("Invalid Nominatim response");
@@ -71,10 +75,8 @@ public class GeocodingServiceImpl implements GeocodingService {
                 response.address().neighborhood(),
                 city,
                 response.address().zipCode().replace("-", ""),
-                response.address().state(),
+                response.address().countryStateCode().substring(3), /*The response format is: BR-UF*/
                 response.address().countryCode()
         );
     }
-
-
 }

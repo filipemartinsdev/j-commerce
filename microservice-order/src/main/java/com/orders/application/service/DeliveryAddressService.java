@@ -11,6 +11,7 @@ import com.orders.domain.entity.DeliveryAddress;
 import com.orders.infra.persistence.DeliveryAddressRepository;
 import io.github.responsekit.core.PagedResponse;
 import io.github.responsekit.spring.PagedResponseFactory;
+import jakarta.transaction.Transactional;
 import jakarta.validation.Valid;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Page;
@@ -39,6 +40,7 @@ public class DeliveryAddressService {
         return PagedResponseFactory.fromPage(page, deliveryAddressMapper::toResponse);
     }
 
+    @Transactional
     public DeliveryAddressResponse createByUserId(CreateDeliveryAddressRequest request, UUID userId) {
         validateRequestToCreateByUserId(request);
 
@@ -80,6 +82,7 @@ public class DeliveryAddressService {
         }
     }
 
+    @Transactional
     public DeliveryAddressResponse createByCoordinatesAndUserId(CreateDeliveryAddressRequest request, UUID userId) {
         if (request.latitude().isEmpty() || request.longitude().isEmpty())
             throw new InvalidDeliveryAddressCoordinatesException("Latitude and Longitude is mandatory");

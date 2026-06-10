@@ -172,4 +172,13 @@ public class GlobalExceptionHandler {
                 .status(HttpStatus.BAD_GATEWAY)
                 .body(StandardResponse.error().message(exception.getMessage()).build());
     }
+
+    @ExceptionHandler(CantCalculateDeliveryDateException.class)
+    public ResponseEntity<StandardResponse<Void>> handleCantCalculateDeliveryDate(CantCalculateDeliveryDateException exception) {
+        log.error("Can't calculate delivey date: {}", exception.getMessage(), exception);
+
+        return ResponseEntity
+                .status(HttpStatus.INTERNAL_SERVER_ERROR)
+                .body(StandardResponse.error().message(exception.getMessage()).build());
+    }
 }

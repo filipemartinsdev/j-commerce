@@ -23,7 +23,6 @@ public class BrokerListener {
             queues = "${broker.queues.generatePayment.name}"
     )
     public void listenGeneratePayment(@Payload GeneratePaymentMessage message){
-        log.info("Received Generate Payment message");
         paymentService.generatePayment(message);
     }
 }

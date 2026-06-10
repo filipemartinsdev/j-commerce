@@ -21,10 +21,26 @@ public class MessageBrokerProducer {
     }
 
     public void producePaymentGeneratedMessage(PaymentGeneratedMessage message) {
-        rabbitTemplate.convertAndSend(PAYMENT_GENERATED_EXCHANGE_NAME, "", message);
+        rabbitTemplate.convertAndSend(
+                PAYMENT_GENERATED_EXCHANGE_NAME,
+                "",
+                message,
+                msg -> {
+                    msg.getMessageProperties().setContentEncoding(null);
+                    return msg;
+                }
+        );
     }
 
     public void producePaymentConfirmedMessage(PaymentConfirmedMessage message) {
-        rabbitTemplate.convertAndSend(PAYMENT_CONFIRMED_EXCHANGE_NAME, "", message);
+        rabbitTemplate.convertAndSend(
+                PAYMENT_CONFIRMED_EXCHANGE_NAME,
+                "",
+                message,
+                msg -> {
+                    msg.getMessageProperties().setContentEncoding(null);
+                    return msg;
+                }
+        );
     }
 }

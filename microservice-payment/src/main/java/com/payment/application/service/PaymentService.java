@@ -3,6 +3,7 @@ package com.payment.application.service;
 import com.payment.application.message.GeneratePaymentMessage;
 import com.payment.application.message.PaymentConfirmedMessage;
 import com.payment.application.message.PaymentGeneratedMessage;
+import jakarta.transaction.Transactional;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
 
@@ -18,6 +19,7 @@ public class PaymentService {
         this.messageBrokerProducer = messageBrokerProducer;
     }
 
+    @Transactional
     public void generatePayment(GeneratePaymentMessage message){
         UUID mockPaymentId = UUID.randomUUID();
 

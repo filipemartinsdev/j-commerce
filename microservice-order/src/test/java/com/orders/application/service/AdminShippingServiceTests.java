@@ -38,6 +38,7 @@ public class AdminShippingServiceTests {
     @Mock private SalesOrderRepository salesOrderRepository;
     @Mock private DeliveryAddressRepository deliveryAddressRepository;
     @Mock private DeliveryDateCalculator deliveryDateCalculator;
+    @Mock private MessageBrokerProducer messageBrokerProducer;
 
     @InjectMocks private AdminShippingService adminShippingService;
 
@@ -432,12 +433,14 @@ public class AdminShippingServiceTests {
                 .thenReturn(Optional.of(shipping));
         when(shippingStatusRepository.getReferenceById(ShippingStatus.Value.DISPATCHED.getId()))
                 .thenReturn(dispatchedStatus);
+        doNothing().when(messageBrokerProducer).produceNotifyShippingDispatched(any());
 
         adminShippingService.dispatchShipping(shippingId);
 
         verify(shippingRepository).findById(shippingId);
         verify(shippingStatusRepository).getReferenceById(ShippingStatus.Value.DISPATCHED.getId());
         verify(shippingRepository).save(shipping);
+        verify(messageBrokerProducer).produceNotifyShippingDispatched(any());
     }
 
     @Test @DisplayName("Should throw ShippingNotFoundException if shipping not exists by ID")

@@ -7,6 +7,11 @@ services:
     ports:
       - "80:80"
       - "443:443"
+    deploy:
+      resources:
+        limits:
+          cpus: 0.5
+          memory: 600M
     volumes:
       - ./caddy/Caddyfile:/etc/caddy/Caddyfile:Z
       - caddy_data:/data
@@ -20,6 +25,11 @@ services:
   identity_db:
     image: postgres:17-alpine
     container_name: identity_db
+    deploy:
+      resources:
+        limits:
+          cpus: 0.5
+          memory: 600M
     environment:
       POSTGRES_DB: ${PG_IDENTITY_DATABASE}
       POSTGRES_USER: ${PG_IDENTITY_USER}
@@ -31,6 +41,11 @@ services:
   product_db:
     image: postgres:17-alpine
     container_name: product_db
+    deploy:
+      resources:
+        limits:
+          cpus: 0.5
+          memory: 600M
     environment:
       POSTGRES_DB: ${PG_PRODUCT_DATABASE}
       POSTGRES_USER: ${PG_PRODUCT_USER}
@@ -41,6 +56,11 @@ services:
   order_db:
     image: postgres:17-alpine
     container_name: order_db
+    deploy:
+      resources:
+        limits:
+          cpus: 0.5
+          memory: 600M
     environment:
       POSTGRES_DB: ${PG_ORDER_DATABASE}
       POSTGRES_USER: ${PG_ORDER_USER}
@@ -51,6 +71,11 @@ services:
   notification_db:
     image: postgres:17-alpine
     container_name: notification_db
+    deploy:
+      resources:
+        limits:
+          cpus: 0.5
+          memory: 600M
     environment:
       POSTGRES_DB: ${PG_NOTIFICATION_DATABASE}
       POSTGRES_USER: ${PG_NOTIFICATION_USER}
@@ -62,6 +87,11 @@ services:
     container_name: cache
     image: redis:7.4-alpine
     restart: unless-stopped
+    deploy:
+      resources:
+        limits:
+          cpus: 0.5
+          memory: 600M
     volumes:
       - cache_data:/data
 
@@ -71,6 +101,11 @@ services:
     container_name: rabbitmq
     image: rabbitmq:4-management-alpine
     hostname: rabbitmq-local
+    deploy:
+      resources:
+        limits:
+          cpus: 0.5
+          memory: 600M
     volumes:
       - rabbitmq_data:/var/lib/rabbitmq
       - ./rabbitmq/definitions.json:/etc/rabbitmq/definitions.json
@@ -85,6 +120,11 @@ services:
     image: prom/prometheus:v3.1.0
     container_name: "prometheus"
     restart: unless-stopped
+    deploy:
+      resources:
+        limits:
+          cpus: 0.5
+          memory: 600M
     volumes:
       - ./observability/prometheus.yml:/etc/prometheus/prometheus.yml:Z
       - prometheus_data:/var/prometheus:Z
@@ -93,6 +133,11 @@ services:
     image: grafana/grafana-oss:11.5.0
     container_name: "grafana"
     restart: unless-stopped
+    deploy:
+      resources:
+        limits:
+          cpus: 0.5
+          memory: 600M
     environment:
       GF_SECURITY_ADMIN_USER: ${GRAFANA_USER}
       GF_SECURITY_ADMIN_PASSWORD: ${GRAFANA_PASSWORD}
@@ -113,6 +158,11 @@ services:
       identity_db:
         condition: service_started
     restart: unless-stopped
+    deploy:
+      resources:
+        limits:
+          cpus: 0.5
+          memory: 600M
     environment:
       PG_IDENTITY_DATABASE:
       PG_IDENTITY_USER:
@@ -133,6 +183,11 @@ services:
       product_db:
         condition: service_started
     restart: unless-stopped
+    deploy:
+      resources:
+        limits:
+          cpus: 0.5
+          memory: 600M
     environment:
       PG_PRODUCT_DATABASE:
       PG_PRODUCT_USER:
@@ -153,6 +208,11 @@ services:
       order_db:
         condition: service_started
     restart: unless-stopped
+    deploy:
+      resources:
+        limits:
+          cpus: 0.5
+          memory: 600M
     environment:
       PG_PRODUCT_DATABASE:
       PG_PRODUCT_USER:
@@ -192,6 +252,11 @@ services:
       context: microservice-notification-v2/
       dockerfile: Dockerfile.jvm.build
     restart: unless-stopped
+    deploy:
+      resources:
+        limits:
+          cpus: 0.5
+          memory: 600M
     depends_on:
       notification_db:
         condition: service_started
@@ -213,6 +278,11 @@ services:
       context: microservice-payment/
       dockerfile: Dockerfile
     restart: unless-stopped
+    deploy:
+      resources:
+        limits:
+          cpus: 0.5
+          memory: 600M
     environment:
       PG_PRODUCT_DATABASE:
       PG_PRODUCT_USER:

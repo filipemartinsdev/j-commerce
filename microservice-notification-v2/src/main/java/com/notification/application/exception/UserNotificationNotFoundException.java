@@ -1,7 +1,8 @@
 package com.notification.application.exception;
 
-// TODO: map this
-public class UserNotificationNotFoundException extends RuntimeException {
+import jakarta.ws.rs.NotFoundException;
+
+public class UserNotificationNotFoundException extends NotFoundException {
     public UserNotificationNotFoundException(String message) {
         super(message);
     }

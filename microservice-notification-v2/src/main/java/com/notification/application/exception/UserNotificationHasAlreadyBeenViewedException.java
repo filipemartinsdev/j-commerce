@@ -1,7 +1,8 @@
 package com.notification.application.exception;
 
-// TODO: map this
-public class UserNotificationHasAlreadyBeenViewedException extends RuntimeException {
+import jakarta.ws.rs.BadRequestException;
+
+public class UserNotificationHasAlreadyBeenViewedException extends BadRequestException {
     public UserNotificationHasAlreadyBeenViewedException(String message) {
         super(message);
     }

@@ -17,7 +17,7 @@ public class UserNotificationCategory extends PanacheEntity {
         DELIVERY(4, "DELIVERY"),
         OTHER(5, "OTHER");
 
-        public final int id;
+        public final long id;
         public final String name;
 
         Value(int id, String name) {

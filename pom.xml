@@ -18,6 +18,6 @@
 		<module>microservice-product</module>
 		<module>microservice-order</module>
 		<module>microservice-notification-v2</module>
-		<module>microservice-payment</module>
+		<module>worker-payment</module>
 	</modules>
 </project>

@@ -9,7 +9,7 @@
 		<relativePath/> <!-- lookup parent from repository -->
 	</parent>
 	<groupId>com</groupId>
-	<artifactId>microservice-payment</artifactId>
+	<artifactId>microservice-payment-deprecated</artifactId>
 	<version>1.0.0</version>
 
 	<name>Payment Microservice</name>

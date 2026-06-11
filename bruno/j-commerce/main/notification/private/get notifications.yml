@@ -17,7 +17,7 @@ http:
       value: createdAt,ASC
       type: query
     - name: viewed
-      value: ""
+      value: "true"
       type: query
       disabled: true
   auth: inherit

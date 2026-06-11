@@ -8,7 +8,7 @@ http:
   url: https://localhost/order/admin/api/v1/shippings/:id/check-in
   params:
     - name: id
-      value: 0b7372ac-2ac4-4dd9-8389-09f97c163734
+      value: d55c31a6-3804-4a7a-a7a7-cc4b7203a7d0
       type: path
   auth: inherit
 

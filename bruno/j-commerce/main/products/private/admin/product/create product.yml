@@ -9,11 +9,11 @@ http:
   body:
     type: json
     data: |-
-      // {
-      //   "name": "Monitor LG 27 pol gamer",
-      //   "description": "Monitor 27 polegadas LG, painel IPS, 144hz",
-      //   "categoryId": 2
-      // }
+      {
+        "name": "Monitor LG 27 pol gamer",
+        "description": "Monitor 27 polegadas LG, painel IPS, 144hz",
+        "categoryId": 2
+      }
 
       // {
       //   "name": "Capa de chuva",

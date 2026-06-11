@@ -10,7 +10,7 @@ http:
     type: json
     data: |-
       {
-        "productId": "638ef036-ef67-47a2-8aed-246d23d2c356",
+        "productId": "3aa36d73-4ec2-497a-a17e-98263be8b2a5",
         "name": "Monitor LG",
         "SKU": "M"
       }

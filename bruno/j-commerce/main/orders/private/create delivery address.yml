@@ -27,8 +27,7 @@ http:
       //   "number": "1",
       //   "neighborhood": "Jardim Maria Inês",
       //   "city": "Goiânia",
-      //   "state": "GO",
-      //   "complement": "Quadra 49, Lote 23"
+      //   "state": "GO"
       // }
   auth: inherit
 

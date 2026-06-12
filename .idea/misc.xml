@@ -3,6 +3,7 @@
   <component name="ExternalStorageConfigurationManager" enabled="true" />
   <component name="FrameworkDetectionExcludesConfiguration">
     <file type="Quarkus" url="file://$PROJECT_DIR$/microservice-notification-v2" />
+    <file type="Quarkus" url="file://$PROJECT_DIR$/worker-payment" />
   </component>
   <component name="MavenProjectsManager">
     <option name="originalFiles">

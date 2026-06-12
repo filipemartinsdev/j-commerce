@@ -14,6 +14,7 @@ E-Commerce platform
 <br> <br>
 
 ![Static Badge](https://img.shields.io/badge/Java-21-red?logo=openjdk)
+![Static Badge](https://img.shields.io/badge/Kotlin-2.3-7F52FF?logo=kotlin)
 ![Static Badge](https://img.shields.io/badge/Maven-3.9-orange?logo=apachemaven)
 ![Static Badge](https://img.shields.io/badge/Spring_Boot-4.0-green?logo=springboot)
 ![Static Badge](https://img.shields.io/badge/Quarkus-3.5-4695EB?logo=quarkus)

@@ -165,7 +165,6 @@
         }
     ],
     "exchanges": [
-
         {
             "name": "order.cancelled.fanout",
             "vhost": "/",
@@ -175,8 +174,6 @@
             "internal": false,
             "arguments": {}
         },
-
-
         {
             "name": "payment.confirmed.fanout",
             "vhost": "/",

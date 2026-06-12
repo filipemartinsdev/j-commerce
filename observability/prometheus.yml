@@ -23,7 +23,7 @@ scrape_configs:
       - targets: [ 'notification:8080' ]
     metrics_path: '/q/metrics'
 
-  - job_name: 'payment-service'
+  - job_name: 'payment-worker'
     static_configs:
       - targets: [ 'payment:8080' ]
-    metrics_path: '/actuator/prometheus'
+    metrics_path: '/q/metrics'

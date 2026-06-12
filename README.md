@@ -25,14 +25,6 @@ E-Commerce platform
 ![Static Badge](https://img.shields.io/badge/Grafana-11.5-F46800?logo=grafana)
 ![Static Badge](https://img.shields.io/badge/Prometheus-3.1-E6522C?logo=prometheus)
 
-
-
-
-
-
-
-
-
 </div>
 
 
@@ -41,9 +33,8 @@ E-Commerce platform
 1. [Identity](/microservice-identity/README.md) - Authentication and user profile management.
 2. [Product](/microservice-product/README.md) - Product catalogue, stock level and wishlist.
 3. [Order](/microservice-order/README.md) - Orders life cycle and shopping cart.
-4. [Payment](/microservice-payment/README.md) - Payment management.
-5. [Notification (Deprecated)](/microservice-notification/README.md) - User notifications management.
-6. [Notification v2](/microservice-notification-v2/README.md) - User notifications management.
+4. [Notification v2](/microservice-notification-v2/README.md) - User notifications management.
+5. [Payment Worker](/worker-payment/README.md) - Payment status management (mock).
 
 ---
 
@@ -122,7 +113,6 @@ The HTTPS will be automatically configured with Caddy, and services will be avai
 | Identity              | https://localhost/identity     |
 | Product               | https://localhost/product      |
 | Order                 | https://localhost/order        |
-| Payment               | https://localhost/payment      |
 | Notification          | https://localhost/notification |
 | Grafana               | http://localhost:3000          |
 | Prometheus Panel      | http://localhost:9090          |
@@ -170,7 +160,6 @@ Services will be available at:
 | Identity      | https://yourdomain.com/identity    |
 | Product       | https://yourdomain.com/product     |
 | Order         | https://yourdomain.com/order     |
-| Payment       | https://yourdomain.com/payment     |
 | Notification | https://yourdomain.com/notification     |
 | Grafana       | https://grafana.yourdomain.com   |
 | Prometheus Panel   | https://prometheus.yourdomain.com   |

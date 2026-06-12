@@ -49,10 +49,6 @@ localhost {
         }
     }
 
-    handle_path /payment/* {
-        reverse_proxy payment:8080
-    }
-
     handle {
         abort
     }

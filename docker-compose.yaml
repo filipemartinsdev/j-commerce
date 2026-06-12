@@ -117,8 +117,8 @@ services:
           memory: 600M
     volumes:
       - rabbitmq_data:/var/lib/rabbitmq
-      - ./rabbitmq/definitions.json:/etc/rabbitmq/definitions.json
-      - ./rabbitmq/rabbitmq.conf:/etc/rabbitmq/rabbitmq.conf
+      - ./rabbitmq/rabbitmq.conf:/etc/rabbitmq/rabbitmq.conf:ro,z
+      - ./rabbitmq/definitions.json:/opt/definitions.json:ro,z
     environment:
       RABBITMQ_DEFAULT_USER: ${RABBITMQ_USER:-admin}
       RABBITMQ_DEFAULT_PASS: ${RABBITMQ_PASSWORD:-admin}
@@ -292,29 +292,44 @@ services:
 #      SPRING_DATA_REDIS_URL: redis://cache:6379
 #      ACTIVE_PROFILE: dev
 
+#  payment:
+#    container_name: payment_service
+#    build:
+#      context: microservice-payment/
+#      dockerfile: Dockerfile
+#    restart: unless-stopped
+#    ports:
+#      - "8084:8080"
+#    deploy:
+#      resources:
+#        limits:
+#          cpus: 0.5
+#          memory: 600M
+#    environment:
+#      SPRING_RABBITMQ_ADDRESSES: amqp://admin:admin@rabbitmq:5672/
+#      ACTIVE_PROFILE: dev
+
   payment:
-    container_name: payment_service
+    container_name: payment_worker
     build:
-      context: microservice-payment/
-      dockerfile: Dockerfile
+      context: worker-payment
+      dockerfile: Dockerfile.jvm.build
     restart: unless-stopped
     ports:
       - "8084:8080"
+    depends_on:
+      rabbitmq:
+        condition: service_started
     deploy:
       resources:
         limits:
           cpus: 0.5
           memory: 600M
     environment:
-      PG_PRODUCT_DATABASE:
-      PG_PRODUCT_USER:
-      PG_PRODUCT_PASSWORD:
-      SPRING_RABBITMQ_ADDRESSES: amqp://admin:admin@rabbitmq:5672/
-      SPRING_DATASOURCE_URL: jdbc:postgresql://identity_db:5432/${PG_IDENTITY_DATABASE:-payment}
-      SPRING_DATASOURCE_USERNAME: ${PG_IDENTITY_USER:-payment}
-      SPRING_DATASOURCE_PASSWORD: ${PG_IDENTITY_PASSWORD:-payment}
-      SPRING_DATA_REDIS_URL: redis://cache:6379
-      ACTIVE_PROFILE: dev
+      RABBITMQ_HOST: rabbitmq
+      RABBITMQ_PORT: 5672
+      RABBITMQ_USER: ${RABBITMQ_USER:-admin}
+      RABBITMQ_PASSWORD: ${RABBITMQ_PASSWORD:-admin}
 
 volumes:
   caddy_data:

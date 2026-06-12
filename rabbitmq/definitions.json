@@ -165,15 +165,7 @@
         }
     ],
     "exchanges": [
-        {
-            "name": "order-cancelled",
-            "vhost": "/",
-            "type": "topic",
-            "durable": true,
-            "auto_delete": false,
-            "internal": false,
-            "arguments": {}
-        },
+
         {
             "name": "order.cancelled.fanout",
             "vhost": "/",
@@ -183,24 +175,8 @@
             "internal": false,
             "arguments": {}
         },
-        {
-            "name": "payment-confirmed",
-            "vhost": "/",
-            "type": "topic",
-            "durable": true,
-            "auto_delete": false,
-            "internal": false,
-            "arguments": {}
-        },
-        {
-            "name": "payment-generated",
-            "vhost": "/",
-            "type": "topic",
-            "durable": true,
-            "auto_delete": false,
-            "internal": false,
-            "arguments": {}
-        },
+
+
         {
             "name": "payment.confirmed.fanout",
             "vhost": "/",
@@ -221,14 +197,7 @@
         }
     ],
     "bindings": [
-        {
-            "source": "payment-confirmed",
-            "vhost": "/",
-            "destination": "notification.notify_payment_confirmed",
-            "destination_type": "queue",
-            "routing_key": "#",
-            "arguments": {}
-        },
+
         {
             "source": "order.cancelled.fanout",
             "vhost": "/",
@@ -261,14 +230,7 @@
             "routing_key": "",
             "arguments": {}
         },
-        {
-            "source": "payment-generated",
-            "vhost": "/",
-            "destination": "notification.notify_payment_generated",
-            "destination_type": "queue",
-            "routing_key": "#",
-            "arguments": {}
-        },
+
         {
             "source": "payment.confirmed.fanout",
             "vhost": "/",
@@ -291,14 +253,6 @@
             "destination": "product.refund_items",
             "destination_type": "queue",
             "routing_key": "",
-            "arguments": {}
-        },
-        {
-            "source": "order-cancelled",
-            "vhost": "/",
-            "destination": "notification.notify_cancelled_order",
-            "destination_type": "queue",
-            "routing_key": "#",
             "arguments": {}
         }
     ]

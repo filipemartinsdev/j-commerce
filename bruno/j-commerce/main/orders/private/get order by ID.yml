@@ -8,7 +8,7 @@ http:
   url: https://localhost/order/api/v1/sales-orders/:id
   params:
     - name: id
-      value: 1045fdf3-2717-4d7b-8ffe-b1fce90d402e
+      value: 1888d42c-06d5-4b2b-9a72-49402a216571
       type: path
   body:
     type: json

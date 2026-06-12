@@ -5,7 +5,7 @@ info:
 
 http:
   method: GET
-  url: https://localhost/payment/actuator/health
+  url: https://localhost/payment/q/metrics
   auth: inherit
 
 settings:

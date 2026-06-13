@@ -9,6 +9,11 @@ spring:
   profiles:
     active: ${ACTIVE_PROFILE:test}
 
+  datasource:
+    hikari:
+      connection-timeout: 5000
+      maximum-pool-size: 10
+
   cache:
     type: redis
 

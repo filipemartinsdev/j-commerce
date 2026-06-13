@@ -20,6 +20,12 @@
 
 	<dependencies>
 		<dependency>
+			<groupId>org.bouncycastle</groupId>
+			<artifactId>bcprov-jdk18on</artifactId>
+			<version>1.84</version>
+		</dependency>
+
+		<dependency>
 			<groupId>io.github.filipemartinsdev</groupId>
 			<artifactId>responsekit-spring</artifactId>
 			<version>0.3.3</version>

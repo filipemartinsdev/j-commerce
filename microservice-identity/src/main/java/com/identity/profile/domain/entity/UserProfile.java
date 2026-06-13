@@ -37,5 +37,5 @@ public class UserProfile {
 
     @NotNull
     @Column(name = "is_active")
-    private Boolean isActive;
+    private Boolean isActive = true;
 }

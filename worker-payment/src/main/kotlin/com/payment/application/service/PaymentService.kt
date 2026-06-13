@@ -3,6 +3,7 @@ package com.payment.application.service
 import com.payment.application.message.GeneratePaymentMessage
 import com.payment.application.message.PaymentConfirmedMessage
 import com.payment.application.message.PaymentGeneratedMessage
+import com.payment.infra.messaging.MessageBrokerProducer
 import jakarta.enterprise.context.ApplicationScoped
 import java.util.UUID
 

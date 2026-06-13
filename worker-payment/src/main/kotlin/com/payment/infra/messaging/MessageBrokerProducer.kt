@@ -1,11 +1,10 @@
-package com.payment.application.service
+package com.payment.infra.messaging
 
 import com.payment.application.message.PaymentConfirmedMessage
 import com.payment.application.message.PaymentGeneratedMessage
 import jakarta.enterprise.context.ApplicationScoped
 import org.eclipse.microprofile.reactive.messaging.Channel
 import org.eclipse.microprofile.reactive.messaging.Emitter
-import org.eclipse.microprofile.reactive.messaging.Outgoing
 
 @ApplicationScoped
 class MessageBrokerProducer (

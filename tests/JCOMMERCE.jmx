@@ -12,41 +12,23 @@
           </elementProp>
         </collectionProp>
       </elementProp>
+      <boolProp name="TestPlan.functional_mode">false</boolProp>
+      <boolProp name="TestPlan.serialize_threadgroups">false</boolProp>
     </TestPlan>
     <hashTree>
       <Arguments guiclass="ArgumentsPanel" testclass="Arguments" testname="User Defined Variables">
         <collectionProp name="Arguments.arguments">
-          <elementProp name="url" elementType="Argument">
-            <stringProp name="Argument.name">url</stringProp>
-            <stringProp name="Argument.value">http://localhost:8080/api/v1/auth/login</stringProp>
-            <stringProp name="Argument.metadata">=</stringProp>
-          </elementProp>
-          <elementProp name="contentType" elementType="Argument">
-            <stringProp name="Argument.name">contentType</stringProp>
-            <stringProp name="Argument.value">application/json</stringProp>
-            <stringProp name="Argument.metadata">=</stringProp>
-          </elementProp>
-          <elementProp name="method" elementType="Argument">
-            <stringProp name="Argument.name">method</stringProp>
-            <stringProp name="Argument.value">GET</stringProp>
-            <stringProp name="Argument.metadata">=</stringProp>
-          </elementProp>
-          <elementProp name="body" elementType="Argument">
-            <stringProp name="Argument.name">body</stringProp>
-            <stringProp name="Argument.value"></stringProp>
-            <stringProp name="Argument.metadata">=</stringProp>
-          </elementProp>
           <elementProp name="JWT" elementType="Argument">
             <stringProp name="Argument.name">JWT</stringProp>
-            <stringProp name="Argument.value">Bearer eyJhbGciOiJSUzI1NiJ9.eyJpc3MiOiJBVVRIX01JQ1JPU0VSVklDRSIsInN1YiI6ImZhMDgxMzhmLTgyN2UtNGJiOS05NTk3LTNmYjgzYjFhY2U0NiIsImV4cCI6MTc4MTM3NTg0OCwidG9rZW5fdHlwZSI6ImFjY2VzcyIsImlhdCI6MTc4MTM3MjI0OCwic2NvcGUiOiJVU0VSICJ9.juRdhvg3SqnMx9rD_H0hYXTwLMc4fatm4yKbN6tMLRBxagyLUQFkLdnXktNSWtAIoLxP85gAYiJlWTbWsKerADcmSLEoJvj--OO5t7CdIFfEt6L95EksviYFQwI2Vj_YvCLqQgsDQqj81rdvyXK-kwhjtbFDn4gvtQIoCsf4yBqo3laAT3XMp-84x9MVB6RtRx2PXzgH0LDM3oyUYoz_8nxcbkE1JNxV_j5iwTu-nNPH_KOoOxTFsXPsHT_Xpn2XH96YAGSPAyAVzSIeLVmY0MlJJsoaOzJRKHkHnTk--4zjEQirVkRXjx55XPUWhSqrf2ecEdW8elVUBmDCJtOozQ</stringProp>
+            <stringProp name="Argument.value">eyJhbGciOiJSUzI1NiJ9.eyJpc3MiOiJBVVRIX01JQ1JPU0VSVklDRSIsInN1YiI6IjA5ZmY5MmE0LTdlODYtNGNjYi05MTRhLTVkZWY2ZTY0NWIwNCIsImV4cCI6MTc4MTQ1ODU3NiwidG9rZW5fdHlwZSI6ImFjY2VzcyIsImlhdCI6MTc4MTQ1NDk3Niwic2NvcGUiOiJVU0VSIEFETUlOIERSSVZFUiAifQ.gFGeQ8iSwAdyhT_RD3mqgSNrwTFkDaGaBRSMJBUUbO7evNI_2sOTXxTDTfDBfQCagmJY7SlXrOmeoa_Md6TeTMHU-2R9VDdM1-lx_mWEZuSWgcE8TOxrKkrTVdO8KCzok72xemzuYa129e-r4PaEKXp2snUoCnuWwyw6WZBxLnroyuhOSLehy4h20TFnsATwniu1xzFNRzqUwUuKcAQ6ZeukItzqRmM8-hlJDHk3n-_2m2VUlGFU59tITj8RUJVGEB5a14H0UF3BYAbiQhZ4rMxcznccDs--y3JUWPelVykWaOgasrBh9hGIrdabNMJJVm4LZ-gct3QnwQXsgK-Daw</stringProp>
             <stringProp name="Argument.metadata">=</stringProp>
           </elementProp>
         </collectionProp>
       </Arguments>
       <hashTree/>
-      <ThreadGroup guiclass="ThreadGroupGui" testclass="ThreadGroup" testname="Identity" enabled="true">
-        <intProp name="ThreadGroup.num_threads">100</intProp>
-        <intProp name="ThreadGroup.ramp_time">20</intProp>
+      <ThreadGroup guiclass="ThreadGroupGui" testclass="ThreadGroup" testname="Identity">
+        <intProp name="ThreadGroup.num_threads">600</intProp>
+        <intProp name="ThreadGroup.ramp_time">60</intProp>
         <boolProp name="ThreadGroup.same_user_on_next_iteration">true</boolProp>
         <stringProp name="ThreadGroup.on_sample_error">continue</stringProp>
         <elementProp name="ThreadGroup.main_controller" elementType="LoopController" guiclass="LoopControlPanel" testclass="LoopController" testname="Loop Controller">
@@ -55,7 +37,7 @@
         </elementProp>
       </ThreadGroup>
       <hashTree>
-        <HTTPSamplerProxy guiclass="HttpTestSampleGui" testclass="HTTPSamplerProxy" testname="Login" enabled="true">
+        <HTTPSamplerProxy guiclass="HttpTestSampleGui" testclass="HTTPSamplerProxy" testname="Login">
           <stringProp name="HTTPSampler.path">http://localhost:8080/api/v1/auth/login</stringProp>
           <boolProp name="HTTPSampler.follow_redirects">true</boolProp>
           <stringProp name="HTTPSampler.method">POST</stringProp>
@@ -83,12 +65,12 @@
               </elementProp>
               <elementProp name="" elementType="Header">
                 <stringProp name="Header.name">Content-Type</stringProp>
-                <stringProp name="Header.value">${contentType}</stringProp>
+                <stringProp name="Header.value">application/json</stringProp>
               </elementProp>
             </collectionProp>
           </HeaderManager>
           <hashTree/>
-          <ResultCollector guiclass="TableVisualizer" testclass="ResultCollector" testname="View Results in Table" enabled="true">
+          <ResultCollector guiclass="TableVisualizer" testclass="ResultCollector" testname="View Results in Table">
             <boolProp name="ResultCollector.error_logging">false</boolProp>
             <objProp>
               <name>saveConfig</name>
@@ -125,7 +107,7 @@
             <stringProp name="filename"></stringProp>
           </ResultCollector>
           <hashTree/>
-          <ResultCollector guiclass="ViewResultsFullVisualizer" testclass="ResultCollector" testname="View Results Tree" enabled="true">
+          <ResultCollector guiclass="ViewResultsFullVisualizer" testclass="ResultCollector" testname="View Results Tree">
             <boolProp name="ResultCollector.error_logging">false</boolProp>
             <objProp>
               <name>saveConfig</name>
@@ -162,7 +144,7 @@
             <stringProp name="filename"></stringProp>
           </ResultCollector>
           <hashTree/>
-          <ResultCollector guiclass="SummaryReport" testclass="ResultCollector" testname="Summary Report" enabled="true">
+          <ResultCollector guiclass="SummaryReport" testclass="ResultCollector" testname="Summary Report">
             <boolProp name="ResultCollector.error_logging">false</boolProp>
             <objProp>
               <name>saveConfig</name>
@@ -201,9 +183,9 @@
           <hashTree/>
         </hashTree>
       </hashTree>
-      <ThreadGroup guiclass="ThreadGroupGui" testclass="ThreadGroup" testname="Product" enabled="true">
-        <intProp name="ThreadGroup.num_threads">100</intProp>
-        <intProp name="ThreadGroup.ramp_time">10</intProp>
+      <ThreadGroup guiclass="ThreadGroupGui" testclass="ThreadGroup" testname="Product">
+        <intProp name="ThreadGroup.num_threads">600</intProp>
+        <intProp name="ThreadGroup.ramp_time">60</intProp>
         <boolProp name="ThreadGroup.same_user_on_next_iteration">true</boolProp>
         <stringProp name="ThreadGroup.on_sample_error">continue</stringProp>
         <elementProp name="ThreadGroup.main_controller" elementType="LoopController" guiclass="LoopControlPanel" testclass="LoopController" testname="Loop Controller">
@@ -223,16 +205,16 @@
           </elementProp>
         </HTTPSamplerProxy>
         <hashTree>
-          <HeaderManager guiclass="HeaderPanel" testclass="HeaderManager" testname="HTTP Header Manager" enabled="true">
+          <HeaderManager guiclass="HeaderPanel" testclass="HeaderManager" testname="HTTP Header Manager">
             <collectionProp name="HeaderManager.headers">
               <elementProp name="" elementType="Header">
                 <stringProp name="Header.name">Authorization</stringProp>
-                <stringProp name="Header.value">${JWT}</stringProp>
+                <stringProp name="Header.value">Bearer ${JWT}</stringProp>
               </elementProp>
             </collectionProp>
           </HeaderManager>
           <hashTree/>
-          <ResultCollector guiclass="TableVisualizer" testclass="ResultCollector" testname="View Results in Table" enabled="true">
+          <ResultCollector guiclass="TableVisualizer" testclass="ResultCollector" testname="View Results in Table">
             <boolProp name="ResultCollector.error_logging">false</boolProp>
             <objProp>
               <name>saveConfig</name>
@@ -269,7 +251,7 @@
             <stringProp name="filename"></stringProp>
           </ResultCollector>
           <hashTree/>
-          <ResultCollector guiclass="ViewResultsFullVisualizer" testclass="ResultCollector" testname="View Results Tree" enabled="true">
+          <ResultCollector guiclass="ViewResultsFullVisualizer" testclass="ResultCollector" testname="View Results Tree">
             <boolProp name="ResultCollector.error_logging">false</boolProp>
             <objProp>
               <name>saveConfig</name>
@@ -306,7 +288,7 @@
             <stringProp name="filename"></stringProp>
           </ResultCollector>
           <hashTree/>
-          <ResultCollector guiclass="SummaryReport" testclass="ResultCollector" testname="Summary Report" enabled="true">
+          <ResultCollector guiclass="SummaryReport" testclass="ResultCollector" testname="Summary Report">
             <boolProp name="ResultCollector.error_logging">false</boolProp>
             <objProp>
               <name>saveConfig</name>

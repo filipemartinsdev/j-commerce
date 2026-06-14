@@ -11,7 +11,7 @@ services:
       resources:
         limits:
           cpus: 0.5
-          memory: 400M
+          memory: 200M
     volumes:
       - ./caddy/dev.Caddyfile:/etc/caddy/Caddyfile:Z
       - caddy_data:/data
@@ -28,7 +28,7 @@ services:
     deploy:
       resources:
         limits:
-          cpus: 0.5
+          cpus: 1
           memory: 600M
     environment:
       POSTGRES_DB: ${PG_IDENTITY_DATABASE:-identity}
@@ -45,7 +45,7 @@ services:
     deploy:
       resources:
         limits:
-          cpus: 0.5
+          cpus: 1
           memory: 600M
     environment:
       POSTGRES_DB: ${PG_PRODUCT_DATABASE:-product}
@@ -62,7 +62,7 @@ services:
     deploy:
       resources:
         limits:
-          cpus: 0.5
+          cpus: 1
           memory: 600M
     environment:
       POSTGRES_DB: ${PG_ORDER_DATABASE:-order}
@@ -174,7 +174,7 @@ services:
     deploy:
       resources:
         limits:
-          cpus: 0.5
+          cpus: 1.0
           memory: 600M
     environment:
       PG_IDENTITY_DATABASE:

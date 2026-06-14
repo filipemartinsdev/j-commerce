@@ -6,6 +6,9 @@ info:
 http:
   method: POST
   url: "{{base_url}}/identity/api/v1/auth/login"
+  headers:
+    - name: ""
+      value: ""
   body:
     type: json
     data: |-
@@ -17,6 +20,12 @@ http:
       // {
       //   "email": "driver@gmail.com",
       //   "password": "driver123"
+      // }
+
+
+      // {
+      //   "email": "common@gmail.com",
+      //   "password": "common123"
       // }
 
 settings:

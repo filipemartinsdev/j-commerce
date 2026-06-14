@@ -13,6 +13,7 @@ spring:
     hikari:
       connection-timeout: 5000
       maximum-pool-size: 10
+      minimum-idle: 2
 
   cache:
     type: redis

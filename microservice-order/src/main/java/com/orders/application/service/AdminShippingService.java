@@ -60,11 +60,6 @@ public class AdminShippingService {
         shippingRepository.save(shipping);
     }
 
-//    TODO: unit tests
-    public void createShipping(ShippingRequest request){
-
-    }
-
     public void finishShipping(UUID shippingId){
         Shipping shipping = shippingRepository.findById(shippingId)
                 .orElseThrow(() -> new ShippingNotFoundException("Shipping not found with ID: " + shippingId));

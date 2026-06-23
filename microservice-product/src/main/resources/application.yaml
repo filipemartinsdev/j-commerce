@@ -1,6 +1,10 @@
 server:
   port: ${PORT:8080}
 
+  tomcat:
+    threads:
+      max: 20
+
 spring:
   application:
     name: microservice-identity
@@ -11,7 +15,7 @@ spring:
   datasource:
     hikari:
       connection-timeout: 5000
-      maximum-pool-size: 10
+      maximum-pool-size: 20
       minimum-idle: 2
 
   security:
@@ -36,6 +40,13 @@ spring:
       embedding:
         options:
           model: text-embedding-3-small
+
+  jpa:
+    hibernate:
+      ddl-auto: none
+
+  flyway:
+    enabled: true
 
 management:
   endpoints:

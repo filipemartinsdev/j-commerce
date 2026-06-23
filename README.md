@@ -80,7 +80,7 @@ E-Commerce platform
 1. **Define environment variables**
 
    ````bash
-   cp .example.env .env
+   cp .jcommerce.env .env
    ````
    
    Update the `.env` file.

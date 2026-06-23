@@ -27,3 +27,12 @@ scrape_configs:
     static_configs:
       - targets: [ 'payment:8080' ]
     metrics_path: '/q/metrics'
+
+  - job_name: 'identity-db'
+    static_configs:
+      - targets: [ 'identity_db_scraper:9187' ]
+    scrape_interval: 5s
+
+  - job_name: 'cadvisor'
+    static_configs:
+      - targets: [ 'cadvisor:8080' ]

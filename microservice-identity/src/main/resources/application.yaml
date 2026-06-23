@@ -1,6 +1,9 @@
 server:
   port: ${PORT:8080}
-  forward-headers-strategy: framework
+
+  tomcat:
+    threads:
+      max: 15
 
 spring:
   application:
@@ -12,7 +15,7 @@ spring:
   datasource:
     hikari:
       connection-timeout: 5000
-      maximum-pool-size: 10
+      maximum-pool-size: 20
       minimum-idle: 2
 
   cache:

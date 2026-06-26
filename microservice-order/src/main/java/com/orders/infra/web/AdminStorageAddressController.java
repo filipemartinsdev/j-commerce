@@ -3,6 +3,8 @@ package com.orders.infra.web;
 import com.orders.application.dto.StorageAddressRequest;
 import com.orders.application.dto.StorageAddressResponse;
 import com.orders.application.service.StorageAddressService;
+import com.orders.docs.AdminStorageAddressControllerDocs;
+
 import io.github.responsekit.core.PagedResponse;
 import io.github.responsekit.core.StandardResponse;
 import jakarta.validation.Valid;
@@ -13,10 +15,9 @@ import org.springframework.web.bind.annotation.*;
 
 import java.util.UUID;
 
-// TODO: openAPI docs
 @RestController
 @RequestMapping("/admin/api/v1/storage-addresses")
-public class AdminStorageAddressController {
+public class AdminStorageAddressController implements AdminStorageAddressControllerDocs{
     private final StorageAddressService  storageAddressService;
 
     public AdminStorageAddressController(StorageAddressService storageAddressService) {

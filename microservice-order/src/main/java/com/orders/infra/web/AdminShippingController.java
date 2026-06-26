@@ -2,6 +2,8 @@ package com.orders.infra.web;
 
 import com.orders.application.dto.ShippingResponse;
 import com.orders.application.service.AdminShippingService;
+import com.orders.docs.AdminShippingControllerDocs;
+
 import io.github.responsekit.core.PagedResponse;
 import io.github.responsekit.core.StandardResponse;
 import org.springframework.data.domain.Pageable;
@@ -13,10 +15,9 @@ import org.springframework.web.bind.annotation.*;
 
 import java.util.UUID;
 
-// TODO: openAPI docs
 @RestController
 @RequestMapping("/admin/api/v1/shippings")
-public class AdminShippingController {
+public class AdminShippingController implements AdminShippingControllerDocs{
     private final AdminShippingService adminShippingService;
 
     public AdminShippingController(AdminShippingService adminShippingService) {

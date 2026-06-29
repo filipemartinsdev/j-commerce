@@ -4,4 +4,4 @@
 
 ## Database
 
-![notification_db.png](../images/notification_db.png)
+![notification_db.png](../images/db/notification_db.png)

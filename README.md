@@ -2,7 +2,7 @@
 
 <br>
 
-<img src="images/jcommerce-logo.png" height="120pt">
+<img src="images/others/jcommerce-logo.png" height="120pt">
 
 <h3> J-Commerce </h3>
 
@@ -172,11 +172,11 @@ Services will be available at:
 
 ### Customer use cases
 
-<img src="images/customer_use_cases.png" width="400pt">
+<img src="images/uml/customer_use_cases.png" width="400pt">
 
 ### Management use cases
 
-<img src="images/management_use_cases.png" width="400pt">
+<img src="images/uml/management_use_cases.png" width="400pt">
 
 
 ## Architecture
@@ -185,15 +185,15 @@ The system has a concise list of C4 Model diagrams for architecture documentatio
 
 ### System context
 
-![c4_model_1.png](images/c4_model_1.png)
+![c4_model_1.png](images/c4/c4_model_1.png)
 
-![c4_model_1_items.png](images/c4_model_1_items.png)
+![c4_model_1_items.png](images/c4/c4_model_1_items.png)
 
 ###  Containers
 
-![c4_model_2.png](images/c4_model_2.png)
+![c4_model_2.png](images/c4/c4_model_2.png)
 
-![c4_model_2_items.png](images/c4_model_2_items.png)
+![c4_model_2_items.png](images/c4/c4_model_2_items.png)
 
 ### Authentication
 
@@ -244,7 +244,7 @@ spring:
           jwk-set-uri: http://identity:8080/.well-known/jwks.json
 ```
 
-<img src="images/auth_servers.png" width="620">
+<img src="images/uml/auth_servers.png" width="620">
 
 With this setup, every resource server validates JWT signatures locally using the public RSA key obtained from the auth service. No shared symmetric secret is required between services.
 
@@ -300,20 +300,20 @@ The entire order flow is based on asynchronous communication, using **Spring AMQ
 | `order.cancel_shipments`                  | Cancel shipments from order                       |
 
 
-![messaging_exchange_default.png](images/messaging_exchange_default.png)
+![messaging_exchange_default.png](images/messaging/messaging_exchange_default.png)
 
-![messaging_exchange_payment_generated.png](images/messaging_exchange_payment_generated.png)
+![messaging_exchange_payment_generated.png](images/messaging/messaging_exchange_payment_generated.png)
 
-![messaging_exchange_payment_confirmed.png](images/messaging_exchange_payment_confirmed.png)
+![messaging_exchange_payment_confirmed.png](images/messaging/messaging_exchange_payment_confirmed.png)
 
-![messaging_exchange_order_cancelled.png](images/messaging_exchange_order_cancelled.png)
+![messaging_exchange_order_cancelled.png](images/messaging/messaging_exchange_order_cancelled.png)
 
 
 ### Purchase confirmation
 
 The payment (mock invoice) is generated and notified, through a robust asynchronous messaging flow.
 
-![client_purchase_successful.png](images/client_purchase_successful.png)
+![client_purchase_successful.png](images/uml/client_purchase_successful.png)
 
 ## License
 

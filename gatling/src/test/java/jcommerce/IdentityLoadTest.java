@@ -11,7 +11,7 @@ public class IdentityLoadTest extends Simulation {
             .baseUrl("http://localhost:8080")
             .acceptHeader("application/json");
 
-    ScenarioBuilder scenarioLogin = scenario("Load Test")
+    ScenarioBuilder scenarioLogin = scenario("Identity Load Test")
             .exec(http("Load Test")
                     .post("/api/v1/auth/login")
                     .body(RawFileBody("bodies/login-admin.json")).asJson()

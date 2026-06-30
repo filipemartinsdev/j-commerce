@@ -10,10 +10,11 @@ import java.util.Map;
 import java.util.concurrent.ThreadLocalRandom;
 import java.util.stream.Stream;
 
-import static io.gatling.javaapi.core.CoreDsl.*;
+import static io.gatling.javaapi.core.CoreDsl.rampUsers;
+import static io.gatling.javaapi.core.CoreDsl.scenario;
 import static io.gatling.javaapi.http.HttpDsl.http;
 
-public class ProductLoadTest extends Simulation {
+public class ProductWarmupAWS extends Simulation {
     private static String JWT;
 
     final static String PRODUCT_URL = "http://localhost:8081";
@@ -33,16 +34,18 @@ public class ProductLoadTest extends Simulation {
             .baseUrl(PRODUCT_URL)
             .acceptHeader("application/json");
 
-    ScenarioBuilder productScenario = scenario("Catalogue Load Test")
+    ScenarioBuilder productScenario = scenario("Catalogue Warmup AWS")
             .feed(pageIndexFeeder)
-            .exec(http("Catalogue Page #{pageIndex}")
-                    .get("/api/v1/products?page=#{pageIndex}")
+            .exec(http("Catalogue Warmup AWS")
+                    .get("/api/v1/products")
                     .header("Authorization", "Bearer "+JWT)
             );
 
     {
         setUp(productScenario.injectOpen(
-                rampUsers(6000).during(600)
+                rampUsers(100).during(30),
+                rampUsers(500).during(30),
+                rampUsers(24000).during(240)
         )).protocols(productProtocol);
     }
 }

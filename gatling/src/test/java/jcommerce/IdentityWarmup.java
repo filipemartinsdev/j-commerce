@@ -11,8 +11,8 @@ public class IdentityWarmup extends Simulation {
             .baseUrl("http://localhost:8080")
             .acceptHeader("application/json");
 
-    ScenarioBuilder scenarioLogin = scenario("Warmup")
-            .exec(http("Warmup")
+    ScenarioBuilder scenarioLogin = scenario("Identity Warmup")
+            .exec(http("Identity Warmup")
                     .post("/api/v1/auth/login")
                     .body(RawFileBody("bodies/login-admin.json")).asJson()
             );

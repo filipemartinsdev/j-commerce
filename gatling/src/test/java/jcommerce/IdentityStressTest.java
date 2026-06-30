@@ -12,8 +12,8 @@ public class IdentityStressTest extends Simulation {
             .baseUrl("http://localhost:8080")
             .acceptHeader("application/json");
 
-    ScenarioBuilder scenarioLogin = scenario("Product Stress Test")
-            .exec(http("Product Stress Test")
+    ScenarioBuilder scenarioLogin = scenario("Identity Stress Test")
+            .exec(http("Identity Stress Test")
                     .post("/api/v1/auth/login")
                     .body(RawFileBody("bodies/login-admin.json")).asJson()
             );

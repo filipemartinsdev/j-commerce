@@ -34,6 +34,12 @@
 
 	<dependencies>
 		<dependency>
+			<groupId>net.datafaker</groupId>
+			<artifactId>datafaker</artifactId>
+			<version>2.7.0</version>
+		</dependency>
+
+		<dependency>
 			<groupId>io.github.filipemartinsdev</groupId>
 			<artifactId>responsekit-spring</artifactId>
 			<version>0.3.3</version>

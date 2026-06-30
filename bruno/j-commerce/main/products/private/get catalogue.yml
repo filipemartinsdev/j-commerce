@@ -5,7 +5,7 @@ info:
 
 http:
   method: GET
-  url: https://localhost/product/api/v1/products
+  url: https://localhost/product/api/v1/products?page=499
   params:
     - name: categoryId
       value: "2"
@@ -15,6 +15,9 @@ http:
       value: Roupa para proteger da chuva
       type: query
       disabled: true
+    - name: page
+      value: "499"
+      type: query
   auth: inherit
 
 settings:

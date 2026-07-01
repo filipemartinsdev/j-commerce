@@ -72,6 +72,24 @@ services:
     volumes:
       - product_data:/var/lib/postgresql/data
 
+  product_db_scraper:
+    image: prometheuscommunity/postgres-exporter
+    container_name: product_db_scraper
+    depends_on:
+      product_db:
+        condition: service_started
+    deploy:
+      resources:
+        limits:
+          cpus: 0.5
+          memory: 600M
+    ports:
+      - "9187:9187"
+    environment:
+      DATA_SOURCE_URI: product_db:5432/${PG_PRODUCT_DATABASE:-product}?sslmode=disable
+      DATA_SOURCE_USER: ${PG_PRODUCT_USER:-product}
+      DATA_SOURCE_PASS: ${PG_PRODUCT_PASSWORD:-product}
+
   order_db:
     image: postgres:17-alpine
     container_name: order_db
@@ -161,6 +179,8 @@ services:
     depends_on:
       identity_db_scraper:
         condition: service_started
+      product_db_scraper:
+        condition: service_started
     ports:
       - "9090:9090"
     deploy:
@@ -202,7 +222,8 @@ services:
       context: microservice-identity/
       dockerfile: Dockerfile
     depends_on:
-      - identity_db
+      identity_db:
+        condition: service_started
     restart: unless-stopped
     ports:
       - "8080:8080"
@@ -229,8 +250,10 @@ services:
       context: microservice-product/
       dockerfile: Dockerfile
     depends_on:
-      - product_db
-      - rabbitmq
+      product_db:
+        condition: service_started
+      rabbitmq:
+        condition: service_started
     restart: unless-stopped
     ports:
       - "8081:8080"
@@ -259,6 +282,8 @@ services:
       dockerfile: Dockerfile
     depends_on:
       order_db:
+        condition: service_started
+      rabbitmq:
         condition: service_started
     restart: unless-stopped
     ports:

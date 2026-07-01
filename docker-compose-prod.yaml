@@ -53,6 +53,24 @@ services:
     volumes:
       - product_data:/var/lib/postgresql/data
 
+  product_db_scraper:
+    image: prometheuscommunity/postgres-exporter
+    container_name: product_db_scraper
+    depends_on:
+      product_db:
+        condition: service_started
+    deploy:
+      resources:
+        limits:
+          cpus: 0.5
+          memory: 600M
+    ports:
+      - "9187:9187"
+    environment:
+      DATA_SOURCE_URI: product_db:5432/${PG_PRODUCT_DATABASE:-product}?sslmode=disable
+      DATA_SOURCE_USER: ${PG_PRODUCT_USER:-product}
+      DATA_SOURCE_PASS: ${PG_PRODUCT_PASSWORD:-product}
+
   order_db:
     image: postgres:17-alpine
     container_name: order_db

@@ -171,6 +171,11 @@ services:
       - /sys:/sys:ro
       - /var/lib/docker/:/var/lib/docker:ro
     restart: unless-stopped
+    deploy:
+      resources:
+        limits:
+          memory: 600M
+          cpus: 0.5
 
   prometheus:
     image: prom/prometheus:v3.1.0

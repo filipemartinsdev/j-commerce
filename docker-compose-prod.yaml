@@ -309,6 +309,23 @@ services:
       SPRING_DATA_REDIS_URL: redis://cache:6379
       ACTIVE_PROFILE: dev
 
+  cadvisor:
+    #    image: gcr.io/cadvisor/cadvisor:v0.49.1
+    image: ghcr.io/google/cadvisor:0.57.0
+    container_name: cadvisor
+    privileged: true
+    volumes:
+      - /:/rootfs:ro
+      - /var/run:/var/run:rw
+      - /sys:/sys:ro
+      - /var/lib/docker/:/var/lib/docker:ro
+    restart: unless-stopped
+    deploy:
+      resources:
+        limits:
+          memory: 600M
+          cpus: 0.5
+
 volumes:
   caddy_data:
   caddy_config:

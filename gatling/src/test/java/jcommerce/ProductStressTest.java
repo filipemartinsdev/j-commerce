@@ -15,20 +15,16 @@ import static io.gatling.javaapi.core.CoreDsl.scenario;
 import static io.gatling.javaapi.http.HttpDsl.http;
 
 public class ProductStressTest extends Simulation {
-    private static String JWT;
+    private static final String JWT = Utils.getAdminJWT();
 
-    final static String PRODUCT_URL = "http://localhost:8081";
+    private static final String PRODUCT_URL = "http://localhost:8081";
 
-    private static final int TOTAL_PAGES = 500;
+    private static final int TOTAL_PAGES = 5000;
 
     private final Iterator<Map<String, Object>> pageIndexFeeder = Stream.generate(() -> {
         int index = ThreadLocalRandom.current().nextInt(TOTAL_PAGES);
         return Collections.<String, Object>singletonMap("pageIndex", index);
     }).iterator();
-
-    {
-        JWT = Utils.getAdminJWT();
-    }
 
     HttpProtocolBuilder productProtocol = http
             .baseUrl(PRODUCT_URL)

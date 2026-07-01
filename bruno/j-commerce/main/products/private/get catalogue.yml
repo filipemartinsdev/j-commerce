@@ -5,19 +5,19 @@ info:
 
 http:
   method: GET
-  url: https://localhost/product/api/v1/products?page=499
+  url: https://localhost/product/api/v1/products?query=Cloathes
   params:
     - name: categoryId
       value: "2"
       type: query
       disabled: true
     - name: query
-      value: Roupa para proteger da chuva
+      value: Cloathes
+      type: query
+    - name: page
+      value: "20"
       type: query
       disabled: true
-    - name: page
-      value: "499"
-      type: query
   auth: inherit
 
 settings:

@@ -15,18 +15,15 @@ import org.springframework.context.annotation.Profile;
 import org.springframework.jdbc.core.JdbcTemplate;
 
 import java.math.BigDecimal;
-import java.time.Instant;
 import java.util.ArrayList;
-import java.util.List;
-import java.util.Random;
 import java.util.UUID;
 import java.util.concurrent.ThreadLocalRandom;
 
 @Slf4j
 @Configuration @Profile("mock")
 public class MockDatabaseSeeder {
-    private final int BATCH_SIZE = 500;
-    private final long PRODUCT_COUNT = 10_000;
+    private final int BATCH_SIZE = 1000;
+    private final long PRODUCT_COUNT = 100_000;
     private final UUID ADMIN_ID = UUID.randomUUID();
 
     private final Faker faker;

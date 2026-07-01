@@ -72,6 +72,24 @@ services:
     volumes:
       - product_data:/var/lib/postgresql/data
 
+  product_db_scraper:
+    image: prometheuscommunity/postgres-exporter
+    container_name: product_db_scraper
+    depends_on:
+      product_db:
+        condition: service_started
+    deploy:
+      resources:
+        limits:
+          cpus: 0.5
+          memory: 600M
+    ports:
+      - "9187:9187"
+    environment:
+      DATA_SOURCE_URI: product_db:5432/${PG_PRODUCT_DATABASE:-product}?sslmode=disable
+      DATA_SOURCE_USER: ${PG_PRODUCT_USER:-product}
+      DATA_SOURCE_PASS: ${PG_PRODUCT_PASSWORD:-product}
+
   order_db:
     image: postgres:17-alpine
     container_name: order_db
@@ -115,7 +133,7 @@ services:
       resources:
         limits:
           cpus: 0.5
-          memory: 600M
+          memory: 400M
     volumes:
       - cache_data:/data
 
@@ -153,6 +171,11 @@ services:
       - /sys:/sys:ro
       - /var/lib/docker/:/var/lib/docker:ro
     restart: unless-stopped
+    deploy:
+      resources:
+        limits:
+          cpus: 0.5
+          memory: 600M
 
   prometheus:
     image: prom/prometheus:v3.1.0
@@ -160,6 +183,8 @@ services:
     restart: unless-stopped
     depends_on:
       identity_db_scraper:
+        condition: service_started
+      cadvisor:
         condition: service_started
     ports:
       - "9090:9090"
@@ -202,7 +227,8 @@ services:
       context: microservice-identity/
       dockerfile: Dockerfile
     depends_on:
-      - identity_db
+      identity_db:
+        condition: service_started
     restart: unless-stopped
     ports:
       - "8080:8080"
@@ -229,8 +255,10 @@ services:
       context: microservice-product/
       dockerfile: Dockerfile
     depends_on:
-      - product_db
-      - rabbitmq
+      product_db:
+        condition: service_started
+      rabbitmq:
+        condition: service_started
     restart: unless-stopped
     ports:
       - "8081:8080"
@@ -307,45 +335,6 @@ services:
       RABBITMQ_PORT: 5672
       RABBITMQ_USER: ${RABBITMQ_USER:-admin}
       RABBITMQ_PASSWORD: ${RABBITMQ_PASSWORD:-admin}
-
-#  notification:
-#    container_name: notification_service
-#    build:
-#      context: microservice-notification/
-#      dockerfile: Dockerfile
-#    restart: unless-stopped
-#    depends_on:
-#      notification_db:
-#        condition: service_started
-#    ports:
-#      - "8083:8080"
-#    environment:
-#      PG_NOTIFICATION_DATABASE:
-#      PG_NOTIFICATION_USER:
-#      PG_NOTIFICATION_PASSWORD:
-#      SPRING_DATASOURCE_URL: jdbc:postgresql://notification_db:5432/${PG_NOTIFICATION_DATABASE:-notification}
-#      SPRING_DATASOURCE_USERNAME: ${PG_NOTIFICATION_USER:-notification}
-#      SPRING_DATASOURCE_PASSWORD: ${PG_NOTIFICATION_PASSWORD:-notification}
-#      SPRING_RABBITMQ_ADDRESSES: amqp://admin:admin@rabbitmq:5672/
-#      SPRING_DATA_REDIS_URL: redis://cache:6379
-#      ACTIVE_PROFILE: dev
-
-#  payment:
-#    container_name: payment_service
-#    build:
-#      context: microservice-payment/
-#      dockerfile: Dockerfile
-#    restart: unless-stopped
-#    ports:
-#      - "8084:8080"
-#    deploy:
-#      resources:
-#        limits:
-#          cpus: 0.5
-#          memory: 600M
-#    environment:
-#      SPRING_RABBITMQ_ADDRESSES: amqp://admin:admin@rabbitmq:5672/
-#      ACTIVE_PROFILE: dev
 
   payment:
     container_name: payment_worker

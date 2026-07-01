@@ -9,7 +9,6 @@ import java.util.Collections;
 import java.util.Iterator;
 import java.util.Map;
 import java.util.concurrent.ThreadLocalRandom;
-import java.util.function.Supplier;
 import java.util.stream.Stream;
 
 import static io.gatling.javaapi.core.CoreDsl.*;

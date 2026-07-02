@@ -167,4 +167,18 @@ public class GlobalExceptionHandler {
                 .status(HttpStatus.BAD_GATEWAY)
                 .body(StandardResponse.error().message(exception.getMessage()).build());
     }
+
+    @ExceptionHandler(CursorEncodingException.class)
+    public ResponseEntity<StandardResponse<Void>> handleCursorEncoding(CursorEncodingException exception){
+        return ResponseEntity
+                .status(HttpStatus.BAD_REQUEST)
+                .body(StandardResponse.fail().message(exception.getMessage()).build());
+    }
+
+    @ExceptionHandler(CursorDecodingException.class)
+    public ResponseEntity<StandardResponse<Void>> handleCursorDecoding(CursorDecodingException exception){
+        return ResponseEntity
+                .status(HttpStatus.BAD_REQUEST)
+                .body(StandardResponse.fail().message(exception.getMessage()).build());
+    }
 }

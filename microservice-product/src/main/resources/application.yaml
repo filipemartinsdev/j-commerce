@@ -8,6 +8,11 @@ spring:
   profiles:
     active: ${ACTIVE_PROFILE:test}
 
+  data:
+    web:
+      pageable:
+        max-page-size: 20
+
   datasource:
     hikari:
       connection-timeout: 5000

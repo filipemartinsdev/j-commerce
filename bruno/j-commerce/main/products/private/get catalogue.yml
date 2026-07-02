@@ -5,7 +5,7 @@ info:
 
 http:
   method: GET
-  url: https://localhost/product/api/v1/products?query=Cloathes
+  url: https://localhost/product/api/v1/products?cursor=eyJsYXN0SWQiOiIwMDE5NjAyZC00MDcxLTRkMTAtYTVhMy1jZDRiNjE1NmVmZmQifQ&size=5000
   params:
     - name: categoryId
       value: "2"
@@ -14,10 +14,13 @@ http:
     - name: query
       value: Cloathes
       type: query
-    - name: page
-      value: "20"
-      type: query
       disabled: true
+    - name: cursor
+      value: eyJsYXN0SWQiOiIwMDE5NjAyZC00MDcxLTRkMTAtYTVhMy1jZDRiNjE1NmVmZmQifQ
+      type: query
+    - name: size
+      value: "5000"
+      type: query
   auth: inherit
 
 settings:

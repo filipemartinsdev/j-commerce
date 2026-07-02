@@ -3,11 +3,15 @@ package com.products.infra.web.catalogue;
 import com.products.application.dto.ProductCategoryResponse;
 import com.products.application.dto.catalogue.ProductCatalogueResponse;
 import com.products.application.dto.catalogue.ProductSummaryCatalogueResponse;
+import com.products.application.service.CursorCodec;
 import com.products.application.service.ProductCatalogueService;
 import com.products.application.service.ProductCategoryService;
 import com.products.docs.ProductControllerDocs;
 import io.github.responsekit.core.PagedResponse;
 import io.github.responsekit.core.StandardResponse;
+import io.github.responsekit.core.*;
+import io.github.responsekit.spring.*;
+import jakarta.validation.constraints.Max;
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -27,39 +31,45 @@ public class ProductController implements ProductControllerDocs {
     }
 
     @GetMapping("/categories")
-    public ResponseEntity<StandardResponse<PagedResponse<ProductCategoryResponse>>> getCategories(Pageable pageable) {
+    public ResponseEntity<StandardResponse<SlicedResponse<ProductCategoryResponse>>> getCategories(
+            @RequestParam(name = "cursor", required = false) String opaqueCursor,
+            Pageable pageable
+    ) {
         return ResponseEntity
                 .status(HttpStatus.OK)
                 .body(
-                        StandardResponse.success(productCategoryService.getAll(pageable)).build()
+                        StandardResponse.success(productCategoryService.getAll(opaqueCursor, pageable.getPageSize())).build()
                 );
     }
 
 //    TODO: integration tests for semantic search
     @GetMapping("/products")
-    public ResponseEntity<StandardResponse<PagedResponse<ProductSummaryCatalogueResponse>>> getProducts(
-            @RequestParam(name = "categoryId", required = false) Integer categoryId,
+    public ResponseEntity<StandardResponse<SlicedResponse<ProductSummaryCatalogueResponse>>> getProducts(
             @RequestParam(name = "query", required = false) String query,
+            @RequestParam(name = "categoryId", required = false) Integer categoryId,
+            @RequestParam(name = "cursor", required = false) String opaqueCursor,
             Pageable pageable
     ) {
-        PagedResponse<ProductSummaryCatalogueResponse> response;
-
-        if (categoryId != null && query != null)
-            response = productCatalogueService.semanticSearchByCategoryId(query, categoryId, pageable);
-
-        else if (categoryId != null)
-            response = productCatalogueService.getAllByCategoryId(categoryId, pageable);
-
-        else if(query != null)
-            response = productCatalogueService.semanticSearch(query, pageable);
-
-        else
-            response = productCatalogueService.getAll(pageable);
+        SlicedResponse<ProductSummaryCatalogueResponse> response = resolveResponse(categoryId, query, opaqueCursor, pageable.getPageSize());
 
         return ResponseEntity
                 .status(HttpStatus.OK)
                 .body(StandardResponse.success(response).build());
     }
+
+    private SlicedResponse<ProductSummaryCatalogueResponse> resolveResponse (Integer categoryId, String query, String opaqueCursor, int size){
+        if (categoryId != null && query != null)
+            return productCatalogueService.semanticSearchByCategoryId(query, categoryId, opaqueCursor, size);
+
+        else if (categoryId != null)
+            return productCatalogueService.getAllByCategoryId(categoryId, opaqueCursor, size);
+
+        else if(query != null)
+            return productCatalogueService.semanticSearch(query, opaqueCursor, size);
+
+        else
+            return productCatalogueService.getAll(opaqueCursor, size);
+    };
 
     @GetMapping("/products/{productId}")
     public ResponseEntity<StandardResponse<ProductCatalogueResponse>> getProductById(@PathVariable UUID productId) {

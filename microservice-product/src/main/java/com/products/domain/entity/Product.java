@@ -17,7 +17,7 @@ import java.util.UUID;
 @Entity @Table(name = "product")
 @Data @NoArgsConstructor @AllArgsConstructor
 public class Product {
-    @Id @GeneratedValue(strategy = GenerationType.UUID)
+    @Id @UuidGenerator(style = UuidGenerator.Style.VERSION_7)
     private UUID id;
 
     @NotBlank

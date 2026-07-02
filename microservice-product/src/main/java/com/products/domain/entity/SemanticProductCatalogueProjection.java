@@ -25,4 +25,5 @@ public interface SemanticProductCatalogueProjection {
     String getCurrentPriceTypeName();
     BigDecimal getCurrentPriceValue();
     Integer getStockCount();
+    Float getDistance();
 }

@@ -1,19 +1,21 @@
 package com.products.application.service;
 
 import com.products.application.dto.*;
-import com.products.application.dto.catalogue.ProductPriceCatalogueResponse;
-import com.products.application.dto.catalogue.ProductSummaryCatalogueResponse;
-import com.products.application.dto.catalogue.ProductCatalogueResponse;
+import com.products.application.dto.catalogue.*;
 import com.products.application.exception.ProductNotFoundException;
 import com.products.application.service.mapper.ProductCategoryMapper;
 import com.products.application.service.mapper.ProductSKUCatalogueMapper;
 import com.products.domain.entity.*;
 import com.products.infra.persistence.*;
 import io.github.responsekit.core.PagedResponse;
+import io.github.responsekit.core.SlicedResponse;
 import io.github.responsekit.spring.PagedResponseFactory;
+import io.github.responsekit.spring.SlicedResponseFactory;
 import org.springframework.ai.embedding.EmbeddingModel;
 import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Slice;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -21,8 +23,7 @@ import java.util.UUID;
 
 @Service
 public class ProductCatalogueService {
-    private final ProductCatalogueViewRepository productCatalogueResumeRepository;
-    private final ProductCategoryRepository productCategoryRepository;
+    private final ProductCatalogueViewRepository productCatalogueViewRepository;
     private final ProductCategoryMapper productCategoryMapper;
     private final ProductRepository productRepository;
     private final ProductCatalogueSummaryViewRepository productCatalogueSummaryViewRepository;
@@ -30,10 +31,10 @@ public class ProductCatalogueService {
     private final ProductDiscountCalculator productDiscountCalculator;
     private final SemanticProductCatalogueViewRepository semanticProductCatalogueRepository;
     private final EmbeddingModel embeddingModel;
+    private final CursorCodec cursorCodec;
 
-    public ProductCatalogueService(ProductCatalogueViewRepository productCatalogueResumeRepository, ProductCategoryRepository productCategoryRepository, ProductCategoryMapper productCategoryMapper, ProductRepository productRepository, ProductCatalogueSummaryViewRepository productCatalogueSummaryViewRepository, ProductSKUCatalogueMapper productSKUSummaryCatalogueMapper, ProductDiscountCalculator productDiscountCalculator, SemanticProductCatalogueViewRepository semanticProductCatalogueRepository, EmbeddingModel embeddingModel) {
-        this.productCatalogueResumeRepository = productCatalogueResumeRepository;
-        this.productCategoryRepository = productCategoryRepository;
+    public ProductCatalogueService(ProductCatalogueViewRepository productCatalogueViewRepository, ProductCategoryMapper productCategoryMapper, ProductRepository productRepository, ProductCatalogueSummaryViewRepository productCatalogueSummaryViewRepository, ProductSKUCatalogueMapper productSKUSummaryCatalogueMapper, ProductDiscountCalculator productDiscountCalculator, SemanticProductCatalogueViewRepository semanticProductCatalogueRepository, EmbeddingModel embeddingModel, CursorCodec cursorCodec) {
+        this.productCatalogueViewRepository = productCatalogueViewRepository;
         this.productCategoryMapper = productCategoryMapper;
         this.productRepository = productRepository;
         this.productCatalogueSummaryViewRepository = productCatalogueSummaryViewRepository;
@@ -41,15 +42,35 @@ public class ProductCatalogueService {
         this.productDiscountCalculator = productDiscountCalculator;
         this.semanticProductCatalogueRepository = semanticProductCatalogueRepository;
         this.embeddingModel = embeddingModel;
+        this.cursorCodec = cursorCodec;
     }
 
-    public PagedResponse<ProductSummaryCatalogueResponse> getAll(Pageable pageable) {
-        Page<ProductCatalogueView> page = productCatalogueResumeRepository.findAll(pageable);
+//    public SlicedResponse<ProductSummaryCatalogueResponse> getAll(int limit) {
+//        Slice<ProductCatalogueView> slice = productCatalogueViewRepository.findAllWithoutCursor(PageRequest.of(0, limit));
+//        return SlicedResponseFactory.fromSlice(
+//                slice,
+//                this::createCatalogueSummaryResponse,
+//                entity -> cursorCodec.encode(new CatalogueCursor(entity.getProductId()))
+//        );
+//    }
 
-        return PagedResponseFactory.fromPage(page, this::createResumeCatalogueResponse);
+    public SlicedResponse<ProductSummaryCatalogueResponse> getAll(String opaqueCursor, int limit) {
+        Slice<ProductCatalogueView> slice;
+
+        if (opaqueCursor == null)
+            slice = productCatalogueViewRepository.findAllWithoutCursor(PageRequest.of(0, limit));
+        else {
+            CatalogueCursor cursor = cursorCodec.decode(opaqueCursor, CatalogueCursor.class);
+            slice = productCatalogueViewRepository.findAllWithCursor(cursor.lastId(), PageRequest.of(0, limit));
+        }
+
+        return SlicedResponseFactory.fromSlice(
+                slice,
+                this::createCatalogueSummaryResponse,
+                entity -> cursorCodec.encode(new CatalogueCursor(entity.getProductId())));
     }
 
-    private ProductSummaryCatalogueResponse createResumeCatalogueResponse(ProductCatalogueView entity) {
+    private ProductSummaryCatalogueResponse createCatalogueSummaryResponse(ProductCatalogueView entity) {
         int discountPercent = productDiscountCalculator.getDiscountPercent(
                 entity.getOriginalPriceValue(),
                 entity.getCurrentPriceValue()
@@ -74,10 +95,21 @@ public class ProductCatalogueService {
     }
 
 
-    public PagedResponse<ProductSummaryCatalogueResponse> getAllByCategoryId(Integer categoryId, Pageable pageable) {
-        Page<ProductCatalogueView> page = productCatalogueResumeRepository.findAllByCategoryId(categoryId, pageable);
+    public SlicedResponse<ProductSummaryCatalogueResponse> getAllByCategoryId(Integer categoryId, String opaqueCursor, int size) {
+        Slice<ProductCatalogueView> slice;
 
-        return PagedResponseFactory.fromPage(page, this::createResumeCatalogueResponse);
+        if (opaqueCursor == null)
+            slice = productCatalogueViewRepository.findAllByCategoryWithoutCursor(categoryId, PageRequest.of(0, size));
+        else {
+            CatalogueCursor cursor = cursorCodec.decode(opaqueCursor, CatalogueCursor.class);
+            slice = productCatalogueViewRepository.findAllByCategoryWithCursor(categoryId, cursor.lastId(), PageRequest.of(0, size));
+        }
+
+        return SlicedResponseFactory.fromSlice(
+                slice,
+                this::createCatalogueSummaryResponse,
+                entity -> cursorCodec.encode(new CatalogueCursor(entity.getProductId()))
+        );
     }
 
     public ProductCatalogueResponse getProductSummaryByProductId(UUID productId) {
@@ -100,16 +132,26 @@ public class ProductCatalogueService {
         );
     }
 
-    public PagedResponse<ProductSummaryCatalogueResponse> semanticSearch(String query, Pageable pageable) {
+    public SlicedResponse<ProductSummaryCatalogueResponse> semanticSearch(String query, String opaqueCursor, int size) {
         float[] vector = embeddingModel.embed(query);
 
-        return PagedResponseFactory.fromPage(
-                semanticProductCatalogueRepository.findAll(vector, pageable),
-                this::createResumeCatalogueResponse
+        Slice<SemanticProductCatalogueProjection> slice;
+
+        if(opaqueCursor == null)
+            slice = semanticProductCatalogueRepository.findAllWithoutCursor(vector, PageRequest.of(0, size));
+        else {
+            SemanticCatalogueCursor cursor = cursorCodec.decode(opaqueCursor, SemanticCatalogueCursor.class);
+            slice = semanticProductCatalogueRepository.findAllWithCursor(vector, cursor.lastId(), cursor.lastDistance(), PageRequest.of(0, size));
+        }
+
+        return SlicedResponseFactory.fromSlice(
+                slice,
+                this::createCatalogueSummaryResponse,
+                entity -> cursorCodec.encode(new SemanticCatalogueCursor(entity.getProductId(), entity.getDistance()))
         );
     }
 
-    private ProductSummaryCatalogueResponse createResumeCatalogueResponse(SemanticProductCatalogueView entity) {
+    private ProductSummaryCatalogueResponse createCatalogueSummaryResponse(SemanticProductCatalogueProjection entity) {
         int discountPercent = productDiscountCalculator.getDiscountPercent(
                 entity.getOriginalPriceValue(),
                 entity.getCurrentPriceValue()
@@ -134,14 +176,24 @@ public class ProductCatalogueService {
     }
 
 //    TODO: unit tests
-    public PagedResponse<ProductSummaryCatalogueResponse> semanticSearchByCategoryId(
-            String query, Integer category, Pageable pageable
+    public SlicedResponse<ProductSummaryCatalogueResponse> semanticSearchByCategoryId(
+            String query, Integer categoryId, String opaqueCursor, int size
     ) {
         float[] vector = embeddingModel.embed(query);
 
-        return PagedResponseFactory.fromPage(
-                semanticProductCatalogueRepository.findAll(vector, category, pageable),
-                this::createResumeCatalogueResponse
+        Slice<SemanticProductCatalogueProjection> slice;
+
+        if (opaqueCursor == null)
+            slice = semanticProductCatalogueRepository.findAllByCategoryWithoutCursor(vector, categoryId, PageRequest.of(0, size));
+        else {
+            SemanticCatalogueCursor cursor = cursorCodec.decode(opaqueCursor, SemanticCatalogueCursor.class);
+            slice = semanticProductCatalogueRepository.findAllByCategoryWithCursor(vector, categoryId, cursor.lastId(), cursor.lastDistance(), PageRequest.of(0, size));
+        }
+
+        return SlicedResponseFactory.fromSlice(
+                slice,
+                this::createCatalogueSummaryResponse,
+                entity -> cursorCodec.encode(new SemanticCatalogueCursor(entity.getProductId(), entity.getDistance()))
         );
     }
 }

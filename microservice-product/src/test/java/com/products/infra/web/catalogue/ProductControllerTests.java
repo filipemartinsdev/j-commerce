@@ -11,11 +11,13 @@ import com.products.application.service.ProductCatalogueService;
 import com.products.application.service.ProductCategoryService;
 import com.products.config.SecurityConfig;
 import io.github.responsekit.core.PagedResponse;
+import io.github.responsekit.core.SlicedResponse;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.webmvc.test.autoconfigure.WebMvcTest;
 import org.springframework.context.annotation.Import;
+import org.springframework.data.domain.Slice;
 import org.springframework.security.test.context.support.WithMockUser;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.MockMvc;
@@ -46,19 +48,18 @@ public class ProductControllerTests {
     @WithMockUser(authorities = "SCOPE_USER")
     void getCategoriesTestCase1() throws Exception {
         ProductCategoryResponse productCategoryResponse = new ProductCategoryResponse(1, "testing");
-        PagedResponse<ProductCategoryResponse> pagedResponse = PagedResponse
+        SlicedResponse<ProductCategoryResponse> slicedResponse = SlicedResponse
                 .content(List.of(productCategoryResponse))
-                .page(0)
                 .size(20)
-                .totalElements(1L)
-                .totalPages(1)
                 .isLast(true)
+                .firstCursor(null)
+                .lastCursor(null)
                 .build();
 
-        when(productCategoryService.getAll(any()))
-                .thenReturn(pagedResponse);
+        when(productCategoryService.getAll(null, 20))
+                .thenReturn(slicedResponse);
 
-        Map<String, Object> response = Map.of("status", "success", "data", pagedResponse);
+        Map<String, Object> response = Map.of("status", "success", "data", slicedResponse);
 
         mockMvc.perform(get("/api/v1/categories"))
                 .andExpect(status().isOk())
@@ -80,18 +81,19 @@ public class ProductControllerTests {
                 new ProductCategoryResponse(1, "testing"),
                 new ProductPriceCatalogueResponse(BigDecimal.ONE, BigDecimal.ONE, 0, "testing")
         );
-        PagedResponse<ProductSummaryCatalogueResponse> pagedResponse = PagedResponse
+
+        SlicedResponse<ProductSummaryCatalogueResponse> slicedResponse = SlicedResponse
                 .content(List.of(productSummaryCatalogueResponse))
-                .page(0)
                 .size(20)
                 .isLast(true)
-                .totalElements(1L)
-                .totalPages(1)
+                .firstCursor(null)
+                .lastCursor(null)
                 .build();
 
-        when(productCatalogueService.getAll(any())).thenReturn(pagedResponse);
+        when(productCatalogueService.getAll(null, 20))
+                .thenReturn(slicedResponse);
 
-        Map<String, Object> response = Map.of("status", "success", "data", pagedResponse);
+        Map<String, Object> response = Map.of("status", "success", "data", slicedResponse);
 
         mockMvc.perform(get("/api/v1/products"))
                 .andExpect(status().isOk())

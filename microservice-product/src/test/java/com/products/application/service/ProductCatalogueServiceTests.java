@@ -2,26 +2,21 @@ package com.products.application.service;
 
 import com.products.application.dto.ProductCategoryResponse;
 import com.products.application.dto.StockStatus;
-import com.products.application.dto.catalogue.ProductPriceCatalogueResponse;
-import com.products.application.dto.catalogue.ProductSummaryCatalogueResponse;
-import com.products.application.dto.catalogue.ProductSKUCatalogueResponse;
-import com.products.application.dto.catalogue.ProductCatalogueResponse;
+import com.products.application.dto.catalogue.*;
 import com.products.application.exception.ProductNotFoundException;
 import com.products.application.service.mapper.ProductCategoryMapper;
 import com.products.application.service.mapper.ProductSKUCatalogueMapper;
 import com.products.domain.entity.*;
 import com.products.infra.persistence.*;
 import io.github.responsekit.core.PagedResponse;
+import io.github.responsekit.core.SlicedResponse;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
-import org.springframework.data.domain.Page;
-import org.springframework.data.domain.PageImpl;
-import org.springframework.data.domain.PageRequest;
-import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.*;
 
 import java.math.BigDecimal;
 import java.util.*;
@@ -38,15 +33,14 @@ public class ProductCatalogueServiceTests {
     @Mock private ProductCatalogueSummaryViewRepository productCatalogueSummaryViewRepository;
     @Mock private ProductSKUCatalogueMapper productSKUSummaryCatalogueMapper;
     @Mock private ProductDiscountCalculator productDiscountCalculator;
+    @Mock private CursorCodec cursorCodec;
 
     @InjectMocks
     private ProductCatalogueService productCatalogueService;
 
-    @Test @DisplayName("Should retrieve all active ProductCatalogueView successfully")
+    @Test @DisplayName("Should retrieve all active ProductCatalogueView successfully when cursor is null")
     void getAllTestCase1() {
         // Given
-        Pageable pageable = PageRequest.of(0, 10);
-
         ProductCatalogueView product1 = new ProductCatalogueView();
         product1.setProductId(UUID.randomUUID());
         product1.setName("Product 1");
@@ -67,7 +61,8 @@ public class ProductCatalogueServiceTests {
         product2.setCurrentPriceTypeName("Discount");
         product2.setStockCount(30);
 
-        Page<ProductCatalogueView> page = new PageImpl<>(List.of(product1, product2), pageable, 2);
+        Pageable pageable = PageRequest.of(0, 10);
+        Slice<ProductCatalogueView> slice = new SliceImpl<>(List.of(product1, product2), pageable, false);
 
         ProductPriceCatalogueResponse price1 = new ProductPriceCatalogueResponse(
                 new BigDecimal("100.00"), new BigDecimal("50.00"), 50, "Sale"
@@ -83,56 +78,49 @@ public class ProductCatalogueServiceTests {
                 product2.getProductId(), "Product 2", new ProductCategoryResponse(2, "Clothing"), price2
         );
 
-        PagedResponse<ProductSummaryCatalogueResponse> expectedResponse = PagedResponse
+        SlicedResponse<ProductSummaryCatalogueResponse> expectedResponse = SlicedResponse
                 .content(List.of(response1, response2))
-                .page(0)
                 .size(10)
                 .isLast(true)
-                .totalElements(2L)
-                .totalPages(1)
+                .firstCursor("")
+                .lastCursor("")
                 .build();
 
-        when(productCatalogueResumeRepository.findAll(pageable)).thenReturn(page);
+        when(cursorCodec.encode(any())).thenReturn("");
+        when(productCatalogueResumeRepository.findAllWithoutCursor(pageable)).thenReturn(slice);
+        when(productDiscountCalculator.getDiscountPercent(any(), any())).thenReturn(50);
 
         // When
-        PagedResponse<ProductSummaryCatalogueResponse> result = productCatalogueService.getAll(pageable);
+        SlicedResponse<ProductSummaryCatalogueResponse> result = productCatalogueService.getAll(null, 10);
 
         // Then
-        assertNotNull(result);
-        assertEquals(0, result.page);
-        assertEquals(10, result.size);
-        assertEquals(2, result.totalElements);
-        assertEquals(1, result.totalPages);
-        assertTrue(result.isLast);
-        assertEquals(2, result.content.size());
-        verify(productCatalogueResumeRepository).findAll(pageable);
+        verify(productCatalogueResumeRepository).findAllWithoutCursor(pageable);
+        verify(cursorCodec, times(2)).encode(any());
+        assertEquals(expectedResponse, result);
     }
 
     @Test @DisplayName("Should retrieve empty PagedResponse if not exists any ProductCatalogueView")
     void getAllTestCase2() {
         // Given
         Pageable pageable = PageRequest.of(0, 10);
-        Page<ProductCatalogueView> emptyPage = new PageImpl<>(Collections.emptyList(), pageable, 0);
+        Slice<ProductCatalogueView> emptySlice = new SliceImpl<>(Collections.emptyList(), pageable, false);
 
-        PagedResponse<ProductSummaryCatalogueResponse> expectedResponse = PagedResponse
+        SlicedResponse<ProductSummaryCatalogueResponse> expectedResponse = SlicedResponse
                 .content(new ArrayList<ProductSummaryCatalogueResponse>())
                 .size(10)
-                .page(0)
                 .isLast(true)
-                .totalPages(0)
-                .totalElements(0L)
+                .lastCursor(null)
+                .firstCursor(null)
                 .build();
 
-        when(productCatalogueResumeRepository.findAll(pageable)).thenReturn(emptyPage);
+        when(productCatalogueResumeRepository.findAllWithoutCursor(pageable)).thenReturn(emptySlice);
 
         // When
-        PagedResponse<ProductSummaryCatalogueResponse> result = productCatalogueService.getAll(pageable);
+        SlicedResponse<ProductSummaryCatalogueResponse> result = productCatalogueService.getAll(null, 10);
 
         // Then
-        assertNotNull(result);
-        assertEquals(0, result.totalElements);
-        assertTrue(result.content.isEmpty());
-        verify(productCatalogueResumeRepository).findAll(pageable);
+        assertEquals(expectedResponse, result);
+        verify(productCatalogueResumeRepository).findAllWithoutCursor(pageable);
     }
 
     @Test @DisplayName("Should retrieve all active ProductCatalogueView by categoryId")
@@ -150,7 +138,7 @@ public class ProductCatalogueServiceTests {
         product1.setCurrentPriceValue(new BigDecimal("100.00"));
         product1.setCurrentPriceTypeName("Offer");
 
-        Page<ProductCatalogueView> page = new PageImpl<>(List.of(product1), pageable, 1);
+        Slice<ProductCatalogueView> slice = new SliceImpl<>(List.of(product1), pageable, false);
 
         ProductPriceCatalogueResponse price1 = new ProductPriceCatalogueResponse(
                 new BigDecimal("100.00"), new BigDecimal("100.00"), 0, "Offer"
@@ -160,25 +148,23 @@ public class ProductCatalogueServiceTests {
                 product1.getProductId(), "Product 1", new ProductCategoryResponse(1, "Electronics"), price1
         );
 
-        PagedResponse<ProductSummaryCatalogueResponse> expectedResponse = PagedResponse
+        SlicedResponse<ProductSummaryCatalogueResponse> expectedResponse = SlicedResponse
                 .content(List.of(response1))
-                .page(0)
                 .size(10)
                 .isLast(true)
-                .totalElements(1L)
-                .totalPages(1)
+                .firstCursor("")
+                .lastCursor("")
                 .build();
 
-        when(productCatalogueResumeRepository.findAllByCategoryId(categoryId, pageable)).thenReturn(page);
+        when(productCatalogueResumeRepository.findAllByCategoryWithoutCursor(categoryId, pageable)).thenReturn(slice);
+        when(cursorCodec.encode(any())).thenReturn("");
 
         // When
-        PagedResponse<ProductSummaryCatalogueResponse> result = productCatalogueService.getAllByCategoryId(categoryId, pageable);
+        SlicedResponse<ProductSummaryCatalogueResponse> result = productCatalogueService.getAllByCategoryId(categoryId, null, 10);
 
         // Then
-        assertNotNull(result);
-        assertEquals(1, result.totalElements);
-        assertEquals(1, result.content.size());
-        verify(productCatalogueResumeRepository).findAllByCategoryId(categoryId, pageable);
+        assertEquals(expectedResponse, result);
+        verify(productCatalogueResumeRepository).findAllByCategoryWithoutCursor(categoryId, pageable);
     }
 
     @Test @DisplayName("Should retrieve empty PagedResponse if not exists any ProductCatalogueView by categoryId")
@@ -186,27 +172,24 @@ public class ProductCatalogueServiceTests {
         // Given
         Integer categoryId = 1;
         Pageable pageable = PageRequest.of(0, 10);
-        Page<ProductCatalogueView> emptyPage = new PageImpl<>(Collections.emptyList(), pageable, 0);
+        Slice<ProductCatalogueView> emptySlice = new SliceImpl<>(Collections.emptyList(), pageable, false);
 
-        PagedResponse<ProductSummaryCatalogueResponse> expectedResponse = PagedResponse
+        SlicedResponse<ProductSummaryCatalogueResponse> expectedResponse = SlicedResponse
                 .content(new ArrayList<ProductSummaryCatalogueResponse>())
                 .size(10)
-                .page(0)
                 .isLast(true)
-                .totalPages(0)
-                .totalElements(0L)
+                .firstCursor(null)
+                .lastCursor(null)
                 .build();
 
-        when(productCatalogueResumeRepository.findAllByCategoryId(categoryId, pageable)).thenReturn(emptyPage);
+        when(productCatalogueResumeRepository.findAllByCategoryWithoutCursor(categoryId, pageable)).thenReturn(emptySlice);
 
         // When
-        PagedResponse<ProductSummaryCatalogueResponse> result = productCatalogueService.getAllByCategoryId(categoryId, pageable);
+        SlicedResponse<ProductSummaryCatalogueResponse> result = productCatalogueService.getAllByCategoryId(categoryId, null, 10);
 
         // Then
-        assertNotNull(result);
-        assertEquals(0, result.totalElements);
-        assertTrue(result.content.isEmpty());
-        verify(productCatalogueResumeRepository).findAllByCategoryId(categoryId, pageable);
+        assertEquals(expectedResponse, result);
+        verify(productCatalogueResumeRepository).findAllByCategoryWithoutCursor(categoryId, pageable);
     }
 
     @Test @DisplayName("Should retrieve ProductSummary by productSKUId successfully")

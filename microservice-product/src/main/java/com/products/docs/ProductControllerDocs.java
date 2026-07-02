@@ -3,7 +3,7 @@ package com.products.docs;
 import com.products.application.dto.ProductCategoryResponse;
 import com.products.application.dto.catalogue.ProductCatalogueResponse;
 import com.products.application.dto.catalogue.ProductSummaryCatalogueResponse;
-import io.github.responsekit.core.PagedResponse;
+import io.github.responsekit.core.SlicedResponse;
 import io.github.responsekit.core.StandardResponse;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.media.Content;
@@ -40,7 +40,7 @@ public interface ProductControllerDocs {
                     content = @Content
             )
     })
-    ResponseEntity<StandardResponse<PagedResponse<ProductCategoryResponse>>> getCategories(Pageable pageable);
+    ResponseEntity<StandardResponse<SlicedResponse<ProductCategoryResponse>>> getCategories(String opaqueCursor, Pageable pageable);
 
     @SecurityRequirement(name = "bearerAuth")
     @Operation(
@@ -63,8 +63,8 @@ public interface ProductControllerDocs {
                     content = @Content
             )
     })
-    ResponseEntity<StandardResponse<PagedResponse<ProductSummaryCatalogueResponse>>> getProducts(
-            Integer category, String query, Pageable pageable
+    ResponseEntity<StandardResponse<SlicedResponse<ProductSummaryCatalogueResponse>>> getProducts(
+            String query, Integer categoryId, String opaqueCursor, Pageable pageable
     );
 
 

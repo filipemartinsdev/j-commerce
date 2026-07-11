@@ -3,8 +3,10 @@ package jcommerce.product;
 import io.gatling.javaapi.core.ScenarioBuilder;
 import io.gatling.javaapi.core.Simulation;
 import io.gatling.javaapi.http.HttpProtocolBuilder;
+import jcommerce.TokenManager;
 import jcommerce.Utils;
 
+import java.time.Duration;
 import java.util.Collections;
 import java.util.Iterator;
 import java.util.Map;
@@ -13,33 +15,43 @@ import java.util.stream.Stream;
 
 import static io.gatling.javaapi.core.CoreDsl.*;
 import static io.gatling.javaapi.http.HttpDsl.http;
+import static io.gatling.javaapi.http.HttpDsl.status;
 
-public class ProductSpikeTest extends Simulation {
-    private static final String JWT = Utils.getAdminJWT();
-
-    private static final String PRODUCT_URL = "http://localhost:8081";
-
-    private static final int TOTAL_PAGES = 5000;
-
-    private final Iterator<Map<String, Object>> pageIndexFeeder = Stream.generate(() -> {
-        int index = ThreadLocalRandom.current().nextInt(TOTAL_PAGES);
-        return Collections.<String, Object>singletonMap("pageIndex", index);
-    }).iterator();
+public class SpikeTest extends Simulation {
+    final static String PRODUCT_URL = "http://localhost:8081";
 
     HttpProtocolBuilder productProtocol = http
             .baseUrl(PRODUCT_URL)
             .acceptHeader("application/json");
 
     ScenarioBuilder productScenario = scenario("Catalogue Spike Test")
-            .feed(pageIndexFeeder)
-            .exec(http("Catalogue Spike Test")
-                    .get("/api/v1/products")
-                    .header("Authorization", "Bearer "+JWT)
+            .exec(session -> session.set("cursor", ""))
+
+            .during(Duration.ofMinutes(15))
+            .on(
+                    exec(session -> session.set("JWT", TokenManager.getAdminToken())),
+
+                    exec(http("Catalogue Spike Test")
+                            .get("/api/v1/products")
+                            .queryParam("cursor", session -> {
+                                String cursor = session.get("cursor");
+                                return cursor == null ? "" : cursor;
+                            })
+                            .header("Authorization", "Bearer #{JWT}")
+                            .check(
+                                    status().is(200),
+                                    jsonPath("$.data.lastCursor").optional().saveAs("cursor")
+                            )
+                    ),
+
+                    pause(Duration.ofSeconds(1))
             );
 
     {
-        setUp(productScenario.injectOpen(
-                stressPeakUsers(30000).during(600) // 50RPS
-        )).protocols(productProtocol);
+        setUp(
+                productScenario.injectClosed(
+                        constantConcurrentUsers(50).during(Duration.ofMinutes(15))
+                )
+        ).protocols(productProtocol);
     }
 }

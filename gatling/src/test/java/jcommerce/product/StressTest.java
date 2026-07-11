@@ -3,45 +3,59 @@ package jcommerce.product;
 import io.gatling.javaapi.core.ScenarioBuilder;
 import io.gatling.javaapi.core.Simulation;
 import io.gatling.javaapi.http.HttpProtocolBuilder;
+import jcommerce.TokenManager;
 import jcommerce.Utils;
 
+import java.time.Duration;
 import java.util.Collections;
 import java.util.Iterator;
 import java.util.Map;
 import java.util.concurrent.ThreadLocalRandom;
 import java.util.stream.Stream;
 
-import static io.gatling.javaapi.core.CoreDsl.rampUsers;
-import static io.gatling.javaapi.core.CoreDsl.scenario;
+import static io.gatling.javaapi.core.CoreDsl.*;
+import static io.gatling.javaapi.core.CoreDsl.constantConcurrentUsers;
+import static io.gatling.javaapi.core.CoreDsl.exec;
+import static io.gatling.javaapi.core.CoreDsl.jsonPath;
+import static io.gatling.javaapi.core.CoreDsl.pause;
 import static io.gatling.javaapi.http.HttpDsl.http;
+import static io.gatling.javaapi.http.HttpDsl.status;
 
-public class ProductStressTest extends Simulation {
-    private static final String JWT = Utils.getAdminJWT();
-
-    private static final String PRODUCT_URL = "http://localhost:8081";
-
-    private static final int TOTAL_PAGES = 5000;
-
-    private final Iterator<Map<String, Object>> pageIndexFeeder = Stream.generate(() -> {
-        int index = ThreadLocalRandom.current().nextInt(TOTAL_PAGES);
-        return Collections.<String, Object>singletonMap("pageIndex", index);
-    }).iterator();
+public class StressTest extends Simulation {
+    final static String PRODUCT_URL = "http://localhost:8081";
 
     HttpProtocolBuilder productProtocol = http
             .baseUrl(PRODUCT_URL)
             .acceptHeader("application/json");
 
     ScenarioBuilder productScenario = scenario("Catalogue Stress Test")
-            .feed(pageIndexFeeder)
-            .exec(http("Catalogue Stress Test")
-                    .get("/api/v1/products")
-                    .header("Authorization", "Bearer "+JWT)
+            .exec(session -> session.set("cursor", ""))
+
+            .during(Duration.ofMinutes(15))
+            .on(
+                    exec(session -> session.set("JWT", TokenManager.getAdminToken())),
+
+                    exec(http("Catalogue Stress Test")
+                            .get("/api/v1/products")
+                            .queryParam("cursor", session -> {
+                                String cursor = session.get("cursor");
+                                return cursor == null ? "" : cursor;
+                            })
+                            .header("Authorization", "Bearer #{JWT}")
+                            .check(
+                                    status().is(200),
+                                    jsonPath("$.data.lastCursor").optional().saveAs("cursor")
+                            )
+                    ),
+
+                    pause(Duration.ofSeconds(1))
             );
 
     {
-        setUp(productScenario.injectOpen(
-                rampUsers(100).during(10),
-                rampUsers(12000).during(600) // 20RPS
-        )).protocols(productProtocol);
+        setUp(
+                productScenario.injectClosed(
+                        constantConcurrentUsers(20).during(Duration.ofMinutes(15))
+                )
+        ).protocols(productProtocol);
     }
 }

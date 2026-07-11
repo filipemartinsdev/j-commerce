@@ -7,7 +7,7 @@ import io.gatling.javaapi.http.HttpProtocolBuilder;
 import static io.gatling.javaapi.core.CoreDsl.*;
 import static io.gatling.javaapi.http.HttpDsl.http;
 
-public class IdentityStressTest extends Simulation {
+public class StressTest extends Simulation {
     HttpProtocolBuilder httpProtocol = http
             .baseUrl("http://localhost:8080")
             .acceptHeader("application/json");

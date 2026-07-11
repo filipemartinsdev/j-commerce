@@ -11,7 +11,7 @@ import static io.gatling.javaapi.core.CoreDsl.*;
 import static io.gatling.javaapi.http.HttpDsl.http;
 import static io.gatling.javaapi.http.HttpDsl.status;
 
-public class ProductWarmup extends Simulation {
+public class Warmup extends Simulation {
     final static String PRODUCT_URL = "http://localhost:8081";
 
     HttpProtocolBuilder productProtocol = http
@@ -21,7 +21,7 @@ public class ProductWarmup extends Simulation {
     ScenarioBuilder productScenario = scenario("Catalogue Warmup")
             .exec(session -> session.set("cursor", ""))
 
-            .during(Duration.ofSeconds(10))
+            .during(Duration.ofMinutes(3))
             .on(
                     exec(session -> session.set("JWT", TokenManager.getAdminToken())),
 
@@ -44,7 +44,7 @@ public class ProductWarmup extends Simulation {
     {
         setUp(
                 productScenario.injectClosed(
-                        constantConcurrentUsers(1).during(Duration.ofSeconds(10))
+                        constantConcurrentUsers(1).during(Duration.ofMinutes(3))
                 )
         ).protocols(productProtocol);
     }

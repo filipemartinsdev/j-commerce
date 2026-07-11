@@ -6,7 +6,7 @@ import static io.gatling.javaapi.http.HttpDsl.*;
 import io.gatling.javaapi.core.*;
 import io.gatling.javaapi.http.*;
 
-public class IdentityWarmup extends Simulation {
+public class Warmup extends Simulation {
     HttpProtocolBuilder httpProtocol = http
             .baseUrl("http://localhost:8080")
             .acceptHeader("application/json");

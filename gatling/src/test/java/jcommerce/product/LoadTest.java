@@ -1,8 +1,9 @@
-package jcommerce;
+package jcommerce.product;
 
 import io.gatling.javaapi.core.ScenarioBuilder;
 import io.gatling.javaapi.core.Simulation;
 import io.gatling.javaapi.http.HttpProtocolBuilder;
+import jcommerce.Utils;
 
 import java.time.Duration;
 import java.util.Collections;

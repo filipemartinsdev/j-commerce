@@ -1,4 +1,4 @@
-package jcommerce;
+package jcommerce.identity;
 
 import static io.gatling.javaapi.core.CoreDsl.*;
 import static io.gatling.javaapi.http.HttpDsl.*;

@@ -1,10 +1,10 @@
-package jcommerce;
+package jcommerce.product;
 
 import io.gatling.javaapi.core.ScenarioBuilder;
 import io.gatling.javaapi.core.Simulation;
 import io.gatling.javaapi.http.HttpProtocolBuilder;
+import jcommerce.Utils;
 
-import java.time.Duration;
 import java.util.Collections;
 import java.util.Iterator;
 import java.util.Map;
@@ -13,12 +13,11 @@ import java.util.stream.Stream;
 
 import static io.gatling.javaapi.core.CoreDsl.*;
 import static io.gatling.javaapi.http.HttpDsl.http;
-import static io.gatling.javaapi.http.HttpDsl.status;
 
-public class ProductWarmup extends Simulation {
+public class ProductSpikeTest extends Simulation {
     private static final String JWT = Utils.getAdminJWT();
 
-    final static String PRODUCT_URL = "http://localhost:8081";
+    private static final String PRODUCT_URL = "http://localhost:8081";
 
     private static final int TOTAL_PAGES = 5000;
 
@@ -31,16 +30,16 @@ public class ProductWarmup extends Simulation {
             .baseUrl(PRODUCT_URL)
             .acceptHeader("application/json");
 
-    ScenarioBuilder productScenario = scenario("Catalogue Warmup")
+    ScenarioBuilder productScenario = scenario("Catalogue Spike Test")
             .feed(pageIndexFeeder)
-            .exec(http("Catalogue Warmup")
+            .exec(http("Catalogue Spike Test")
                     .get("/api/v1/products")
                     .header("Authorization", "Bearer "+JWT)
             );
 
     {
         setUp(productScenario.injectOpen(
-                constantUsersPerSec(1).during(Duration.ofMinutes(3))
+                stressPeakUsers(30000).during(600) // 50RPS
         )).protocols(productProtocol);
     }
 }

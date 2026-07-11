@@ -10,9 +10,9 @@ http:
     type: json
     data: |-
       {
-        "productId": "c955417d-b097-43fa-bdb6-bc15b7a9d731",
-        "name": "Monitor LG",
-        "SKU": "M"
+        "productId": "019f2441-79cc-7674-af0d-43f9a079703f",
+        "name": "Controler Dualshock 4",
+        "SKU": "DS4"
       }
   auth: inherit
 

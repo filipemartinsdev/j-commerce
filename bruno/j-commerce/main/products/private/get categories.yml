@@ -5,14 +5,16 @@ info:
 
 http:
   method: GET
-  url: https://localhost/product/api/v1/categories?cursor=eyJsYXN0SWQiOjR9&size=2
+  url: https://localhost/product/api/v1/categories
   params:
     - name: cursor
-      value: eyJsYXN0SWQiOjR9
+      value: eyJsYXN0SWQiOjIwfQ
       type: query
+      disabled: true
     - name: size
-      value: "2"
+      value: "20"
       type: query
+      disabled: true
   auth: inherit
 
 settings:

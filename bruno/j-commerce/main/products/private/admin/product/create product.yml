@@ -9,11 +9,11 @@ http:
   body:
     type: json
     data: |-
-      {
-        "name": "Monitor LG 27 pol gamer",
-        "description": "Monitor 27 polegadas LG, painel IPS, 144hz",
-        "categoryId": 2
-      }
+      // {
+      //   "name": "Monitor LG 27 pol gamer",
+      //   "description": "Monitor 27 polegadas LG, painel IPS, 144hz",
+      //   "categoryId": 2
+      // }
 
       // {
       //   "name": "Capa de chuva",
@@ -33,11 +33,11 @@ http:
       //   "categoryId": 20
       // }
 
-      // {
-      //   "name": "Controle Dualshock 4",
-      //   "description": "Controle de PlayStation 4",
-      //   "categoryId": 2
-      // }
+      {
+        "name": "Controle Dualshock 4",
+        "description": "Controle de PlayStation 4",
+        "categoryId": 2
+      }
   auth: inherit
 
 settings:

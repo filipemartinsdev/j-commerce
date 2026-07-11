@@ -5,17 +5,20 @@ info:
 
 http:
   method: GET
-  url: https://localhost/product/admin/api/v1/stock?page=&size=&sort=
+  url: https://localhost/product/admin/api/v1/stock
   params:
     - name: page
       value: ""
       type: query
+      disabled: true
     - name: size
       value: ""
       type: query
+      disabled: true
     - name: sort
       value: ""
       type: query
+      disabled: true
   auth: inherit
 
 settings:

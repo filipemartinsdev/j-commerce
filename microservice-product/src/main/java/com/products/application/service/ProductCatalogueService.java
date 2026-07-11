@@ -57,7 +57,7 @@ public class ProductCatalogueService {
     public SlicedResponse<ProductSummaryCatalogueResponse> getAll(String opaqueCursor, int limit) {
         Slice<ProductCatalogueView> slice;
 
-        if (opaqueCursor == null)
+        if (opaqueCursor == null || opaqueCursor.isEmpty())
             slice = productCatalogueViewRepository.findAllWithoutCursor(PageRequest.of(0, limit));
         else {
             CatalogueCursor cursor = cursorCodec.decode(opaqueCursor, CatalogueCursor.class);
@@ -98,7 +98,7 @@ public class ProductCatalogueService {
     public SlicedResponse<ProductSummaryCatalogueResponse> getAllByCategoryId(Integer categoryId, String opaqueCursor, int size) {
         Slice<ProductCatalogueView> slice;
 
-        if (opaqueCursor == null)
+        if (opaqueCursor == null || opaqueCursor.isEmpty())
             slice = productCatalogueViewRepository.findAllByCategoryWithoutCursor(categoryId, PageRequest.of(0, size));
         else {
             CatalogueCursor cursor = cursorCodec.decode(opaqueCursor, CatalogueCursor.class);
@@ -137,7 +137,7 @@ public class ProductCatalogueService {
 
         Slice<SemanticProductCatalogueProjection> slice;
 
-        if(opaqueCursor == null)
+        if(opaqueCursor == null || opaqueCursor.isEmpty())
             slice = semanticProductCatalogueRepository.findAllWithoutCursor(vector, PageRequest.of(0, size));
         else {
             SemanticCatalogueCursor cursor = cursorCodec.decode(opaqueCursor, SemanticCatalogueCursor.class);
@@ -183,7 +183,7 @@ public class ProductCatalogueService {
 
         Slice<SemanticProductCatalogueProjection> slice;
 
-        if (opaqueCursor == null)
+        if (opaqueCursor == null || opaqueCursor.isEmpty())
             slice = semanticProductCatalogueRepository.findAllByCategoryWithoutCursor(vector, categoryId, PageRequest.of(0, size));
         else {
             SemanticCatalogueCursor cursor = cursorCodec.decode(opaqueCursor, SemanticCatalogueCursor.class);

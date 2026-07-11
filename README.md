@@ -144,11 +144,14 @@ The Identity microservice creates default users via Flyway migration:
 | driver@gmail.com    | driver123    | `USER`, `DRIVER`        |
 | logistics@gmail.com | logistics123 | `USER`, `LOGISTICS`     |
 
+
+> You can also use `docker-compose-mock.yaml` for tests, that contains a mocked catalogue.
+
 ---
 
 ## VPS-ready application
 
-You can also use the `docker-compose.yaml` file for a VPS-ready application. However, you need to define the _domain_ variable in the `.env` file:
+For VPS environments, you can use the `docker-compose.yaml` file for a VPS-ready application. However, you need to define the _domain_ variable in the `.env` file:
 
 ````dotenv
 SERVER_DOMAIN=yourdomain.com

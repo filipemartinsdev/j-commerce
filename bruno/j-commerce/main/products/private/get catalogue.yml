@@ -5,7 +5,7 @@ info:
 
 http:
   method: GET
-  url: https://localhost/product/api/v1/products?cursor=&size=2
+  url: https://localhost/product/api/v1/products
   params:
     - name: categoryId
       value: "2"
@@ -18,9 +18,11 @@ http:
     - name: cursor
       value: ""
       type: query
+      disabled: true
     - name: size
       value: "2"
       type: query
+      disabled: true
   auth: inherit
 
 settings:

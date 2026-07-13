@@ -3,7 +3,7 @@ server:
 
   tomcat:
     threads:
-      max: 15
+      max: 10
 
 spring:
   application:
@@ -15,7 +15,7 @@ spring:
   datasource:
     hikari:
       connection-timeout: 5000
-      maximum-pool-size: 20
+      maximum-pool-size: 10
       minimum-idle: 2
 
   cache:

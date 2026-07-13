@@ -9,20 +9,20 @@ import java.time.Duration;
 import static io.gatling.javaapi.core.CoreDsl.*;
 import static io.gatling.javaapi.http.HttpDsl.http;
 
-public class StressTest extends Simulation {
+public class SpikeTest extends Simulation {
     HttpProtocolBuilder httpProtocol = http
             .baseUrl("http://localhost:8080")
             .acceptHeader("application/json");
 
-    ScenarioBuilder scenarioLogin = scenario("Identity Stress Test")
-            .exec(http("Identity Stress Test")
+    ScenarioBuilder scenarioLogin = scenario("Identity Spike Test")
+            .exec(http("Identity Spike Test")
                     .post("/api/v1/auth/login")
                     .body(RawFileBody("bodies/login-admin.json")).asJson()
             );
 
     {
         setUp(scenarioLogin.injectOpen(
-                constantUsersPerSec(8).during(Duration.ofMinutes(15))
+                constantUsersPerSec(20).during(Duration.ofMinutes(10))
         )).protocols(httpProtocol);
     }
 }

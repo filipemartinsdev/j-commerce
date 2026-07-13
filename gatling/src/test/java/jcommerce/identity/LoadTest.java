@@ -6,6 +6,8 @@ import static io.gatling.javaapi.http.HttpDsl.*;
 import io.gatling.javaapi.core.*;
 import io.gatling.javaapi.http.*;
 
+import java.time.Duration;
+
 public class LoadTest extends Simulation {
     HttpProtocolBuilder httpProtocol = http
             .baseUrl("http://localhost:8080")
@@ -19,7 +21,7 @@ public class LoadTest extends Simulation {
 
     {
         setUp(scenarioLogin.injectOpen(
-                rampUsers(600).during(300)
+                constantUsersPerSec(5).during(Duration.ofMinutes(15))
         )).protocols(httpProtocol);
     }
 }

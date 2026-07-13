@@ -27,7 +27,7 @@ public class SpikeTest extends Simulation {
     ScenarioBuilder productScenario = scenario("Catalogue Spike Test")
             .exec(session -> session.set("cursor", ""))
 
-            .during(Duration.ofMinutes(15))
+            .during(Duration.ofMinutes(10))
             .on(
                     exec(session -> session.set("JWT", TokenManager.getAdminToken())),
 
@@ -50,7 +50,7 @@ public class SpikeTest extends Simulation {
     {
         setUp(
                 productScenario.injectClosed(
-                        constantConcurrentUsers(50).during(Duration.ofMinutes(15))
+                        constantConcurrentUsers(100).during(Duration.ofMinutes(10))
                 )
         ).protocols(productProtocol);
     }

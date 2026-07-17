@@ -22,6 +22,7 @@ import org.mockito.junit.jupiter.MockitoExtension;
 
 import java.time.Instant;
 import java.util.List;
+import java.util.Optional;
 import java.util.UUID;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
@@ -119,12 +120,13 @@ public class UserNotificationServiceTests {
         notification.userId = userId;
         notification.viewed = false;
 
-        Mockito.when(userNotificationRepository.findById(id))
-                .thenReturn(notification);
+        Mockito.when(userNotificationRepository.findByIdOptional(id))
+                .thenReturn(Optional.of(notification));
 
         userNotificationService.view(id, userId);
 
         Mockito.verify(userNotificationRepository).persist(notification);
+        Mockito.verify(userNotificationRepository).findByIdOptional(id);
     }
 
     @Test @DisplayName("Should throw UserNotificationHasAlreadyBeenViewedException if notification is viewed")
@@ -137,8 +139,8 @@ public class UserNotificationServiceTests {
         notification.userId = userId;
         notification.viewed = true;
 
-        Mockito.when(userNotificationRepository.findById(id))
-                .thenReturn(notification);
+        Mockito.when(userNotificationRepository.findByIdOptional(id))
+                .thenReturn(Optional.of(notification));
 
         assertThrows(UserNotificationHasAlreadyBeenViewedException.class,
                 () -> userNotificationService.view(id, userId));
@@ -155,8 +157,8 @@ public class UserNotificationServiceTests {
         notification.userId = otherUserId;
         notification.viewed = false;
 
-        Mockito.when(userNotificationRepository.findById(id))
-                .thenReturn(notification);
+        Mockito.when(userNotificationRepository.findByIdOptional(id))
+                .thenReturn(Optional.of(notification));
 
         assertThrows(ForbiddenException.class,
                 () -> userNotificationService.view(id, userId));
@@ -167,8 +169,8 @@ public class UserNotificationServiceTests {
         UUID id = UUID.randomUUID();
         UUID userId = UUID.randomUUID();
 
-        Mockito.when(userNotificationRepository.findById(id))
-                .thenReturn(null);
+        Mockito.when(userNotificationRepository.findByIdOptional(id))
+                .thenReturn(Optional.empty());
 
         assertThrows(UserNotificationNotFoundException.class,
                 () -> userNotificationService.view(id, userId));

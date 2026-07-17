@@ -10,9 +10,22 @@ import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 
 import java.util.List;
+import java.util.Optional;
 import java.util.UUID;
 
 public interface ProductSKUPriceRepository extends JpaRepository<ProductSKUPrice, UUID> {
+    @Query(
+        """
+        SELECT p
+        FROM ProductSKUPrice p
+        WHERE p.isActive IS TRUE
+            AND (p.endAt > CURRENT_TIMESTAMP OR p.endAt IS NULL)
+            AND p.productSKU.id = :productSKUId
+        ORDER BY p.priceType.id DESC
+        """
+    )
+    Optional<ProductSKUPrice> findFirstCurrentPrice(@Param("productSKUId") UUID productSKUId);
+
     @Query(
         """
         SELECT p 

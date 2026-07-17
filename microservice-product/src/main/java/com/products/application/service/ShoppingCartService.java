@@ -1,130 +1,131 @@
 package com.products.application.service;
 
-import com.products.application.dto.catalogue.ConfirmShoppingCartRequest;
-import com.products.application.dto.catalogue.CreateShoppingCartItemRequest;
-import com.products.application.dto.catalogue.ShoppingCartItemResponse;
+import com.products.application.dto.catalogue.*;
 import com.products.application.exception.*;
-import com.products.application.message.CreateOrderMessage;
-import com.products.application.service.mapper.ShoppingCartItemMapper;
-import com.products.domain.entity.ProductSKU;
-import com.products.domain.entity.ShoppingCartItem;
-import com.products.domain.entity.ShoppingCartItemSummaryView;
+import com.products.application.service.mapper.ShoppingCartMapper;
+import com.products.domain.entity.ProductSKUPrice;
+import com.products.infra.persistence.ProductSKUPriceRepository;
 import com.products.infra.persistence.ProductSKURepository;
-import com.products.infra.persistence.ShoppingCartItemSummaryViewRepository;
-import com.products.infra.persistence.ShoppingCartItemRepository;
-import io.github.responsekit.core.PagedResponse;
-import io.github.responsekit.spring.PagedResponseFactory;
 import jakarta.transaction.Transactional;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.data.domain.Page;
-import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
+import java.math.BigDecimal;
 import java.util.List;
 import java.util.UUID;
+
+ // TODO: update unit tests
 
 @Slf4j
 @Service
 public class ShoppingCartService {
-    private final ShoppingCartItemRepository shoppingCartItemRepository;
-    private final ShoppingCartItemMapper shoppingCartItemProductSKUMapper;
-    private final ShoppingCartItemSummaryViewRepository shoppingCartItemProductSKUSummaryRepository;
+    private final ShoppingCartMapper shoppingCartMapper;
     private final ProductSKURepository productSKURepository;
     private final ProductStockChecker productStockChecker;
     private final MessageBrokerProducer shoppingCartConfirmationProducer;
     private final StockMovementManagementService stockMovementService;
-    private final SalesOrderClient salesOrderClient;
     private final ProductStockManagementService productStockManagementService;
+    private final ShoppingCartCacheStorage shoppingCartCacheStorage;
+    private final ProductSKUPriceRepository productSKUPriceRepository;
+    private final SalesOrderClient salesOrderClient;
 
-    public ShoppingCartService(ShoppingCartItemRepository shoppingCartItemRepository, ShoppingCartItemMapper shoppingCartItemProductSKUMapper, ShoppingCartItemSummaryViewRepository shoppingCartItemProductSKUSummaryRepository, ProductSKURepository productSKURepository, ProductStockChecker productStockChecker, MessageBrokerProducer shoppingCartConfirmationProducer, StockMovementManagementService stockMovementService, SalesOrderClient salesOrderClient, ProductStockManagementService productStockManagementService) {
-        this.shoppingCartItemRepository = shoppingCartItemRepository;
-        this.shoppingCartItemProductSKUMapper = shoppingCartItemProductSKUMapper;
-        this.shoppingCartItemProductSKUSummaryRepository = shoppingCartItemProductSKUSummaryRepository;
+    public ShoppingCartService(ShoppingCartMapper shoppingCartMapper, ProductSKURepository productSKURepository, ProductStockChecker productStockChecker, MessageBrokerProducer shoppingCartConfirmationProducer, StockMovementManagementService stockMovementService, ProductStockManagementService productStockManagementService, ShoppingCartCacheStorage shoppingCartCacheStorage, ProductSKUPriceRepository productSKUPriceRepository, SalesOrderClient salesOrderClient) {
+        this.shoppingCartMapper = shoppingCartMapper;
         this.productSKURepository = productSKURepository;
         this.productStockChecker = productStockChecker;
         this.shoppingCartConfirmationProducer = shoppingCartConfirmationProducer;
         this.stockMovementService = stockMovementService;
-        this.salesOrderClient = salesOrderClient;
         this.productStockManagementService = productStockManagementService;
+        this.shoppingCartCacheStorage = shoppingCartCacheStorage;
+        this.productSKUPriceRepository = productSKUPriceRepository;
+        this.salesOrderClient = salesOrderClient;
     }
 
-    public void createItemByUserId(CreateShoppingCartItemRequest request, UUID authenticatedUserId) {
-        ProductSKU sku = productSKURepository.findActiveById(request.productSKUId())
-                .orElseThrow(() -> new ProductSKUNotFoundException("Product SKU not found with ID: "+request.productSKUId()));
+    public void createItemByUserId(CreateShoppingCartItemRequest request, UUID userId) {
+        if (!productSKURepository.existsById(request.productSKUId()))
+            throw new ProductSKUNotFoundException("Product SKU not found with ID: "+request.productSKUId());
 
-        if (!productStockChecker.isTheProductWithStockEnough(sku.getId(), request.units()))
+        if (!productStockChecker.isTheProductWithStockEnough(request.productSKUId(), request.units()))
             throw new ProductOutOfStockException("This product haven't stock enough");
 
-        ShoppingCartItem item = new ShoppingCartItem();
-        item.setUserId(authenticatedUserId);
-        item.setProductSKU(sku);
-        item.setUnits(request.units());
+        ProductSKUPrice productPrice = productSKUPriceRepository.findFirstCurrentPrice(request.productSKUId())
+                .orElseThrow(() -> new ProductSKUPriceNotFoundException("Price not found"));
 
-        if (shoppingCartItemRepository.existsByProductSKUIdAndUserId(request.productSKUId(), authenticatedUserId))
-            throw new ShoppingCartItemAlreadyExistsException("This product is already on shopping cart");
+        var shoppingCart = shoppingCartCacheStorage.get(userId);
 
-        shoppingCartItemRepository.save(item);
+        for (ShoppingCart.Item item : shoppingCart.items())
+            if (item.productSKUId().equals(request.productSKUId()))
+                throw new ShoppingCartItemAlreadyExistsException("This product is already on shopping cart");
+
+        shoppingCart.items().add(
+                new ShoppingCart.Item(
+                        request.productSKUId(),
+                        productPrice.getProductSKU().getProduct().getId(),
+                        productPrice.getProductSKU().getName(),
+                        request.units(),
+                        productPrice.getPrice()
+                )
+        );
+
+        shoppingCartCacheStorage.update(userId, shoppingCart);
     }
 
-    public PagedResponse<ShoppingCartItemResponse> getAllItems(UUID authenticatedUserId, Pageable pageable) {
-        Page<ShoppingCartItemSummaryView> page = shoppingCartItemProductSKUSummaryRepository.findAllByUserId(authenticatedUserId, pageable);
+    public ShoppingCartResponse getAllItems(UUID userId) {
+        var shoppingCart = shoppingCartCacheStorage.get(userId);
 
-        return PagedResponseFactory.fromPage(page, shoppingCartItemProductSKUMapper::toResponse);
+        return new ShoppingCartResponse(
+                shoppingCart.items().stream()
+                        .map(item -> item.price().multiply(new BigDecimal(item.units())))
+                        .reduce(BigDecimal::add)
+                        .orElse(BigDecimal.ZERO),
+                shoppingCart.items()
+        );
     }
 
-    public void deleteItemById(UUID id, UUID authenticatedUserId) {
-        ShoppingCartItem item = shoppingCartItemRepository.findActiveByIdAndUserId(id, authenticatedUserId)
-                .orElseThrow(() -> new ShoppingCartItemNotFoundException("Shopping cart item not found with ID: "+id));
+    public void deleteItemByProductSKUId(UUID productSKUId, UUID userId) {
+        var shoppingCart = shoppingCartCacheStorage.get(userId);
 
-        item.setIsActive(false);
-        shoppingCartItemRepository.save(item);
+        shoppingCart.items().stream()
+                .filter(shoppingCartItem -> shoppingCartItem.productSKUId().equals(productSKUId))
+                .findFirst()
+                .ifPresentOrElse(shoppingCart.items()::remove, () -> {
+                    throw new ShoppingCartItemNotFoundException("ShoppingCart item not found with productSKUId: " + productSKUId);
+                });
+
+
+        shoppingCartCacheStorage.update(userId, shoppingCart);
     }
 
     public void deleteAllItemsByUserId(UUID userId) {
-        shoppingCartItemRepository.markAllAsInactiveByUserId(userId);
+        shoppingCartCacheStorage.clear(userId);
     }
 
     @Transactional
     public void confirmShoppingCart(ConfirmShoppingCartRequest request, UUID userId, String JWTBearer) {
         verifyDeliveryAddress(request.deliveryAddressId(), JWTBearer);
 
-        List<CreateOrderMessage.OrderItem> items = shoppingCartItemProductSKUSummaryRepository.findAllByUserId(userId).stream()
-                .map(shoppingCartItemProductSKUMapper::toCreateOrderMessageItem)
-                .toList();
+        var shoppingCart = shoppingCartCacheStorage.get(userId);
 
-        if (items.isEmpty())
-         throw new EmptyShoppingCartException("The shopping cart is empty");
+        if (shoppingCart.items().isEmpty())
+            throw new EmptyShoppingCartException("The shopping cart is empty");
 
-        var shoppingCartConfirmation = new CreateOrderMessage(userId, items, request.deliveryAddressId());
+        updateStock(shoppingCart.items(), userId);
 
-        updateStock(items, userId);
+        var createOrderMessage = shoppingCartMapper.toCreateOrderMessage(shoppingCart, userId, request.deliveryAddressId());
 
-        shoppingCartConfirmationProducer.produce(shoppingCartConfirmation);
+        shoppingCartConfirmationProducer.produce(createOrderMessage);
 
-        clearShoppingCart(userId);
+        shoppingCartCacheStorage.clear(userId);
     }
+
     private void verifyDeliveryAddress(UUID deliveryAddressId, String JWTBearer) {
         salesOrderClient.getDeliveryAddress(deliveryAddressId, JWTBearer);
-
-//        ResponseEntity<?> deliveryAddressResponse = salesOrderClient.getDeliveryAddress(deliveryAddressId, JWTBearer);
-
-//        if (deliveryAddressResponse.getStatusCode().is4xxClientError())
-//            throw new DeliveryAddressNotFoundException("Delivery address not found with ID: "+deliveryAddressId);
-//
-//        else if (!deliveryAddressResponse.getStatusCode().is2xxSuccessful()) {
-//            log.error("Bad gateway on Order Microservice, with status {}: {}", deliveryAddressResponse.getStatusCode(), deliveryAddressResponse.getBody());
-//            throw new BadGatewayException("External service not responding");
-//        }
     }
 
-    private void updateStock(List<CreateOrderMessage.OrderItem> items, UUID userId) {
+    private void updateStock(List<ShoppingCart.Item> items, UUID userId) {
         for (var item : items) {
-            productStockManagementService.reduceProductStock(item.productSKUId(), item.units());
+            productStockManagementService.decreaseProductStock(item.productSKUId(), item.units());
             stockMovementService.registerSale(item.productSKUId(), item.units(), userId);
         }
-    }
-
-    private void clearShoppingCart(UUID userId) {
-        this.deleteAllItemsByUserId(userId);
     }
 }

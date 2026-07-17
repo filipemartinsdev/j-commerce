@@ -2,7 +2,8 @@ package com.products.infra.web.catalogue;
 
 import com.products.application.dto.catalogue.ConfirmShoppingCartRequest;
 import com.products.application.dto.catalogue.CreateShoppingCartItemRequest;
-import com.products.application.dto.catalogue.ShoppingCartItemResponse;
+import com.products.application.dto.catalogue.ShoppingCart;
+import com.products.application.dto.catalogue.ShoppingCartResponse;
 import com.products.application.exception.*;
 import com.products.application.service.ShoppingCartService;
 import com.products.config.SecurityConfig;
@@ -40,26 +41,24 @@ public class ShoppingCartControllerTests {
     @WithMockUser(authorities = "SCOPE_USER")
     @Test @DisplayName("Should retrieve shopping cart items and return status code 200")
     void getAllItemsTestCase1() throws Exception {
-        ShoppingCartItemResponse itemResponse = new ShoppingCartItemResponse(
-                UUID.randomUUID(),
-                UUID.randomUUID(),
-                "testing",
-                1,
-                BigDecimal.ONE,
-                BigDecimal.ONE,
-                0
+        var shoppingCart = new ShoppingCart(
+                List.of(
+                        new ShoppingCart.Item(
+                                UUID.randomUUID(),
+                                UUID.randomUUID(),
+                                "test",
+                                1,
+                                BigDecimal.ONE
+                        )
+                )
         );
 
-        var expectedResponse = PagedResponse
-                .content(List.of(itemResponse))
-                .page(0)
-                .size(20)
-                .totalElements(1L)
-                .totalPages(1)
-                .isLast(true)
-                .build();
+        var expectedResponse = new ShoppingCartResponse(
+                BigDecimal.ONE,
+                shoppingCart.items()
+        );
 
-        when(shoppingCartService.getAllItems(any(), any()))
+        when(shoppingCartService.getAllItems(any()))
                 .thenReturn(expectedResponse);
 
         String expectedJSON = objectMapper.writeValueAsString(Map.of(
@@ -196,20 +195,20 @@ public class ShoppingCartControllerTests {
     @WithMockUser(authorities = "SCOPE_USER")
     @Test @DisplayName("Should remove item from shopping cart and return status code 200")
     void deleteByIdTestCase1() throws Exception {
-        doNothing().when(shoppingCartService).deleteItemById(any(), any());
+        doNothing().when(shoppingCartService).deleteItemByProductSKUId(any(), any());
 
         mockMvc.perform(delete("/api/v1/shopping-cart/" + UUID.randomUUID())
                         .with(jwt().jwt(jwt -> jwt.subject(UUID.randomUUID().toString()))))
                 .andExpect(status().isOk());
 
-        verify(shoppingCartService).deleteItemById(any(), any());
+        verify(shoppingCartService).deleteItemByProductSKUId(any(), any());
     }
 
     @WithMockUser(authorities = "SCOPE_USER")
     @Test @DisplayName("Should return status code 404 if item not exists")
     void deleteByIdTestCase2() throws Exception {
         doThrow(ShoppingCartItemNotFoundException.class)
-                .when(shoppingCartService).deleteItemById(any(), any());
+                .when(shoppingCartService).deleteItemByProductSKUId(any(), any());
 
         mockMvc.perform(delete("/api/v1/shopping-cart/" + UUID.randomUUID())
                         .with(jwt().jwt(jwt -> jwt.subject(UUID.randomUUID().toString()))))

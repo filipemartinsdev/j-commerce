@@ -533,7 +533,7 @@ public class ProductStockManagementServiceTests {
         when(productStockRepository.save(any(ProductStock.class)))
                 .thenReturn(stock);
 
-        productStockManagementService.reduceProductStock(productSKUId, units);
+        productStockManagementService.decreaseProductStock(productSKUId, units);
 
         assertEquals(5, stock.getUnits());
         verify(productStockRepository).save(stock);
@@ -554,7 +554,7 @@ public class ProductStockManagementServiceTests {
         when(productStockRepository.save(any(ProductStock.class)))
                 .thenReturn(stock);
 
-        productStockManagementService.reduceProductStock(productSKUId, units);
+        productStockManagementService.decreaseProductStock(productSKUId, units);
 
         assertEquals(0, stock.getUnits());
     }
@@ -569,7 +569,7 @@ public class ProductStockManagementServiceTests {
                 .thenReturn(Optional.empty());
 
         assertThrows(ProductStockNotFoundException.class, () ->
-                productStockManagementService.reduceProductStock(productSKUId, units)
+                productStockManagementService.decreaseProductStock(productSKUId, units)
         );
     }
 
@@ -587,7 +587,7 @@ public class ProductStockManagementServiceTests {
                 .thenReturn(Optional.of(stock));
 
         assertThrows(ProductStockNotFoundException.class, () ->
-                productStockManagementService.reduceProductStock(productSKUId, units)
+                productStockManagementService.decreaseProductStock(productSKUId, units)
         );
     }
 
@@ -605,7 +605,7 @@ public class ProductStockManagementServiceTests {
                 .thenReturn(Optional.of(stock));
 
         assertThrows(ProductOutOfStockException.class, () ->
-                productStockManagementService.reduceProductStock(productSKUId, units)
+                productStockManagementService.decreaseProductStock(productSKUId, units)
         );
     }
 
@@ -623,7 +623,7 @@ public class ProductStockManagementServiceTests {
                 .thenReturn(Optional.of(stock));
 
         assertThrows(ProductOutOfStockException.class, () ->
-                productStockManagementService.reduceProductStock(productSKUId, units)
+                productStockManagementService.decreaseProductStock(productSKUId, units)
         );
     }
 
@@ -641,7 +641,7 @@ public class ProductStockManagementServiceTests {
                 .thenReturn(Optional.of(stock));
 
         assertThrows(ProductOutOfStockException.class, () ->
-                productStockManagementService.reduceProductStock(productSKUId, units)
+                productStockManagementService.decreaseProductStock(productSKUId, units)
         );
     }
 
@@ -660,7 +660,7 @@ public class ProductStockManagementServiceTests {
         when(productStockRepository.save(any(ProductStock.class)))
                 .thenReturn(stock);
 
-        productStockManagementService.reduceProductStock(productSKUId, units);
+        productStockManagementService.decreaseProductStock(productSKUId, units);
 
         assertEquals(4, stock.getUnits());
     }

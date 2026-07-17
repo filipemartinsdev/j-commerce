@@ -135,7 +135,7 @@ public class ProductStockManagementService {
         stockMovementRepository.save(stockMovement);
     }
 
-    public void reduceProductStock(UUID productSKUId, int units){
+    public void decreaseProductStock(UUID productSKUId, int units){
         var stock = productStockRepository.findByProductSKU_id(productSKUId)
                 .orElseThrow(() -> new ProductStockNotFoundException("Product stock not found with productSKUId: "+productSKUId));
 

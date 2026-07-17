@@ -5,7 +5,7 @@ info:
 
 http:
   method: DELETE
-  url: https://localhost/product/api/v1/shopping-cart/81b69dd4-5e96-4ce2-aada-b0838599c8d2
+  url: https://localhost/product/api/v1/shopping-cart/4fe1cb1a-4668-4ec2-b79f-0c741b6a6499
   body:
     type: json
     data: ""

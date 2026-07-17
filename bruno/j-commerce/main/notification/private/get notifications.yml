@@ -5,17 +5,20 @@ info:
 
 http:
   method: GET
-  url: https://localhost/notification/api/v2/notifications?page=&size=&sort=createdAt,ASC
+  url: https://localhost/notification/api/v2/notifications
   params:
     - name: page
       value: ""
       type: query
+      disabled: true
     - name: size
       value: ""
       type: query
+      disabled: true
     - name: sort
       value: createdAt,ASC
       type: query
+      disabled: true
     - name: viewed
       value: "true"
       type: query

@@ -22,10 +22,10 @@ http:
 
       // {
       //   "haveNumber": true,
-      //   "street": "Rua das oliveiras",
-      //   "zipCode": "74914460",
+      //   "street": "Rua X",
+      //   "zipCode": "12345678",
       //   "number": "1",
-      //   "neighborhood": "Jardim Maria Inês",
+      //   "neighborhood": "X",
       //   "city": "Goiânia",
       //   "state": "GO"
       // }

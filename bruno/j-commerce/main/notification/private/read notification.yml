@@ -5,7 +5,11 @@ info:
 
 http:
   method: POST
-  url: https://localhost/notification/api/v2/notifications/a13316f8-b8b5-4523-89c1-e29ead9c5a38/read
+  url: https://localhost/notification/api/v2/notifications/:id/view
+  params:
+    - name: id
+      value: ff7c4a71-f773-45fa-b19a-590712158d08
+      type: path
   auth: inherit
 
 settings:

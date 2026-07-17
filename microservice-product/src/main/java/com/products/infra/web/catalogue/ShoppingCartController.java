@@ -2,13 +2,11 @@ package com.products.infra.web.catalogue;
 
 import com.products.application.dto.catalogue.ConfirmShoppingCartRequest;
 import com.products.application.dto.catalogue.CreateShoppingCartItemRequest;
-import com.products.application.dto.catalogue.ShoppingCartItemResponse;
+import com.products.application.dto.catalogue.ShoppingCartResponse;
 import com.products.application.service.ShoppingCartService;
 import com.products.docs.ShoppingCartControllerDocs;
-import io.github.responsekit.core.PagedResponse;
 import io.github.responsekit.core.StandardResponse;
 import jakarta.validation.Valid;
-import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
@@ -27,20 +25,19 @@ public class ShoppingCartController implements ShoppingCartControllerDocs {
     }
 
     @GetMapping
-    public ResponseEntity<StandardResponse<PagedResponse<ShoppingCartItemResponse>>> getAllItems(
-            @AuthenticationPrincipal Jwt jwt,
-            Pageable pageable
+    public ResponseEntity<StandardResponse<ShoppingCartResponse>> getAllItems(
+            @AuthenticationPrincipal Jwt jwt
     ){
         UUID authenticatedUserId = UUID.fromString(jwt.getSubject());
         return ResponseEntity
                 .status(HttpStatus.OK)
                 .body(StandardResponse.success(
-                        shoppingCartService.getAllItems(authenticatedUserId, pageable)
+                        shoppingCartService.getAllItems(authenticatedUserId)
                 ).build());
     }
 
     @PostMapping
-    public ResponseEntity<Void> create (
+    public ResponseEntity<StandardResponse<Void>> create (
             @AuthenticationPrincipal Jwt jwt,
             @Valid @RequestBody CreateShoppingCartItemRequest request
     ){
@@ -49,11 +46,11 @@ public class ShoppingCartController implements ShoppingCartControllerDocs {
 
         return ResponseEntity
                 .status(HttpStatus.CREATED)
-                .build();
+                .body(StandardResponse.success().build());
     }
 
     @DeleteMapping
-    public ResponseEntity<StandardResponse<PagedResponse<ShoppingCartItemResponse>>> deleteAllItems(
+    public ResponseEntity<StandardResponse<Void>> deleteAllItems(
             @AuthenticationPrincipal Jwt jwt
     ){
         UUID authenticatedUserId = UUID.fromString(jwt.getSubject());
@@ -61,24 +58,24 @@ public class ShoppingCartController implements ShoppingCartControllerDocs {
 
         return ResponseEntity
                 .status(HttpStatus.OK)
-                .build();
+                .body(StandardResponse.success().build());
     }
 
     @DeleteMapping("/{id}")
-    public ResponseEntity<StandardResponse<PagedResponse<ShoppingCartItemResponse>>> deleteById(
+    public ResponseEntity<StandardResponse<Void>> deleteById(
             @AuthenticationPrincipal Jwt jwt,
             @PathVariable UUID id
     ){
         UUID authenticatedUserId = UUID.fromString(jwt.getSubject());
-        shoppingCartService.deleteItemById(id, authenticatedUserId);
+        shoppingCartService.deleteItemByProductSKUId(id, authenticatedUserId);
 
         return ResponseEntity
                 .status(HttpStatus.OK)
-                .build();
+                .body(StandardResponse.success().build());
     }
 
     @PostMapping("/checkout")
-    public ResponseEntity<Void> confirm(
+    public ResponseEntity<StandardResponse<Void>> confirm(
             @Valid @RequestBody ConfirmShoppingCartRequest request,
             @AuthenticationPrincipal Jwt jwt
     ) {
@@ -87,6 +84,6 @@ public class ShoppingCartController implements ShoppingCartControllerDocs {
 
         return ResponseEntity
                 .status(HttpStatus.CREATED)
-                .build();
+                .body(StandardResponse.success().build());
     }
 }

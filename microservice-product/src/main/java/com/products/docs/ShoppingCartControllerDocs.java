@@ -2,8 +2,7 @@ package com.products.docs;
 
 import com.products.application.dto.catalogue.ConfirmShoppingCartRequest;
 import com.products.application.dto.catalogue.CreateShoppingCartItemRequest;
-import com.products.application.dto.catalogue.ShoppingCartItemResponse;
-import io.github.responsekit.core.PagedResponse;
+import com.products.application.dto.catalogue.ShoppingCartResponse;
 import io.github.responsekit.core.StandardResponse;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.media.Content;
@@ -12,7 +11,6 @@ import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import io.swagger.v3.oas.annotations.tags.Tag;
-import org.springframework.data.domain.Pageable;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.security.oauth2.jwt.Jwt;
@@ -43,9 +41,8 @@ public interface ShoppingCartControllerDocs {
                     content = @Content
             )
     })
-    ResponseEntity<StandardResponse<PagedResponse<ShoppingCartItemResponse>>> getAllItems(
-            @AuthenticationPrincipal Jwt jwt,
-            Pageable pageable
+    ResponseEntity<StandardResponse<ShoppingCartResponse>> getAllItems(
+            @AuthenticationPrincipal Jwt jwt
     );
 
     @SecurityRequirement(name = "bearerAuth")
@@ -99,7 +96,7 @@ public interface ShoppingCartControllerDocs {
                     )
             )
     })
-    ResponseEntity<Void> create(
+    ResponseEntity<StandardResponse<Void>> create(
             @AuthenticationPrincipal Jwt jwt,
             CreateShoppingCartItemRequest request
     );
@@ -125,7 +122,7 @@ public interface ShoppingCartControllerDocs {
                     content = @Content
             )
     })
-    ResponseEntity<StandardResponse<PagedResponse<ShoppingCartItemResponse>>> deleteAllItems(
+    ResponseEntity<StandardResponse<Void>> deleteAllItems(
             @AuthenticationPrincipal Jwt jwt
     );
 
@@ -160,7 +157,7 @@ public interface ShoppingCartControllerDocs {
                     )
             )
     })
-    ResponseEntity<StandardResponse<PagedResponse<ShoppingCartItemResponse>>> deleteById(
+    ResponseEntity<StandardResponse<Void>> deleteById(
             @AuthenticationPrincipal Jwt jwt,
             UUID id
     );
@@ -206,7 +203,7 @@ public interface ShoppingCartControllerDocs {
                     )
             )
     })
-    ResponseEntity<Void> confirm(
+    ResponseEntity<StandardResponse<Void>> confirm(
             ConfirmShoppingCartRequest request,
             @AuthenticationPrincipal Jwt jwt
     );

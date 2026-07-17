@@ -13,6 +13,10 @@ spring:
       pageable:
         max-page-size: 20
 
+    redis:
+      host: ${REDIS_HOST}
+      port: 6379
+
   datasource:
     hikari:
       connection-timeout: 5000

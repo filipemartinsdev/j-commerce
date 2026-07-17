@@ -40,16 +40,12 @@ services:
   identity_db_scraper:
     image: prometheuscommunity/postgres-exporter
     container_name: identity_db_scraper
-    depends_on:
-      identity_db:
-        condition: service_started
+
     deploy:
       resources:
         limits:
           cpus: 0.5
           memory: 600M
-    ports:
-      - "9187:9187"
     environment:
       DATA_SOURCE_URI: identity_db:5432/${PG_IDENTITY_DATABASE:-identity}?sslmode=disable
       DATA_SOURCE_USER: ${PG_IDENTITY_USER:-identity}
@@ -83,8 +79,6 @@ services:
         limits:
           cpus: 0.5
           memory: 600M
-    ports:
-      - "9187:9187"
     environment:
       DATA_SOURCE_URI: product_db:5432/${PG_PRODUCT_DATABASE:-product}?sslmode=disable
       DATA_SOURCE_USER: ${PG_PRODUCT_USER:-product}
@@ -129,6 +123,8 @@ services:
     container_name: cache
     image: redis:7.4-alpine
     restart: unless-stopped
+    ports:
+      - "6379:6379"
     deploy:
       resources:
         limits:
@@ -183,6 +179,8 @@ services:
     restart: unless-stopped
     depends_on:
       identity_db_scraper:
+        condition: service_started
+      product_db_scraper:
         condition: service_started
       cadvisor:
         condition: service_started
@@ -259,6 +257,8 @@ services:
         condition: service_started
       rabbitmq:
         condition: service_started
+      cache:
+        condition: service_started
     restart: unless-stopped
     ports:
       - "8081:8080"
@@ -269,6 +269,7 @@ services:
           memory: 600M
     environment:
       JAVA_TOOL_OPTIONS: -Xmx256m
+      REDIS_HOST: cache
       PG_PRODUCT_DATABASE:
       PG_PRODUCT_USER:
       PG_PRODUCT_PASSWORD:
@@ -277,7 +278,6 @@ services:
       SPRING_DATASOURCE_USERNAME: ${PG_PRODUCT_USER:-product}
       SPRING_DATASOURCE_PASSWORD: ${PG_PRODUCT_PASSWORD:-product}
       OPENAI_API_KEY:
-      SPRING_DATA_REDIS_URL: redis://cache:6379
       ACTIVE_PROFILE: mock
 
   order:

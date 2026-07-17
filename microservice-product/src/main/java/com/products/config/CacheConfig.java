@@ -18,14 +18,18 @@ import java.time.Duration;
 public class CacheConfig {
     @Bean @Primary
     public CacheManager redisCacheManager(RedisConnectionFactory redisConnectionFactory) {
-        return RedisCacheManager.create(redisConnectionFactory);
-    }
-
-    @Bean
-    public RedisCacheConfiguration redisCacheConfiguration() {
-        return RedisCacheConfiguration.defaultCacheConfig()
+        RedisCacheConfiguration defaultCacheConfig = RedisCacheConfiguration.defaultCacheConfig()
                 .entryTtl(Duration.ofHours(1))
                 .disableCachingNullValues();
+
+        RedisCacheConfiguration shoppingCartCacheConfig = RedisCacheConfiguration.defaultCacheConfig()
+                .entryTtl(Duration.ofDays(7));
+
+        return RedisCacheManager.RedisCacheManagerBuilder
+                .fromConnectionFactory(redisConnectionFactory)
+                .cacheDefaults(defaultCacheConfig)
+                .withCacheConfiguration("shopping-cart", shoppingCartCacheConfig)
+                .build();
     }
 
     @Bean

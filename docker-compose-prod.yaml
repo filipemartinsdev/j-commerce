@@ -4,9 +4,6 @@ services:
     build:
       context: ./caddy
       dockerfile: Dockerfile
-    ports:
-      - "80:80"
-      - "443:443"
     deploy:
       resources:
         limits:
@@ -20,7 +17,7 @@ services:
     environment:
       SERVER_DOMAIN:
 
-# ----- DATA ------
+  # ----- DATA ------
 
   identity_db:
     image: postgres:17-alpine
@@ -28,28 +25,41 @@ services:
     deploy:
       resources:
         limits:
-          cpus: 0.5
+          cpus: 1
           memory: 600M
     environment:
-      POSTGRES_DB: ${PG_IDENTITY_DATABASE}
-      POSTGRES_USER: ${PG_IDENTITY_USER}
-      POSTGRES_PASSWORD: ${PG_IDENTITY_PASSWORD}
-      GRAPH_HOPPER_API_KEY:
+      POSTGRES_DB: ${PG_IDENTITY_DATABASE:-identity}
+      POSTGRES_USER: ${PG_IDENTITY_USER:-identity}
+      POSTGRES_PASSWORD: ${PG_IDENTITY_PASSWORD:-identity}
     volumes:
       - identity_data:/var/lib/postgresql/data
 
-  product_db:
-    image: postgres:17-alpine
-    container_name: product_db
+  identity_db_scraper:
+    image: prometheuscommunity/postgres-exporter
+    container_name: identity_db_scraper
+
     deploy:
       resources:
         limits:
           cpus: 0.5
           memory: 600M
     environment:
-      POSTGRES_DB: ${PG_PRODUCT_DATABASE}
-      POSTGRES_USER: ${PG_PRODUCT_USER}
-      POSTGRES_PASSWORD: ${PG_PRODUCT_PASSWORD}
+      DATA_SOURCE_URI: identity_db:5432/${PG_IDENTITY_DATABASE:-identity}?sslmode=disable
+      DATA_SOURCE_USER: ${PG_IDENTITY_USER:-identity}
+      DATA_SOURCE_PASS: ${PG_IDENTITY_PASSWORD:-identity}
+
+  product_db:
+    image: pgvector/pgvector:pg17-trixie
+    container_name: product_db
+    deploy:
+      resources:
+        limits:
+          cpus: 1
+          memory: 600M
+    environment:
+      POSTGRES_DB: ${PG_PRODUCT_DATABASE:-product}
+      POSTGRES_USER: ${PG_PRODUCT_USER:-product}
+      POSTGRES_PASSWORD: ${PG_PRODUCT_PASSWORD:-product}
     volumes:
       - product_data:/var/lib/postgresql/data
 
@@ -64,8 +74,6 @@ services:
         limits:
           cpus: 0.5
           memory: 600M
-    ports:
-      - "9187:9187"
     environment:
       DATA_SOURCE_URI: product_db:5432/${PG_PRODUCT_DATABASE:-product}?sslmode=disable
       DATA_SOURCE_USER: ${PG_PRODUCT_USER:-product}
@@ -77,12 +85,13 @@ services:
     deploy:
       resources:
         limits:
-          cpus: 0.5
+          cpus: 1
           memory: 600M
     environment:
-      POSTGRES_DB: ${PG_ORDER_DATABASE}
-      POSTGRES_USER: ${PG_ORDER_USER}
-      POSTGRES_PASSWORD: ${PG_ORDER_PASSWORD}
+      POSTGRES_DB: ${PG_ORDER_DATABASE:-order}
+      POSTGRES_USER: ${PG_ORDER_USER:-order}
+      POSTGRES_PASSWORD: ${PG_ORDER_PASSWORD:-order}
+      GRAPH_HOPPER_API_KEY:
     volumes:
       - order_data:/var/lib/postgresql/data
 
@@ -95,9 +104,9 @@ services:
           cpus: 0.5
           memory: 600M
     environment:
-      POSTGRES_DB: ${PG_NOTIFICATION_DATABASE}
-      POSTGRES_USER: ${PG_NOTIFICATION_USER}
-      POSTGRES_PASSWORD: ${PG_NOTIFICATION_PASSWORD}
+      POSTGRES_DB: ${PG_NOTIFICATION_DATABASE:-notification}
+      POSTGRES_USER: ${PG_NOTIFICATION_USER:-notification}
+      POSTGRES_PASSWORD: ${PG_NOTIFICATION_PASSWORD:-notification}
     volumes:
       - notification_data:/var/lib/postgresql/data
 
@@ -109,11 +118,11 @@ services:
       resources:
         limits:
           cpus: 0.5
-          memory: 600M
+          memory: 400M
     volumes:
       - cache_data:/data
 
-# ----- COMMUNICATION ------
+  # ----- COMMUNICATION ------
 
   rabbitmq:
     container_name: rabbitmq
@@ -129,15 +138,38 @@ services:
       - ./rabbitmq/rabbitmq.conf:/etc/rabbitmq/rabbitmq.conf:ro,z
       - ./rabbitmq/definitions.json:/opt/definitions.json:ro,z
     environment:
-      RABBITMQ_DEFAULT_USER: ${RABBITMQ_USER}
-      RABBITMQ_DEFAULT_PASS: ${RABBITMQ_PASSWORD}
+      RABBITMQ_DEFAULT_USER: ${RABBITMQ_USER:-admin}
+      RABBITMQ_DEFAULT_PASS: ${RABBITMQ_PASSWORD:-admin}
 
-# ----- OBSERVABILITY ------
+  # ----- OBSERVABILITY ------
+  cadvisor:
+    #    image: gcr.io/cadvisor/cadvisor:v0.49.1
+    image: ghcr.io/google/cadvisor:0.57.0
+    container_name: cadvisor
+    privileged: true
+    volumes:
+      - /:/rootfs:ro
+      - /var/run:/var/run:rw
+      - /sys:/sys:ro
+      - /var/lib/docker/:/var/lib/docker:ro
+    restart: unless-stopped
+    deploy:
+      resources:
+        limits:
+          cpus: 0.5
+          memory: 600M
 
   prometheus:
     image: prom/prometheus:v3.1.0
     container_name: "prometheus"
     restart: unless-stopped
+    depends_on:
+      identity_db_scraper:
+        condition: service_started
+      product_db_scraper:
+        condition: service_started
+      cadvisor:
+        condition: service_started
     deploy:
       resources:
         limits:
@@ -151,21 +183,23 @@ services:
     image: grafana/grafana-oss:11.5.0
     container_name: "grafana"
     restart: unless-stopped
+    depends_on:
+      prometheus:
+        condition: service_started
     deploy:
       resources:
         limits:
           cpus: 0.5
           memory: 600M
     environment:
-      GF_SECURITY_ADMIN_USER: ${GRAFANA_USER}
-      GF_SECURITY_ADMIN_PASSWORD: ${GRAFANA_PASSWORD}
-      GF_SERVER_HTTP_ADDR: "0.0.0.0"
+      GF_SECURITY_ADMIN_USER: ${GRAFANA_USER:-admin}
+      GF_SECURITY_ADMIN_PASSWORD: ${GRAFANA_PASSWORD:-admin}
     volumes:
       - ./observability/grafana.yml:/etc/grafana/provisioning/datasources/grafana.yml:Z
       - grafana_data:/var/lib/grafana:Z
 
 
-# ----- MICROSERVICES ------
+  # ----- MICROSERVICES -----
 
   identity:
     container_name: identity_service
@@ -179,16 +213,17 @@ services:
     deploy:
       resources:
         limits:
-          cpus: 0.5
+          cpus: 1.0
           memory: 600M
     environment:
+      JAVA_TOOL_OPTIONS: -Xmx256m
       PG_IDENTITY_DATABASE:
       PG_IDENTITY_USER:
       PG_IDENTITY_PASSWORD:
       SPRING_RABBITMQ_ADDRESSES: amqp://admin:admin@rabbitmq:5672/
-      SPRING_DATASOURCE_URL: jdbc:postgresql://identity_db:5432/${PG_IDENTITY_DATABASE}
-      SPRING_DATASOURCE_USERNAME: ${PG_IDENTITY_USER}
-      SPRING_DATASOURCE_PASSWORD: ${PG_IDENTITY_PASSWORD}
+      SPRING_DATASOURCE_URL: jdbc:postgresql://identity_db:5432/${PG_IDENTITY_DATABASE:-identity}
+      SPRING_DATASOURCE_USERNAME: ${PG_IDENTITY_USER:-identity}
+      SPRING_DATASOURCE_PASSWORD: ${PG_IDENTITY_PASSWORD:-identity}
       SPRING_DATA_REDIS_URL: redis://cache:6379
       ACTIVE_PROFILE: dev
 
@@ -200,22 +235,27 @@ services:
     depends_on:
       product_db:
         condition: service_started
+      rabbitmq:
+        condition: service_started
+      cache:
+        condition: service_started
     restart: unless-stopped
     deploy:
       resources:
         limits:
-          cpus: 0.5
+          cpus: 1.0
           memory: 600M
     environment:
+      JAVA_TOOL_OPTIONS: -Xmx256m
+      REDIS_HOST: cache
       PG_PRODUCT_DATABASE:
       PG_PRODUCT_USER:
       PG_PRODUCT_PASSWORD:
       SPRING_RABBITMQ_ADDRESSES: amqp://admin:admin@rabbitmq:5672/
-      SPRING_DATASOURCE_URL: jdbc:postgresql://product_db:5432/${PG_PRODUCT_DATABASE}
-      SPRING_DATASOURCE_USERNAME: ${PG_PRODUCT_USER}
-      SPRING_DATASOURCE_PASSWORD: ${PG_PRODUCT_PASSWORD}
-      SPRING_DATA_REDIS_URL: redis://cache:6379
-      ACTIVE_PROFILE: dev
+      SPRING_DATASOURCE_URL: jdbc:postgresql://product_db:5432/${PG_PRODUCT_DATABASE:-product}
+      SPRING_DATASOURCE_USERNAME: ${PG_PRODUCT_USER:-product}
+      SPRING_DATASOURCE_PASSWORD: ${PG_PRODUCT_PASSWORD:-product}
+      OPENAI_API_KEY:
 
   order:
     container_name: order_service
@@ -236,36 +276,15 @@ services:
       PG_PRODUCT_USER:
       PG_PRODUCT_PASSWORD:
       SPRING_RABBITMQ_ADDRESSES: amqp://admin:admin@rabbitmq:5672/
-      SPRING_DATASOURCE_URL: jdbc:postgresql://order_db:5432/${PG_ORDER_DATABASE}
-      SPRING_DATASOURCE_USERNAME: ${PG_ORDER_USER}
-      SPRING_DATASOURCE_PASSWORD: ${PG_ORDER_PASSWORD}
+      SPRING_DATASOURCE_URL: jdbc:postgresql://order_db:5432/${PG_ORDER_DATABASE:-order}
+      SPRING_DATASOURCE_USERNAME: ${PG_ORDER_USER:-order}
+      SPRING_DATASOURCE_PASSWORD: ${PG_ORDER_PASSWORD:-order}
       SPRING_DATA_REDIS_URL: redis://cache:6379
       ACTIVE_PROFILE: dev
       GRAPH_HOPPER_API_KEY:
 
-#  notification:
-#    container_name: notification_service
-#    build:
-#      context: microservice-notification/
-#      dockerfile: Dockerfile
-#    restart: unless-stopped
-#    depends_on:
-#      notification_db:
-#        condition: service_started
-#    environment:
-#      PG_NOTIFICATION_DATABASE:
-#      PG_NOTIFICATION_USER:
-#      PG_NOTIFICATION_PASSWORD:
-#      SPRING_DATASOURCE_URL: jdbc:postgresql://notification_db:5432/${PG_NOTIFICATION_DATABASE}
-#      SPRING_DATASOURCE_USERNAME: ${PG_NOTIFICATION_USER}
-#      SPRING_DATASOURCE_PASSWORD: ${PG_NOTIFICATION_PASSWORD}
-#      SPRING_RABBITMQ_ADDRESSES: amqp://admin:admin@rabbitmq:5672/
-#
-#      SPRING_DATA_REDIS_URL: redis://cache:6379
-#      ACTIVE_PROFILE: dev
-
-  notification-v2:
-    container_name: notification_service_v2
+  notification:
+    container_name: notification_service
     build:
       context: microservice-notification-v2/
       dockerfile: Dockerfile.jvm.build
@@ -281,50 +300,34 @@ services:
       rabbitmq:
         condition: service_started
     environment:
-      PG_NOTIFICATION_URL: jdbc:postgresql://notification_db:5432/postgres
+      PG_NOTIFICATION_URL: jdbc:postgresql://notification_db:5432/${PG_NOTIFICATION_DATABASE:-notification}
       PG_NOTIFICATION_USER:
       PG_NOTIFICATION_PASSWORD:
       AUTH_PUBLIC_KEY_URL: http://identity:8080/.well-known/jwks.json
       RABBITMQ_HOST: rabbitmq
       RABBITMQ_PORT: 5672
-      RABBITMQ_USER: ${RABBITMQ_USER}
-      RABBITMQ_PASSWORD: ${RABBITMQ_PASSWORD}
+      RABBITMQ_USER: ${RABBITMQ_USER:-admin}
+      RABBITMQ_PASSWORD: ${RABBITMQ_PASSWORD:-admin}
 
   payment:
-    container_name: payment_service
+    container_name: payment_worker
     build:
-      context: microservice-payment/
-      dockerfile: Dockerfile
+      context: worker-payment
+      dockerfile: Dockerfile.jvm.build
     restart: unless-stopped
+    depends_on:
+      rabbitmq:
+        condition: service_started
     deploy:
       resources:
         limits:
           cpus: 0.5
           memory: 600M
     environment:
-      PG_PRODUCT_DATABASE:
-      PG_PRODUCT_USER:
-      PG_PRODUCT_PASSWORD:
-      SPRING_RABBITMQ_ADDRESSES: amqp://admin:admin@rabbitmq:5672/
-      SPRING_DATA_REDIS_URL: redis://cache:6379
-      ACTIVE_PROFILE: dev
-
-  cadvisor:
-    #    image: gcr.io/cadvisor/cadvisor:v0.49.1
-    image: ghcr.io/google/cadvisor:0.57.0
-    container_name: cadvisor
-    privileged: true
-    volumes:
-      - /:/rootfs:ro
-      - /var/run:/var/run:rw
-      - /sys:/sys:ro
-      - /var/lib/docker/:/var/lib/docker:ro
-    restart: unless-stopped
-    deploy:
-      resources:
-        limits:
-          memory: 600M
-          cpus: 0.5
+      RABBITMQ_HOST: rabbitmq
+      RABBITMQ_PORT: 5672
+      RABBITMQ_USER: ${RABBITMQ_USER:-admin}
+      RABBITMQ_PASSWORD: ${RABBITMQ_PASSWORD:-admin}
 
 volumes:
   caddy_data:

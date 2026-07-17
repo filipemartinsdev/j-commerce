@@ -11,13 +11,17 @@ import io.github.responsekit.core.PagedResponse;
 import io.github.responsekit.quarkus.PagedResponseFactory;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.persistence.EntityManager;
+import jakarta.transaction.Transactional;
 import jakarta.ws.rs.BadRequestException;
 import jakarta.ws.rs.ForbiddenException;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.util.UUID;
 
 @ApplicationScoped
 public class UserNotificationService {
+    private static final Logger log = LoggerFactory.getLogger(UserNotificationService.class);
     private final UserNotificationRepository userNotificationRepository;
     private final UserNotificationMapper userNotificationMapper;
     private final EntityManager entityManager;
@@ -35,11 +39,10 @@ public class UserNotificationService {
         );
     }
 
+    @Transactional
     public void view(UUID id, UUID userId) {
-        UserNotification notification = userNotificationRepository.findById(id);
-
-        if (notification == null)
-            throw new UserNotificationNotFoundException("Notification not found by ID: "+id);
+        UserNotification notification = userNotificationRepository.findByIdOptional(id)
+                .orElseThrow(() -> new UserNotificationNotFoundException("Notification not found by ID: " + id));
 
         if (!notification.userId.equals(userId))
             throw new ForbiddenException();
@@ -50,8 +53,11 @@ public class UserNotificationService {
         notification.viewed = true;
 
         userNotificationRepository.persist(notification);
+
+        log.info("Viewing: {}", id);
     }
 
+    @Transactional
     public void create(UUID userId, String title, String description, Long categoryId){
         UserNotification notification = new UserNotification();
         notification.userId = userId;

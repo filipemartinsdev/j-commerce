@@ -10,7 +10,7 @@ http:
     type: json
     data: |-
       {
-        "productSKUId": "4fe1cb1a-4668-4ec2-b79f-0c741b6a6499",
+        "productSKUId": "cfce88a7-3f55-4c1f-af9f-8206745a7af3",
         "units": 50
       }
   auth: inherit

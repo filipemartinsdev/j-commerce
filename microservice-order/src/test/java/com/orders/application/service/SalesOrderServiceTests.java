@@ -6,10 +6,9 @@ import com.orders.application.exception.CantCancelSalesOrderException;
 import com.orders.application.exception.CantCreateSalesOrderException;
 import com.orders.application.exception.SalesOrderNotFoundException;
 import com.orders.application.message.CreateOrderMessage;
-import com.orders.application.message.CreateShippingMessage;
-import com.orders.application.message.GeneratePaymentMessage;
 import com.orders.application.service.mapper.SalesOrderMapper;
 import com.orders.domain.entity.*;
+import com.orders.infra.messaging.MessageBrokerProducer;
 import com.orders.infra.persistence.SalesOrderRepository;
 import com.orders.infra.persistence.SalesOrderStatusRepository;
 import io.github.responsekit.core.PagedResponse;
@@ -97,8 +96,7 @@ public class SalesOrderServiceTests {
         salesOrderService.createOrder(message);
 
         verify(salesOrderRepository).save(any(SalesOrder.class));
-        verify(messageBrokerProducer).produceCreateShipping(any(CreateShippingMessage.class));
-        verify(messageBrokerProducer).produceGeneratePayment(any(GeneratePaymentMessage.class));
+        verify(messageBrokerProducer).produceOrderCreated(any());
     }
 
     @Test
@@ -117,7 +115,7 @@ public class SalesOrderServiceTests {
         });
 
         verify(salesOrderRepository, never()).save(any(SalesOrder.class));
-        verify(messageBrokerProducer, never()).produceGeneratePayment(any(GeneratePaymentMessage.class));
+        verify(messageBrokerProducer, never()).produceOrderCreated(any());
     }
 
     @Test

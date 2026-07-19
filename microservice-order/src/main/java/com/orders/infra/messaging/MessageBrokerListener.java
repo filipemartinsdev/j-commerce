@@ -31,14 +31,14 @@ public class MessageBrokerListener {
     @RabbitListener(
             queues = "${broker.queues.createShipping.name}"
     )
-    public void listenCreateShipping(@Payload CreateShippingMessage message){
-        adminShippingService.createShippingFromMessage(message);
+    public void listenCreateShipping(@Payload SalesOrderCreatedMessage message){
+        adminShippingService.createShipping(message);
     }
 
     @RabbitListener(
             queues = "${broker.queues.cancelShipments.name}"
     )
-    public void listenCancelShipments(@Payload SalesOrderCancelledMessage message){
+    public void listenCancelShipments(@Payload SalesOrderCanceledMessage message){
         adminShippingService.cancelShipmentsBySalesOrderId(message.salesOrderId());
     }
 
@@ -50,9 +50,9 @@ public class MessageBrokerListener {
     }
 
     @RabbitListener(
-            queues = "${broker.queues.confirmOrderPayment.name}"
+            queues = "${broker.queues.confirmPayment.name}"
     )
-    public void listenConfirmOrder(@Payload PaymentConfirmedMessage message){
+    public void listenConfirmOrder(@Payload ConfirmPaymentMessage message){
         salesOrderService.confirmOrderPayment(message);
     }
 }

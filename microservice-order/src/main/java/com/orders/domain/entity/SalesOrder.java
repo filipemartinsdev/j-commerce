@@ -24,7 +24,7 @@ public class SalesOrder {
     private UUID userId;
 
     @NotNull
-    @ManyToOne(fetch = FetchType.LAZY)
+    @ManyToOne
     @JoinColumn(name = "status_id")
     private SalesOrderStatus status;
 

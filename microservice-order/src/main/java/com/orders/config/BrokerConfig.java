@@ -7,8 +7,7 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Profile;
 
-@Configuration
-@Profile("!test")
+@Deprecated
 public class BrokerConfig {
     @Value("${broker.exchanges.orderCancelledFanout.name}")
     private String ORDER_CANCELLED_EXCHANGE_NAME;

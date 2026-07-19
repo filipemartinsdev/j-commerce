@@ -2,9 +2,10 @@ package com.orders.application.service;
 
 import com.orders.application.dto.ShippingResponse;
 import com.orders.application.exception.*;
-import com.orders.application.message.CreateShippingMessage;
+import com.orders.application.message.SalesOrderCreatedMessage;
 import com.orders.application.service.mapper.ShippingMapper;
 import com.orders.domain.entity.*;
+import com.orders.infra.messaging.MessageBrokerProducer;
 import com.orders.infra.persistence.DeliveryAddressRepository;
 import com.orders.infra.persistence.SalesOrderRepository;
 import com.orders.infra.persistence.ShippingRepository;
@@ -43,12 +44,12 @@ public class AdminShippingServiceTests {
     @InjectMocks private AdminShippingService adminShippingService;
 
     @Test @DisplayName("Should create shipping from message successfully")
-    void createShippingFromMessageTestCase1() {
+    void createShippingTestCase1() {
         UUID salesOrderId = UUID.randomUUID();
         UUID deliveryAddressId = UUID.randomUUID();
         Instant deliveryDate = Instant.now().plusSeconds(86400);
 
-        var message = new CreateShippingMessage(salesOrderId, deliveryAddressId);
+        var message = new SalesOrderCreatedMessage(salesOrderId, null, deliveryAddressId, null);
 
         var deliveryAddress = new DeliveryAddress();
         deliveryAddress.setId(deliveryAddressId);
@@ -70,7 +71,7 @@ public class AdminShippingServiceTests {
         when(deliveryDateCalculator.getDeliveryDate(anyDouble(), anyDouble()))
                 .thenReturn(deliveryDate);
 
-        adminShippingService.createShippingFromMessage(message);
+        adminShippingService.createShipping(message);
 
         verify(deliveryAddressRepository).findById(deliveryAddressId);
         verify(salesOrderRepository).getReferenceById(salesOrderId);
@@ -80,17 +81,17 @@ public class AdminShippingServiceTests {
     }
 
     @Test @DisplayName("Should throw DeliveryAddressNotFoundException if DeliveryAddress not exists by ID")
-    void createShippingFromMessageTestCase2() {
+    void createShippingTestCase2() {
         UUID salesOrderId = UUID.randomUUID();
         UUID deliveryAddressId = UUID.randomUUID();
 
-        var message = new CreateShippingMessage(salesOrderId, deliveryAddressId);
+        var message = new SalesOrderCreatedMessage(salesOrderId, null, deliveryAddressId, null);
 
         when(deliveryAddressRepository.findById(deliveryAddressId))
                 .thenReturn(Optional.empty());
 
         assertThrows(DeliveryAddressNotFoundException.class, () -> {
-            adminShippingService.createShippingFromMessage(message);
+            adminShippingService.createShipping(message);
         });
 
         verify(deliveryAddressRepository).findById(deliveryAddressId);
@@ -102,7 +103,7 @@ public class AdminShippingServiceTests {
         UUID salesOrderId = UUID.randomUUID();
 
         var salesOrderStatus = new SalesOrderStatus();
-        salesOrderStatus.setId(SalesOrderStatus.Value.CONFIRMED.getId());
+        salesOrderStatus.setId(SalesOrderStatus.Value.CANCELLED.getId());
 
         var shippingStatus = new ShippingStatus();
         shippingStatus.setId(ShippingStatus.Value.PENDING.getId());
@@ -189,7 +190,7 @@ public class AdminShippingServiceTests {
         verify(shippingRepository, never()).save(any());
     }
 
-    @Test @DisplayName("Should throw CantCancelShippingException if shipping is already cancelled")
+    @Test @DisplayName("Should throw CantTransitionShippingStatusException if shipping is already cancelled")
     void cancelShippingTestCase3() {
         UUID shippingId = UUID.randomUUID();
 
@@ -207,7 +208,7 @@ public class AdminShippingServiceTests {
         when(shippingRepository.findById(shippingId))
                 .thenReturn(Optional.of(shipping));
 
-        assertThrows(CantCancelShippingException.class, () -> {
+        assertThrows(CantTransitionShippingStatusException.class, () -> {
             adminShippingService.cancelShipping(shippingId);
         });
 
@@ -215,7 +216,7 @@ public class AdminShippingServiceTests {
         verify(shippingRepository, never()).save(any());
     }
 
-    @Test @DisplayName("Should throw CantCancelShippingException if shipping is delivered")
+    @Test @DisplayName("Should throw CantTransitionShippingStatusException if shipping is delivered")
     void cancelShippingTestCase4() {
         UUID shippingId = UUID.randomUUID();
 
@@ -233,7 +234,7 @@ public class AdminShippingServiceTests {
         when(shippingRepository.findById(shippingId))
                 .thenReturn(Optional.of(shipping));
 
-        assertThrows(CantCancelShippingException.class, () -> {
+        assertThrows(CantTransitionShippingStatusException.class, () -> {
             adminShippingService.cancelShipping(shippingId);
         });
 
@@ -433,14 +434,14 @@ public class AdminShippingServiceTests {
                 .thenReturn(Optional.of(shipping));
         when(shippingStatusRepository.getReferenceById(ShippingStatus.Value.DISPATCHED.getId()))
                 .thenReturn(dispatchedStatus);
-        doNothing().when(messageBrokerProducer).produceNotifyShippingDispatched(any());
+        doNothing().when(messageBrokerProducer).produceOrderDispatched(any());
 
         adminShippingService.dispatchShipping(shippingId);
 
         verify(shippingRepository).findById(shippingId);
         verify(shippingStatusRepository).getReferenceById(ShippingStatus.Value.DISPATCHED.getId());
         verify(shippingRepository).save(shipping);
-        verify(messageBrokerProducer).produceNotifyShippingDispatched(any());
+        verify(messageBrokerProducer).produceOrderDispatched(any());
     }
 
     @Test @DisplayName("Should throw ShippingNotFoundException if shipping not exists by ID")
@@ -458,7 +459,7 @@ public class AdminShippingServiceTests {
         verify(shippingRepository, never()).save(any());
     }
 
-    @Test @DisplayName("Should throw CantDispatchShippingException shipping is not PENDING")
+    @Test @DisplayName("Should throw CantTransitionShippingStatusException if shipping is not PENDING")
     void dispatchShippingTestCase3() {
         UUID shippingId = UUID.randomUUID();
 
@@ -480,7 +481,7 @@ public class AdminShippingServiceTests {
         when(shippingRepository.findById(shippingId))
                 .thenReturn(Optional.of(shipping));
 
-        assertThrows(CantDispatchShippingException.class, () -> {
+        assertThrows(CantTransitionShippingStatusException.class, () -> {
             adminShippingService.dispatchShipping(shippingId);
         });
 
@@ -488,7 +489,7 @@ public class AdminShippingServiceTests {
         verify(shippingRepository, never()).save(any());
     }
 
-    @Test @DisplayName("Should throw CantDispatchShippingException sales order status is not CONFIRMED")
+    @Test @DisplayName("Should throw CantDispatchShippingException if sales order status is not CONFIRMED")
     void dispatchShippingTestCase4() {
         UUID shippingId = UUID.randomUUID();
 
@@ -571,7 +572,7 @@ public class AdminShippingServiceTests {
         verify(shippingRepository, never()).save(any());
     }
 
-    @Test @DisplayName("Should throw CantCheckInShippingException if shipping status is not DISPATCHED")
+    @Test @DisplayName("Should throw CantTransitionShippingStatusException if shipping status is not DISPATCHED")
     void startShippingTestCase3() {
         UUID shippingId = UUID.randomUUID();
         UUID driverId = UUID.randomUUID();
@@ -595,7 +596,7 @@ public class AdminShippingServiceTests {
         when(shippingRepository.findById(shippingId))
                 .thenReturn(Optional.of(shipping));
 
-        assertThrows(CantCheckInShippingException.class, () -> {
+        assertThrows(CantTransitionShippingStatusException.class, () -> {
             adminShippingService.startShipping(shippingId, driverId);
         });
 
@@ -652,7 +653,7 @@ public class AdminShippingServiceTests {
         verify(shippingRepository, never()).save(any());
     }
 
-    @Test @DisplayName("Should throw CantCheckOutShippingException if shipping is not in transit")
+    @Test @DisplayName("Should throw CantTransitionShippingStatusException if shipping is not in transit")
     void finishShippingTestCase3() {
         UUID shippingId = UUID.randomUUID();
 
@@ -674,7 +675,7 @@ public class AdminShippingServiceTests {
         when(shippingRepository.findById(shippingId))
                 .thenReturn(Optional.of(shipping));
 
-        assertThrows(CantCheckOutShippingException.class, () -> {
+        assertThrows(CantTransitionShippingStatusException.class, () -> {
             adminShippingService.finishShipping(shippingId);
         });
 

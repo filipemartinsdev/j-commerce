@@ -9,6 +9,7 @@ import static com.orders.application.message.CreateOrderMessage.OrderItem;
 
 import com.orders.application.service.mapper.SalesOrderMapper;
 import com.orders.domain.entity.*;
+import com.orders.infra.messaging.MessageBrokerProducer;
 import com.orders.infra.persistence.*;
 import io.github.responsekit.core.PagedResponse;
 import org.springframework.data.domain.Page;
@@ -41,12 +42,8 @@ public class SalesOrderService {
 
         SalesOrder order = registerNewOrder(message.userId(), message.items());
 
-        messageBrokerProducer.produceGeneratePayment(
-                new GeneratePaymentMessage(order.getId(), message.userId(), getTotalAmount(order))
-        );
-
-        messageBrokerProducer.produceCreateShipping(
-                new CreateShippingMessage(order.getId(), message.deliveryAddressId())
+        messageBrokerProducer.produceOrderCreated(
+                new SalesOrderCreatedMessage(order.getId(), message.userId(), message.deliveryAddressId(), getTotalAmount(order))
         );
     }
 
@@ -121,26 +118,26 @@ public class SalesOrderService {
 
         salesOrderRepository.save(order);
 
-        publishOrderCancelledMessage(order);
+        publishOrderCanceledMessage(order);
     }
 
-    private void publishOrderCancelledMessage(SalesOrder order){
-        SalesOrderCancelledMessage message = new SalesOrderCancelledMessage(
+    private void publishOrderCanceledMessage(SalesOrder order){
+        SalesOrderCanceledMessage message = new SalesOrderCanceledMessage(
                 order.getId(),
                 order.getUserId(),
                 order.getItems().stream()
                         .map(salesOrderItem ->
-                                new SalesOrderCancelledMessage.OrderItem(salesOrderItem.getProductSkuId(), salesOrderItem.getUnits())
+                                new SalesOrderCanceledMessage.OrderItem(salesOrderItem.getProductSkuId(), salesOrderItem.getUnits())
                         )
                         .toList(),
                 getTotalAmount(order)
         );
 
-        messageBrokerProducer.produceOrderCancelled(message);
+        messageBrokerProducer.produceOrderCanceled(message);
     }
 
 
-    public void confirmOrderPayment(PaymentConfirmedMessage message) {
+    public void confirmOrderPayment(ConfirmPaymentMessage message) {
         SalesOrder order = salesOrderRepository.findById(message.orderId())
                 .orElseThrow(() -> new SalesOrderNotFoundException("Sales order not found with ID: "+message.orderId()));
 

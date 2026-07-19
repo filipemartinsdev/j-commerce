@@ -19,34 +19,13 @@ spring:
           jwk-set-uri: http://localhost:8080/.well-known/jwks.json
 
   datasource:
-    url: ${PG_URL}
-    username: ${PG_USER}
-    password: ${PG_PASSWORD}
-
     hikari:
       connection-timeout: 5000
       maximum-pool-size: 10
       minimum-idle: 2
 
-  data:
-    redis:
-      url: ${REDIS_URL}
-
   cache:
     type: redis
-
-  rabbitmq:
-    addresses: ${RABBITMQ_URL}
-
-    listener:
-      direct:
-        prefetch: 20
-
-        retry:
-          enabled: true
-          max-retries: 3
-          multiplier: 2.0
-          initial-interval: 2000ms
 
 management:
   endpoints:

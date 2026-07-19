@@ -3,16 +3,10 @@ server:
 
 spring:
   application:
-    name: microservice-identity
+    name: microservice-order
 
   profiles:
     active: ${ACTIVE_PROFILE:test}
-
-  datasource:
-    hikari:
-      connection-timeout: 5000
-      maximum-pool-size: 10
-      minimum-idle: 2
 
   security:
     oauth2:
@@ -20,7 +14,29 @@ spring:
         jwt:
           jwk-set-uri: http://identity:8080/.well-known/jwks.json
 
+  datasource:
+    url: ${PG_URL}
+    username: ${PG_USER}
+    password: ${PG_PASSWORD}
+
+    hikari:
+      connection-timeout: 5000
+      maximum-pool-size: 10
+      minimum-idle: 2
+
+  jpa:
+    hibernate:
+      ddl-auto: none
+
+  flyway:
+    enabled: true
+
   rabbitmq:
+    host: ${RABBITMQ_HOST}
+    port: ${RABBITMQ_PORT}
+    username: ${RABBITMQ_USER}
+    password: ${RABBITMQ_PASSWORD}
+
     listener:
       simple:
         prefetch: 20
@@ -38,14 +54,8 @@ management:
 
 broker:
   exchanges:
-    paymentGeneratedFanout:
-      name: payment.generated.fanout
-
-    paymentConfirmedFanout:
-      name: payment.confirmed.fanout
-
-    orderCancelledFanout:
-      name: order.cancelled.fanout
+    orderTopic:
+      name: order.topic
 
   queues:
     createOrder:
@@ -57,23 +67,11 @@ broker:
     cancelShipments:
       name: order.cancel_shipments
 
-    generatePayment:
-      name: payment.generate_payment
+    confirmPayment:
+      name: order.confirm_payment
 
     handlePaymentTimeout:
       name: order.handle_payment_timeout
-
-    confirmOrderPayment:
-      name: order.confirm_order_payment
-
-    refundItems:
-      name: product.refund_items
-
-    notifyCancelledOrder:
-      name: notification.notify_cancelled_order
-
-    notifyShippingDispatched:
-      name: notification.notify_shipping_dispatched
 
 graphHopperClient:
   apiKey: ${GRAPH_HOPPER_API_KEY:test}

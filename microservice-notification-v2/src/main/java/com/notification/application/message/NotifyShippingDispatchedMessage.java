@@ -5,7 +5,9 @@ import java.math.BigDecimal;
 import java.util.UUID;
 
 public record NotifyShippingDispatchedMessage(
+        UUID salesOrderId,
         UUID userId,
-        BigDecimal orderValue
+        UUID deliveryAddressId,
+        BigDecimal totalAmount
 ) implements Serializable {
 }

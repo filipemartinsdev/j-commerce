@@ -11,12 +11,12 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 @ApplicationScoped
-public class NotificationConsumer {
-    private static final Logger log = LoggerFactory.getLogger(NotificationConsumer.class);
+public class MessageBrokerConsumer {
+    private static final Logger log = LoggerFactory.getLogger(MessageBrokerConsumer.class);
 
     private final UserNotificationService userNotificationService;
 
-    public NotificationConsumer(UserNotificationService userNotificationService) {
+    public MessageBrokerConsumer(UserNotificationService userNotificationService) {
         this.userNotificationService = userNotificationService;
     }
 
@@ -67,7 +67,7 @@ public class NotificationConsumer {
         userNotificationService.create(
                 message.userId(),
                 "Order canceled",
-                "Your order of R$" + message.amount() + " has been cancelled",
+                "Your order of R$" + message.totalAmount() + " has been cancelled",
                 UserNotificationCategory.Value.WARNING.id
         );
     }
@@ -93,7 +93,7 @@ public class NotificationConsumer {
         userNotificationService.create(
                 message.userId(),
                 "Shipping dispatched",
-                "Your order of R$" + message.orderValue() + " has been dispatched for delivery",
+                "Your order of R$" + message.totalAmount() + " has been dispatched for delivery",
                 UserNotificationCategory.Value.WARNING.id
         );
     }

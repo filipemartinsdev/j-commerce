@@ -41,7 +41,7 @@ public class ShippingStatus {
                 case 3 -> Value.IN_TRANSIT;
                 case 4 -> Value.DELIVERED;
                 case 5 -> Value.CANCELLED;
-                default -> throw new IllegalArgumentException("No enum constant for id: " + id);
+                default -> throw new IllegalArgumentException("No enum constant for salesOrderId: " + id);
             };
         }
     }

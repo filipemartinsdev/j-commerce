@@ -17,7 +17,6 @@ import jakarta.transaction.Transactional;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
-import java.math.BigDecimal;
 import java.util.UUID;
 
 @Service
@@ -45,7 +44,7 @@ public class AdminShippingService {
                 .orElseThrow(() -> new DeliveryAddressNotFoundException("Delivery address not found with ID: " + message.deliveryAddressId()));
 
         Shipping shipping = new Shipping();
-        shipping.setSalesOrder(salesOrderRepository.getReferenceById(message.id()));
+        shipping.setSalesOrder(salesOrderRepository.getReferenceById(message.salesOrderId()));
         shipping.setDeliveryAddress(deliveryAddress);
         shipping.setStatus(shippingStatusRepository.getReferenceById(
                 ShippingStatus.Value.PENDING.getId()

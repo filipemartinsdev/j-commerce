@@ -38,7 +38,7 @@ public class SalesOrderStatus {
                 case 1 -> PENDING;
                 case 2 -> CONFIRMED;
                 case 3 -> CANCELLED;
-                default -> throw new IllegalArgumentException("No enum constant for id: " + id);
+                default -> throw new IllegalArgumentException("No enum constant for salesOrderId: " + id);
             };
         }
     }

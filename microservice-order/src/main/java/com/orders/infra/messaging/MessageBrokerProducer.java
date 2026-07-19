@@ -16,7 +16,11 @@ public class MessageBrokerProducer {
     @Value("${broker.exchanges.orderTopic.name}")
     private String ORDER_EXCHANGE_NAME;
 
-    private RabbitTemplate rabbitTemplate;
+    private final RabbitTemplate rabbitTemplate;
+
+    public MessageBrokerProducer(RabbitTemplate rabbitTemplate) {
+        this.rabbitTemplate = rabbitTemplate;
+    }
 
     public void produceOrderCreated(SalesOrderCreatedMessage message){
         rabbitTemplate.convertAndSend(ORDER_EXCHANGE_NAME, "order.created", message, msg -> {

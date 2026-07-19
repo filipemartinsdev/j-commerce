@@ -175,7 +175,7 @@ public class SalesOrderServiceTests {
     }
 
     @Test
-    @DisplayName("Should return sales order summary by id")
+    @DisplayName("Should return sales order summary by salesOrderId")
     void getSummaryByIdTestCase1() {
         UUID orderId = UUID.randomUUID();
         UUID userId = UUID.randomUUID();

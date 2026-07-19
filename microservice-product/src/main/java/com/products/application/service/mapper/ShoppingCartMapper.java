@@ -2,11 +2,9 @@ package com.products.application.service.mapper;
 
 import com.products.application.dto.catalogue.ShoppingCart;
 import com.products.application.dto.catalogue.ShoppingCartResponse;
-import com.products.application.message.OrderCheckedMessage;
 import org.springframework.stereotype.Component;
 
 import java.math.BigDecimal;
-import java.util.UUID;
 
 @Component
 public class ShoppingCartMapper {

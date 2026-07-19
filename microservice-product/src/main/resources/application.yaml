@@ -19,26 +19,13 @@ spring:
       pageable:
         max-page-size: 20
 
-    redis:
-      url: ${REDIS_URL}
-
   datasource:
-    url: ${PG_URL}
-    username: ${PG_USER}
-    password: ${PG_PASSWORD}
-
     hikari:
       connection-timeout: 5000
       maximum-pool-size: 20
       minimum-idle: 2
 
   rabbitmq:
-#    addresses: ${RABBITMQ_URL}
-    host: ${RABBITMQ_HOST}
-    port: ${RABBITMQ_PORT}
-    username: ${RABBITMQ_USER}
-    password: ${RABBITMQ_PASSWORD}
-
     listener:
       simple:
         prefetch: 20

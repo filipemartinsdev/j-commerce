@@ -275,7 +275,7 @@ The entire project is following the principle of **Soft Delete**. No data is del
 
 ## Messaging
 
-The entire order flow is based on asynchronous communication, using **Spring AMQP** to integrate the **RabbitMQ** Message Broker.
+The entire order flow is based on asynchronous communication, using **Spring AMQP** and **Quarkus Messaging RabbitMQ** to integrate the **RabbitMQ** Message Broker.
 
 ### Exchanges
 

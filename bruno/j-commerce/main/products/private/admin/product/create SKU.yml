@@ -10,8 +10,8 @@ http:
     type: json
     data: |-
       {
-        "productId": "019f2441-79cc-7674-af0d-43f9a079703f",
-        "name": "Controler Dualshock 4",
+        "productId": "019f77a4-4a37-7220-ad11-06f26a26604a",
+        "name": "Dualshock 4 Controller",
         "SKU": "DS4"
       }
   auth: inherit

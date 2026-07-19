@@ -10,7 +10,7 @@ http:
     type: json
     data: |
       {
-        "productSKUId": "8e8d8eaa-df29-41e9-980c-2d4207316474",
+        "productSKUId": "cfce88a7-3f55-4c1f-af9f-8206745a7af3",
         "price": 170.99,
         "priceTypeId": 1
       }

@@ -11,21 +11,6 @@ import org.springframework.context.annotation.Profile;
 @Profile("!test")
 @Configuration
 public class MessageBrokerConfig {
-    @Value("${broker.queues.createOrder.name}")
-    private String CREATE_ORDER_QUEUE_NAME;
-
-    @Value("${broker.queues.refundItems.name}")
-    private String REFUND_ITEMS_QUEUE_NAME;
-
-    @Bean
-    public Queue shoppingCartConfirmationQueue() {
-        return new Queue(CREATE_ORDER_QUEUE_NAME, true);
-    }
-
-    @Bean Queue refundItemsQueue() {
-        return new Queue(REFUND_ITEMS_QUEUE_NAME, true);
-    }
-
     @Bean
     public JacksonJsonMessageConverter jacksonJsonMessageConverter() {
         return new JacksonJsonMessageConverter();

@@ -53,8 +53,6 @@ public class UserNotificationService {
         notification.viewed = true;
 
         userNotificationRepository.persist(notification);
-
-        log.info("Viewing: {}", id);
     }
 
     @Transactional

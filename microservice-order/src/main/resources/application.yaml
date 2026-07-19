@@ -15,10 +15,6 @@ spring:
           jwk-set-uri: http://identity:8080/.well-known/jwks.json
 
   datasource:
-    url: ${PG_URL}
-    username: ${PG_USER}
-    password: ${PG_PASSWORD}
-
     hikari:
       connection-timeout: 5000
       maximum-pool-size: 10
@@ -32,11 +28,6 @@ spring:
     enabled: true
 
   rabbitmq:
-    host: ${RABBITMQ_HOST}
-    port: ${RABBITMQ_PORT}
-    username: ${RABBITMQ_USER}
-    password: ${RABBITMQ_PASSWORD}
-
     listener:
       simple:
         prefetch: 20

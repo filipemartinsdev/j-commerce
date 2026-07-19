@@ -2,9 +2,8 @@ package com.orders.application.service;
 
 import com.orders.application.dto.ShippingResponse;
 import com.orders.application.exception.*;
-import com.orders.application.message.OrderDispatchedMessage;
-import com.orders.application.message.SalesOrderCanceledMessage;
 import com.orders.application.message.SalesOrderCreatedMessage;
+import com.orders.application.message.SalesOrderDispatchedMessage;
 import com.orders.application.service.mapper.ShippingMapper;
 import com.orders.domain.entity.*;
 import com.orders.infra.messaging.MessageBrokerProducer;
@@ -16,9 +15,9 @@ import io.github.responsekit.core.PagedResponse;
 import io.github.responsekit.spring.PagedResponseFactory;
 import jakarta.transaction.Transactional;
 import org.springframework.data.domain.Pageable;
-import org.springframework.resilience.annotation.Retryable;
 import org.springframework.stereotype.Service;
 
+import java.math.BigDecimal;
 import java.util.UUID;
 
 @Service
@@ -140,8 +139,11 @@ public class AdminShippingService {
         shippingRepository.save(shipping);
 
         messageBrokerProducer.produceOrderDispatched(
-                new OrderDispatchedMessage(
-                        shipping.getSalesOrder().getUserId(), salesOrderRepository.getSalesOrderValue(shipping.getSalesOrder().getId())
+                new SalesOrderDispatchedMessage(
+                        shipping.getSalesOrder().getId(),
+                        shipping.getSalesOrder().getUserId(),
+                        shipping.getDeliveryAddress().getId(),
+                        salesOrderRepository.getSalesOrderValue(shipping.getSalesOrder().getId())
                 )
         );
     }

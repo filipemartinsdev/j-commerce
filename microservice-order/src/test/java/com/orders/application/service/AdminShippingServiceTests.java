@@ -410,8 +410,6 @@ public class AdminShippingServiceTests {
 
     @Test @DisplayName("Should dispatch shipping successfully")
     void dispatchShippingTestCase1() {
-        UUID shippingId = UUID.randomUUID();
-
         var shippingStatus = new ShippingStatus();
         shippingStatus.setId(ShippingStatus.Value.PENDING.getId());
 
@@ -422,23 +420,27 @@ public class AdminShippingServiceTests {
         salesOrder.setId(UUID.randomUUID());
         salesOrder.setStatus(salesOrderStatus);
 
+        var deliveryAddress = new DeliveryAddress();
+        deliveryAddress.setId(UUID.randomUUID());
+
         var shipping = new Shipping();
-        shipping.setId(shippingId);
+        shipping.setId(UUID.randomUUID());
         shipping.setStatus(shippingStatus);
         shipping.setSalesOrder(salesOrder);
+        shipping.setDeliveryAddress(deliveryAddress);
 
         var dispatchedStatus = new ShippingStatus();
         dispatchedStatus.setId(ShippingStatus.Value.DISPATCHED.getId());
 
-        when(shippingRepository.findById(shippingId))
+        when(shippingRepository.findById(shipping.getId()))
                 .thenReturn(Optional.of(shipping));
         when(shippingStatusRepository.getReferenceById(ShippingStatus.Value.DISPATCHED.getId()))
                 .thenReturn(dispatchedStatus);
         doNothing().when(messageBrokerProducer).produceOrderDispatched(any());
 
-        adminShippingService.dispatchShipping(shippingId);
+        adminShippingService.dispatchShipping(shipping.getId());
 
-        verify(shippingRepository).findById(shippingId);
+        verify(shippingRepository).findById(shipping.getId());
         verify(shippingStatusRepository).getReferenceById(ShippingStatus.Value.DISPATCHED.getId());
         verify(shippingRepository).save(shipping);
         verify(messageBrokerProducer).produceOrderDispatched(any());

@@ -22,7 +22,7 @@ public class Shipping {
     private ShippingStatus status;
 
     @NotNull
-    @ManyToOne
+    @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "sales_order_id")
     private SalesOrder salesOrder;
 

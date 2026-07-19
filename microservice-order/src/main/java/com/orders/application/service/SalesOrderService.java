@@ -70,15 +70,16 @@ public class SalesOrderService {
                 .map(item -> {
                     var salesOrderItem = new SalesOrderItem();
                     salesOrderItem.setSalesOrder(salesOrder);
-                    salesOrderItem.setProductSkuId(item.getProductSKUId());
-                    salesOrderItem.setUnits(item.getUnits());
-                    salesOrderItem.setUnitPrice(item.getUnitPrice());
-                    salesOrderItem.setProductSkuName(item.getName());
+                    salesOrderItem.setProductSkuId(item.productSKUId());
+                    salesOrderItem.setUnits(item.units());
+                    salesOrderItem.setUnitPrice(item.unitPrice());
+                    salesOrderItem.setProductSkuName(item.name());
                     return salesOrderItem;
                 })
                 .toList();
         salesOrder.setItems(salesOrderItems);
     }
+
 
     public PagedResponse<SalesOrderResponse> getAllByUserId(UUID userId, Pageable pageable) {
         Page<SalesOrder> page = salesOrderRepository.findAllByUserId(userId, pageable);
@@ -115,13 +116,11 @@ public class SalesOrderService {
 
     private void cancelOrder(SalesOrder order) {
         order.setStatus(salesOrderStatusRepository.getReferenceById(SalesOrderStatus.Value.CANCELLED.getId()));
-
         salesOrderRepository.save(order);
-
-        publishOrderCanceledMessage(order);
+        produceOrderCanceledMessage(order);
     }
 
-    private void publishOrderCanceledMessage(SalesOrder order){
+    private void produceOrderCanceledMessage(SalesOrder order){
         SalesOrderCanceledMessage message = new SalesOrderCanceledMessage(
                 order.getId(),
                 order.getUserId(),
@@ -149,13 +148,10 @@ public class SalesOrderService {
         SalesOrder order = salesOrderRepository.findById(id)
                 .orElseThrow(() -> new SalesOrderNotFoundException("Sales order not found with ID: "+id));
 
-        if (canUserCancelOrder(userId, order)){
+        if (canUserCancelOrder(userId, order))
             cancelOrder(order);
-        }
-
-        else {
+        else
             throw new CantCancelSalesOrderException("Can't cancel this order");
-        }
     }
 
     private boolean canUserCancelOrder(UUID userId, SalesOrder order) {

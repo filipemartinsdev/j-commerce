@@ -8,30 +8,39 @@ spring:
   profiles:
     active: ${ACTIVE_PROFILE:test}
 
-  data:
-    web:
-      pageable:
-        max-page-size: 20
-
-    redis:
-      host: ${REDIS_HOST}
-      port: 6379
-
-  datasource:
-    hikari:
-      connection-timeout: 5000
-      maximum-pool-size: 20
-      minimum-idle: 2
-
   security:
     oauth2:
       resourceserver:
         jwt:
           jwk-set-uri: http://identity:8080/.well-known/jwks.json
 
+  data:
+    web:
+      pageable:
+        max-page-size: 20
+
+    redis:
+      url: ${REDIS_URL}
+
+  datasource:
+    url: ${PG_URL}
+    username: ${PG_USER}
+    password: ${PG_PASSWORD}
+
+    hikari:
+      connection-timeout: 5000
+      maximum-pool-size: 20
+      minimum-idle: 2
+
   rabbitmq:
+#    addresses: ${RABBITMQ_URL}
+    host: ${RABBITMQ_HOST}
+    port: ${RABBITMQ_PORT}
+    username: ${RABBITMQ_USER}
+    password: ${RABBITMQ_PASSWORD}
+
     listener:
-      direct:
+      simple:
         prefetch: 20
         retry:
           enabled: true
@@ -46,13 +55,6 @@ spring:
         options:
           model: text-embedding-3-small
 
-  jpa:
-    hibernate:
-      ddl-auto: none
-
-  flyway:
-    enabled: true
-
 management:
   endpoints:
     web:
@@ -61,10 +63,12 @@ management:
 
 broker:
   queues:
-    createOrder:
-      name: order.create_order
-    refundItems:
-      name: product.refund_items
+    refundProduct:
+      name: product.refund
+
+  exchanges:
+    orderTopic:
+      name: order.topic
 
 feign:
   clients:

@@ -28,7 +28,7 @@ public class NotificationConsumer {
         userNotificationService.create(
                 message.userId(),
                 "Payment generated",
-                "A payment of R$" + message.value() + " has been generated and sent by email",
+                "A payment of R$" + message.amount() + " has been generated and sent by email",
                 UserNotificationCategory.Value.WARNING.id
         );
     }
@@ -41,7 +41,7 @@ public class NotificationConsumer {
         userNotificationService.create(
                 message.userId(),
                 "Payment confirmed",
-                "Your payment of R$" + message.value() + " has been confirmed",
+                "Your payment of R$" + message.amount() + " has been confirmed",
                 UserNotificationCategory.Value.WARNING.id
         );
     }
@@ -54,7 +54,7 @@ public class NotificationConsumer {
         userNotificationService.create(
                 message.userId(),
                 "Payment expired",
-                "Your payment of R$" + message.value() + " has been expired and your order will be refunded.",
+                "Your payment of R$" + message.amount() + " has been expired and your order will be refunded.",
                 UserNotificationCategory.Value.WARNING.id
         );
     }
@@ -67,7 +67,7 @@ public class NotificationConsumer {
         userNotificationService.create(
                 message.userId(),
                 "Order canceled",
-                "Your order of R$" + message.value() + " has been cancelled",
+                "Your order of R$" + message.amount() + " has been cancelled",
                 UserNotificationCategory.Value.WARNING.id
         );
     }
@@ -80,7 +80,7 @@ public class NotificationConsumer {
         userNotificationService.create(
                 message.userId(),
                 "Payment refunded",
-                "Your payment of R$" + message.value() + " has been refunded",
+                "Your payment of R$" + message.amount() + " has been refunded",
                 UserNotificationCategory.Value.WARNING.id
         );
     }

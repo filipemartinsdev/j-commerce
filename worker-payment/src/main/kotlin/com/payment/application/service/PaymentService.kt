@@ -5,7 +5,7 @@ import com.payment.application.message.PaymentGeneratedMessage
 import com.payment.application.message.PaymentRefundedMessage
 import com.payment.application.message.PaymentTimeoutMessage
 import com.payment.application.message.RefundPaymentMessage
-import com.payment.application.message.SalesOrderCreatedMessage
+import com.payment.application.message.GeneratePaymentMessage
 import com.payment.domain.Payment
 import com.payment.domain.PaymentStatus
 import com.payment.infra.messaging.MessageBrokerProducer
@@ -27,9 +27,9 @@ class PaymentService(
     val log: Logger = Logger.getLogger(PaymentService::class.java)
 
     @Transactional
-    fun generatePayment(message: SalesOrderCreatedMessage) {
+    fun generatePayment(message: GeneratePaymentMessage) {
         val payment = Payment()
-        payment.salesOrderId = message.id
+        payment.salesOrderId = message.salesOrderId
         payment.userId = message.userId
         payment.amount = message.totalAmount
         payment.status = entityManager.getReference(
@@ -42,9 +42,9 @@ class PaymentService(
         messageBrokerProducer.producePaymentGenerated(
             PaymentGeneratedMessage(
                 paymentId = payment.id,
-                orderId = message.id,
+                orderId = message.salesOrderId,
                 userId = message.userId,
-                value = message.totalAmount,
+                amount = message.totalAmount
             )
         )
 
@@ -71,10 +71,11 @@ class PaymentService(
                 paymentId = payment.id,
                 orderId = payment.salesOrderId,
                 userId = payment.userId,
-                value = payment.amount
+                amount = payment.amount
             )
         )
     }
+
 
     fun handlePaymentTimeout(message: PaymentGeneratedMessage) {
         val payment = paymentRepository.findById(message.paymentId)
@@ -88,28 +89,29 @@ class PaymentService(
                 paymentId = message.paymentId,
                 orderId = message.orderId,
                 userId = message.userId,
-                value = message.value
+                amount = message.amount
             )
         )
     }
 
+    @Transactional
     fun refundPayment(message: RefundPaymentMessage){
-        val payment: Payment = paymentRepository.findById(message.paymentId)
-            ?: throw NotFoundException("Payment not found by ID: ${message.paymentId}")
+        val payments: List<Payment> = paymentRepository.findAllBySalesOrderId(message.salesOrderId)
 
-        if (payment.status.id != PaymentStatus.Companion.Value.PAID.id)
-            throw BadRequestException("Payment not confirmed")
+        if (payments.isEmpty())
+            throw NotFoundException("Payment not found by salesOrderId: ${message.salesOrderId}")
 
-        refund(payment)
+        var refundCount = 0
 
-        messageBrokerProducer.producePaymentRefunded(
-            PaymentRefundedMessage(
-                paymentId = message.paymentId,
-                orderId = message.orderId,
-                userId = message.userId,
-                value = message.value
-            )
-        )
+        for (payment in payments) {
+            if (payment.status.id != PaymentStatus.Companion.Value.PAID.id)
+                continue
+            refund(payment)
+            refundCount++
+        }
+
+        if (refundCount == 0)
+            throw NotFoundException("No payments found for refund")
     }
 
     private fun refund(payment: Payment) {
@@ -121,5 +123,14 @@ class PaymentService(
         paymentRepository.persist(payment)
 
         log.info("Payment refunded: " + payment.id)
+
+        messageBrokerProducer.producePaymentRefunded(
+            PaymentRefundedMessage(
+                paymentId = payment.id,
+                orderId = payment.salesOrderId,
+                userId = payment.userId,
+                amount = payment.amount
+            )
+        )
     }
 }

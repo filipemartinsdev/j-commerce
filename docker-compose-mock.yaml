@@ -229,6 +229,13 @@ services:
     environment:
       GF_SECURITY_ADMIN_USER: ${GRAFANA_USER:-admin}
       GF_SECURITY_ADMIN_PASSWORD: ${GRAFANA_PASSWORD:-admin}
+      GF_SMTP_ENABLED: true
+      GF_SMTP_HOST: smtp.gmail.com:587
+      GF_SMTP_USER: ${GRAFANA_SMTP_GMAIL}
+      GF_SMTP_PASSWORD: ${GRAFANA_SMTP_PASSWORD}
+      GF_SMTP_FROM_ADDRESS: ${GRAFANA_SMTP_GMAIL}
+      GF_SMTP_FROM_MESSAGE: Grafana Alerts
+      GF_SMTP_STARTTLS_POLICY: MandatoryStartTLS
     volumes:
       - ./observability/grafana.yml:/etc/grafana/provisioning/datasources/grafana.yml:Z
       - grafana_data:/var/lib/grafana:Z

@@ -7,6 +7,6 @@ public record HandlePaymentTimeoutMessage(
         UUID paymentId,
         UUID orderId,
         UUID userId,
-        BigDecimal value
+        BigDecimal totalAmount
 ) {
 }

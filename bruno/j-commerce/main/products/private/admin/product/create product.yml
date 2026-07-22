@@ -34,8 +34,8 @@ http:
       // }
 
       {
-        "name": "Controle Dualshock 4",
-        "description": "Controle de PlayStation 4",
+        "name": "Dualshock 4 Controller",
+        "description": "PlayStation 4 Controller",
         "categoryId": 2
       }
   auth: inherit

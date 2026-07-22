@@ -9,6 +9,7 @@ import static com.orders.application.message.CreateOrderMessage.OrderItem;
 
 import com.orders.application.service.mapper.SalesOrderMapper;
 import com.orders.domain.entity.*;
+import com.orders.infra.messaging.MessageBrokerProducer;
 import com.orders.infra.persistence.*;
 import io.github.responsekit.core.PagedResponse;
 import org.springframework.data.domain.Page;
@@ -41,12 +42,8 @@ public class SalesOrderService {
 
         SalesOrder order = registerNewOrder(message.userId(), message.items());
 
-        messageBrokerProducer.produceGeneratePayment(
-                new GeneratePaymentMessage(order.getId(), message.userId(), getTotalAmount(order))
-        );
-
-        messageBrokerProducer.produceCreateShipping(
-                new CreateShippingMessage(order.getId(), message.deliveryAddressId())
+        messageBrokerProducer.produceOrderCreated(
+                new SalesOrderCreatedMessage(order.getId(), message.userId(), message.deliveryAddressId(), getTotalAmount(order))
         );
     }
 
@@ -73,15 +70,16 @@ public class SalesOrderService {
                 .map(item -> {
                     var salesOrderItem = new SalesOrderItem();
                     salesOrderItem.setSalesOrder(salesOrder);
-                    salesOrderItem.setProductSkuId(item.getProductSKUId());
-                    salesOrderItem.setUnits(item.getUnits());
-                    salesOrderItem.setUnitPrice(item.getUnitPrice());
-                    salesOrderItem.setProductSkuName(item.getName());
+                    salesOrderItem.setProductSkuId(item.productSKUId());
+                    salesOrderItem.setUnits(item.units());
+                    salesOrderItem.setUnitPrice(item.unitPrice());
+                    salesOrderItem.setProductSkuName(item.name());
                     return salesOrderItem;
                 })
                 .toList();
         salesOrder.setItems(salesOrderItems);
     }
+
 
     public PagedResponse<SalesOrderResponse> getAllByUserId(UUID userId, Pageable pageable) {
         Page<SalesOrder> page = salesOrderRepository.findAllByUserId(userId, pageable);
@@ -118,29 +116,27 @@ public class SalesOrderService {
 
     private void cancelOrder(SalesOrder order) {
         order.setStatus(salesOrderStatusRepository.getReferenceById(SalesOrderStatus.Value.CANCELLED.getId()));
-
         salesOrderRepository.save(order);
-
-        publishOrderCancelledMessage(order);
+        produceOrderCanceledMessage(order);
     }
 
-    private void publishOrderCancelledMessage(SalesOrder order){
-        SalesOrderCancelledMessage message = new SalesOrderCancelledMessage(
+    private void produceOrderCanceledMessage(SalesOrder order){
+        SalesOrderCanceledMessage message = new SalesOrderCanceledMessage(
                 order.getId(),
                 order.getUserId(),
                 order.getItems().stream()
                         .map(salesOrderItem ->
-                                new SalesOrderCancelledMessage.OrderItem(salesOrderItem.getProductSkuId(), salesOrderItem.getUnits())
+                                new SalesOrderCanceledMessage.OrderItem(salesOrderItem.getProductSkuId(), salesOrderItem.getUnits())
                         )
                         .toList(),
                 getTotalAmount(order)
         );
 
-        messageBrokerProducer.produceOrderCancelled(message);
+        messageBrokerProducer.produceOrderCanceled(message);
     }
 
 
-    public void confirmOrderPayment(PaymentConfirmedMessage message) {
+    public void confirmOrderPayment(ConfirmPaymentMessage message) {
         SalesOrder order = salesOrderRepository.findById(message.orderId())
                 .orElseThrow(() -> new SalesOrderNotFoundException("Sales order not found with ID: "+message.orderId()));
 
@@ -152,13 +148,10 @@ public class SalesOrderService {
         SalesOrder order = salesOrderRepository.findById(id)
                 .orElseThrow(() -> new SalesOrderNotFoundException("Sales order not found with ID: "+id));
 
-        if (canUserCancelOrder(userId, order)){
+        if (canUserCancelOrder(userId, order))
             cancelOrder(order);
-        }
-
-        else {
+        else
             throw new CantCancelSalesOrderException("Can't cancel this order");
-        }
     }
 
     private boolean canUserCancelOrder(UUID userId, SalesOrder order) {

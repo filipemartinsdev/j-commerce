@@ -106,7 +106,7 @@ public class DeliveryAddressControllerTests {
     }
 
     @Test
-    @DisplayName("Should return address by id and status code 200")
+    @DisplayName("Should return address by salesOrderId and status code 200")
     void getAddressByIdTestCase1() throws Exception {
         UUID addressId = UUID.randomUUID();
         UUID userId = UUID.randomUUID();

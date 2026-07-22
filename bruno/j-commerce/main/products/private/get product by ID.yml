@@ -8,7 +8,7 @@ http:
   url: https://localhost/product/api/v1/products/:id
   params:
     - name: id
-      value: 000170ed-2ae8-41fc-bf22-3dd64f9e2a45
+      value: 000064c5-5036-4e65-805e-69911f18af1e
       type: path
   auth: inherit
 

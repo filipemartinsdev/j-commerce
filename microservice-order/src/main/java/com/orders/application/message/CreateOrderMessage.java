@@ -1,10 +1,6 @@
 package com.orders.application.message;
 
 
-import lombok.AllArgsConstructor;
-import lombok.Data;
-import lombok.NoArgsConstructor;
-
 import java.io.Serializable;
 import java.math.BigDecimal;
 import java.util.List;
@@ -15,11 +11,11 @@ public record CreateOrderMessage(
         List<OrderItem> items,
         UUID deliveryAddressId
 ) implements Serializable {
-    @Data @NoArgsConstructor @AllArgsConstructor
-    public static class OrderItem implements Serializable {
-        private UUID productSKUId;
-        private String name;
-        private Integer units;
-        private BigDecimal unitPrice;
+    public static record OrderItem(
+            UUID productSKUId,
+            String name,
+            Integer units,
+            BigDecimal unitPrice
+    ) implements Serializable {
     }
 }

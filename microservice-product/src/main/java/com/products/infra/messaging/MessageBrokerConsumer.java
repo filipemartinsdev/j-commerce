@@ -15,7 +15,7 @@ public class MessageBrokerConsumer {
         this.adminProductStockService = adminProductStockService;
     }
 
-    @RabbitListener(queues = "${broker.queues.refundItems.name}")
+    @RabbitListener(queues = "${broker.queues.refundProduct.name}")
     public void listenRefundItems(@Payload RefundItemsMessage message) {
         adminProductStockService.refundItems(message);
     }

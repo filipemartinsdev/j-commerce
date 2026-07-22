@@ -2,8 +2,10 @@ package com.products.application.service;
 
 import com.products.application.dto.catalogue.*;
 import com.products.application.exception.*;
+import com.products.application.message.OrderCheckedMessage;
 import com.products.application.service.mapper.ShoppingCartMapper;
 import com.products.domain.entity.ProductSKUPrice;
+import com.products.infra.messaging.MessageBrokerProducer;
 import com.products.infra.persistence.ProductSKUPriceRepository;
 import com.products.infra.persistence.ProductSKURepository;
 import jakarta.transaction.Transactional;
@@ -22,18 +24,18 @@ public class ShoppingCartService {
     private final ShoppingCartMapper shoppingCartMapper;
     private final ProductSKURepository productSKURepository;
     private final ProductStockChecker productStockChecker;
-    private final MessageBrokerProducer shoppingCartConfirmationProducer;
+    private final MessageBrokerProducer messageBrokerProducer;
     private final StockMovementManagementService stockMovementService;
     private final ProductStockManagementService productStockManagementService;
     private final ShoppingCartCacheStorage shoppingCartCacheStorage;
     private final ProductSKUPriceRepository productSKUPriceRepository;
     private final SalesOrderClient salesOrderClient;
 
-    public ShoppingCartService(ShoppingCartMapper shoppingCartMapper, ProductSKURepository productSKURepository, ProductStockChecker productStockChecker, MessageBrokerProducer shoppingCartConfirmationProducer, StockMovementManagementService stockMovementService, ProductStockManagementService productStockManagementService, ShoppingCartCacheStorage shoppingCartCacheStorage, ProductSKUPriceRepository productSKUPriceRepository, SalesOrderClient salesOrderClient) {
+    public ShoppingCartService(ShoppingCartMapper shoppingCartMapper, ProductSKURepository productSKURepository, ProductStockChecker productStockChecker, MessageBrokerProducer messageBrokerProducer, StockMovementManagementService stockMovementService, ProductStockManagementService productStockManagementService, ShoppingCartCacheStorage shoppingCartCacheStorage, ProductSKUPriceRepository productSKUPriceRepository, SalesOrderClient salesOrderClient) {
         this.shoppingCartMapper = shoppingCartMapper;
         this.productSKURepository = productSKURepository;
         this.productStockChecker = productStockChecker;
-        this.shoppingCartConfirmationProducer = shoppingCartConfirmationProducer;
+        this.messageBrokerProducer = messageBrokerProducer;
         this.stockMovementService = stockMovementService;
         this.productStockManagementService = productStockManagementService;
         this.shoppingCartCacheStorage = shoppingCartCacheStorage;
@@ -111,9 +113,7 @@ public class ShoppingCartService {
 
         updateStock(shoppingCart.items(), userId);
 
-        var createOrderMessage = shoppingCartMapper.toCreateOrderMessage(shoppingCart, userId, request.deliveryAddressId());
-
-        shoppingCartConfirmationProducer.produce(createOrderMessage);
+        publishOrderCheckedMessage(shoppingCart, userId, request.deliveryAddressId());
 
         shoppingCartCacheStorage.clear(userId);
     }
@@ -121,11 +121,33 @@ public class ShoppingCartService {
     private void verifyDeliveryAddress(UUID deliveryAddressId, String JWTBearer) {
         salesOrderClient.getDeliveryAddress(deliveryAddressId, JWTBearer);
     }
-
     private void updateStock(List<ShoppingCart.Item> items, UUID userId) {
         for (var item : items) {
             productStockManagementService.decreaseProductStock(item.productSKUId(), item.units());
             stockMovementService.registerSale(item.productSKUId(), item.units(), userId);
         }
     }
+
+    private void publishOrderCheckedMessage(ShoppingCart shoppingCart, UUID userId, UUID deliveryAddressId) {
+        OrderCheckedMessage orderCheckedMessage = this.toOrderCheckedMessage(shoppingCart, userId, deliveryAddressId);
+        messageBrokerProducer.produceOrderChecked(orderCheckedMessage);
+    }
+
+    private OrderCheckedMessage toOrderCheckedMessage(ShoppingCart shoppingCart, UUID userId, UUID deliveryAddressId) {
+        return new OrderCheckedMessage(
+                userId,
+                shoppingCart.items().stream()
+                        .map(item ->
+                                new OrderCheckedMessage.OrderItem(
+                                        item.productSKUId(),
+                                        item.productSKUName(),
+                                        item.units(),
+                                        item.price()
+                                )
+                        )
+                        .toList(),
+                deliveryAddressId
+        );
+    }
+
 }

@@ -17,7 +17,7 @@ public class Shipping {
     private UUID id;
 
     @NotNull
-    @ManyToOne(fetch = FetchType.LAZY)
+    @ManyToOne
     @JoinColumn(name = "status_id")
     private ShippingStatus status;
 
@@ -27,7 +27,7 @@ public class Shipping {
     private SalesOrder salesOrder;
 
     @NotNull
-    @ManyToOne(fetch = FetchType.LAZY)
+    @ManyToOne
     @JoinColumn(name = "delivery_address_id")
     private DeliveryAddress deliveryAddress;
 

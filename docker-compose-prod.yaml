@@ -110,6 +110,23 @@ services:
     volumes:
       - notification_data:/var/lib/postgresql/data
 
+  payment_db:
+    image: postgres:17-alpine
+    container_name: payment_db
+    ports:
+      - "5436:5432"
+    deploy:
+      resources:
+        limits:
+          cpus: 0.5
+          memory: 600M
+    environment:
+      POSTGRES_DB: ${PG_PAYMENT_DATABASE:-payment}
+      POSTGRES_USER: ${PG_PAYMENT_USER:-payment}
+      POSTGRES_PASSWORD: ${PG_PAYMENT_PASSWORD:-payment}
+    volumes:
+      - payment_data:/var/lib/postgresql/data
+
   cache:
     container_name: cache
     image: redis:7.4-alpine
@@ -194,6 +211,13 @@ services:
     environment:
       GF_SECURITY_ADMIN_USER: ${GRAFANA_USER:-admin}
       GF_SECURITY_ADMIN_PASSWORD: ${GRAFANA_PASSWORD:-admin}
+      GF_SMTP_ENABLED: true
+      GF_SMTP_HOST: smtp.gmail.com:587
+      GF_SMTP_USER: ${GRAFANA_SMTP_GMAIL}
+      GF_SMTP_PASSWORD: ${GRAFANA_SMTP_PASSWORD}
+      GF_SMTP_FROM_ADDRESS: ${GRAFANA_SMTP_GMAIL}
+      GF_SMTP_FROM_MESSAGE: Grafana Alerts
+      GF_SMTP_STARTTLS_POLICY: MandatoryStartTLS
     volumes:
       - ./observability/grafana.yml:/etc/grafana/provisioning/datasources/grafana.yml:Z
       - grafana_data:/var/lib/grafana:Z
@@ -217,15 +241,14 @@ services:
           memory: 600M
     environment:
       JAVA_TOOL_OPTIONS: -Xmx256m
-      PG_IDENTITY_DATABASE:
-      PG_IDENTITY_USER:
-      PG_IDENTITY_PASSWORD:
-      SPRING_RABBITMQ_ADDRESSES: amqp://admin:admin@rabbitmq:5672/
-      SPRING_DATASOURCE_URL: jdbc:postgresql://identity_db:5432/${PG_IDENTITY_DATABASE:-identity}
-      SPRING_DATASOURCE_USERNAME: ${PG_IDENTITY_USER:-identity}
-      SPRING_DATASOURCE_PASSWORD: ${PG_IDENTITY_PASSWORD:-identity}
-      SPRING_DATA_REDIS_URL: redis://cache:6379
-      ACTIVE_PROFILE: dev
+      PG_URL: jdbc:postgresql://identity_db:5432/${PG_IDENTITY_DATABASE:-identity}
+      PG_USER: ${PG_IDENTITY_USER:-identity}
+      PG_PASSWORD: ${PG_IDENTITY_PASSWORD:-identity}
+      RABBITMQ_URL: amqp://admin:admin@rabbitmq:5672/
+      RABBITMQ_USER: ${RABBITMQ_USER:-admin}
+      RABBITMQ_PASSWORD: ${RABBITMQ_PASSWORD:-admin}
+      REDIS_URL: redis://cache:6379
+      ACTIVE_PROFILE: prod
 
   product:
     container_name: product_service
@@ -247,15 +270,16 @@ services:
           memory: 600M
     environment:
       JAVA_TOOL_OPTIONS: -Xmx256m
-      REDIS_HOST: cache
-      PG_PRODUCT_DATABASE:
-      PG_PRODUCT_USER:
-      PG_PRODUCT_PASSWORD:
-      SPRING_RABBITMQ_ADDRESSES: amqp://admin:admin@rabbitmq:5672/
-      SPRING_DATASOURCE_URL: jdbc:postgresql://product_db:5432/${PG_PRODUCT_DATABASE:-product}
-      SPRING_DATASOURCE_USERNAME: ${PG_PRODUCT_USER:-product}
-      SPRING_DATASOURCE_PASSWORD: ${PG_PRODUCT_PASSWORD:-product}
+      PG_URL: jdbc:postgresql://product_db:5432/${PG_PRODUCT_DATABASE:-product}
+      PG_USER: ${PG_PRODUCT_USER:-product}
+      PG_PASSWORD: ${PG_PRODUCT_PASSWORD:-product}
+      REDIS_URL: redis://cache:6379
+      RABBITMQ_HOST: rabbitmq
+      RABBITMQ_PORT: 5672
+      RABBITMQ_USER: ${RABBITMQ_USER:-admin}
+      RABBITMQ_PASSWORD: ${RABBITMQ_PASSWORD:-admin}
       OPENAI_API_KEY:
+      ACTIVE_PROFILE: prod
 
   order:
     container_name: order_service
@@ -265,6 +289,10 @@ services:
     depends_on:
       order_db:
         condition: service_started
+      cache:
+        condition: service_started
+      rabbitmq:
+        condition: service_started
     restart: unless-stopped
     deploy:
       resources:
@@ -272,16 +300,16 @@ services:
           cpus: 0.5
           memory: 600M
     environment:
-      PG_PRODUCT_DATABASE:
-      PG_PRODUCT_USER:
-      PG_PRODUCT_PASSWORD:
-      SPRING_RABBITMQ_ADDRESSES: amqp://admin:admin@rabbitmq:5672/
-      SPRING_DATASOURCE_URL: jdbc:postgresql://order_db:5432/${PG_ORDER_DATABASE:-order}
-      SPRING_DATASOURCE_USERNAME: ${PG_ORDER_USER:-order}
-      SPRING_DATASOURCE_PASSWORD: ${PG_ORDER_PASSWORD:-order}
-      SPRING_DATA_REDIS_URL: redis://cache:6379
-      ACTIVE_PROFILE: dev
+      PG_URL: jdbc:postgresql://order_db:5432/${PG_ORDER_DATABASE:-order}
+      PG_USER: ${PG_ORDER_USER:-order}
+      PG_PASSWORD: ${PG_ORDER_PASSWORD:-order}
+      REDIS_URL: redis://cache:6379
+      RABBITMQ_HOST: rabbitmq
+      RABBITMQ_PORT: 5672
+      RABBITMQ_USER: ${RABBITMQ_USER:-admin}
+      RABBITMQ_PASSWORD: ${RABBITMQ_PASSWORD:-admin}
       GRAPH_HOPPER_API_KEY:
+      ACTIVE_PROFILE: prod
 
   notification:
     container_name: notification_service
@@ -300,9 +328,9 @@ services:
       rabbitmq:
         condition: service_started
     environment:
-      PG_NOTIFICATION_URL: jdbc:postgresql://notification_db:5432/${PG_NOTIFICATION_DATABASE:-notification}
-      PG_NOTIFICATION_USER:
-      PG_NOTIFICATION_PASSWORD:
+      PG_URL: jdbc:postgresql://notification_db:5432/${PG_NOTIFICATION_DATABASE:-notification}
+      PG_USER: ${PG_NOTIFICATION_USER:-notification}
+      PG_PASSWORD: ${PG_NOTIFICATION_PASSWORD:-notification}
       AUTH_PUBLIC_KEY_URL: http://identity:8080/.well-known/jwks.json
       RABBITMQ_HOST: rabbitmq
       RABBITMQ_PORT: 5672
@@ -318,12 +346,17 @@ services:
     depends_on:
       rabbitmq:
         condition: service_started
+      payment_db:
+        condition: service_started
     deploy:
       resources:
         limits:
           cpus: 0.5
           memory: 600M
     environment:
+      PG_URL: jdbc:postgresql://payment_db:5432/${PG_PAYMENT_DATABASE:-payment}
+      PG_USER: ${PG_PAYMENT_USER:-payment}
+      PG_PASSWORD: ${PG_PAYMENT_PASSWORD:-payment}
       RABBITMQ_HOST: rabbitmq
       RABBITMQ_PORT: 5672
       RABBITMQ_USER: ${RABBITMQ_USER:-admin}
@@ -340,3 +373,4 @@ volumes:
   grafana_data:
   rabbitmq_data:
   notification_data:
+  payment_data:

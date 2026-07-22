@@ -9,22 +9,18 @@ import com.products.application.exception.ProductOutOfStockException;
 import com.products.application.exception.ProductSKUNotFoundException;
 import com.products.application.exception.ShoppingCartItemAlreadyExistsException;
 import com.products.application.exception.ShoppingCartItemNotFoundException;
-import com.products.application.message.CreateOrderMessage;
+import com.products.application.message.OrderCheckedMessage;
 import com.products.application.service.mapper.ShoppingCartMapper;
 import com.products.domain.entity.*;
+import com.products.infra.messaging.MessageBrokerProducer;
 import com.products.infra.persistence.ProductSKUPriceRepository;
 import com.products.infra.persistence.ProductSKURepository;
-import io.github.responsekit.core.PagedResponse;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
-import org.springframework.data.domain.Page;
-import org.springframework.data.domain.PageImpl;
-import org.springframework.data.domain.PageRequest;
-import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 
@@ -306,23 +302,8 @@ class ShoppingCartServiceTests {
                 .when(productStockManagementService).decreaseProductStock(any(), anyInt());
         doNothing()
                 .when(stockMovementService).registerSale(any(), anyInt(), any());
-        when(shoppingCartMapper.toCreateOrderMessage(shoppingCart, userId, request.deliveryAddressId()))
-                .thenReturn(new CreateOrderMessage(
-                        userId,
-                        shoppingCart.items().stream()
-                                .map(item ->
-                                        new CreateOrderMessage.OrderItem(
-                                                item.productSKUId(),
-                                                item.productSKUName(),
-                                                item.units(),
-                                                item.price()
-                                        )
-                                )
-                                .toList(),
-                        deliveryAddressId
-                ));
         doNothing()
-                .when(shoppingCartConfirmationProducer).produce(any());
+                .when(shoppingCartConfirmationProducer).produceOrderChecked(any());
         doNothing()
                 .when(shoppingCartCacheStorage).clear(userId);
 
@@ -333,7 +314,7 @@ class ShoppingCartServiceTests {
         verify(shoppingCartCacheStorage)
                 .clear(userId);
         verify(shoppingCartConfirmationProducer)
-                .produce(any());
+                .produceOrderChecked(any());
     }
 
     @Test

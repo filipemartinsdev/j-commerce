@@ -53,7 +53,25 @@
     "policies": [],
     "queues": [
         {
-            "name": "order.confirm_order_payment",
+            "name": "payment.refund",
+            "vhost": "/",
+            "durable": true,
+            "auto_delete": false,
+            "arguments": {
+                "x-queue-type": "classic"
+            }
+        },
+        {
+            "name": "order.confirm_payment",
+            "vhost": "/",
+            "durable": true,
+            "auto_delete": false,
+            "arguments": {
+                "x-queue-type": "classic"
+            }
+        },
+        {
+            "name": "notification.notify_payment_timeout",
             "vhost": "/",
             "durable": true,
             "auto_delete": false,
@@ -77,8 +95,17 @@
             "auto_delete": false,
             "arguments": {
                 "x-dead-letter-exchange": "",
-                "x-dead-letter-routing-key": "order.handle_payment_timeout",
-                "x-message-ttl": 86400,
+                "x-dead-letter-routing-key": "payment.handle_payment_timeout",
+                "x-message-ttl": 86400000,
+                "x-queue-type": "classic"
+            }
+        },
+        {
+            "name": "notification.notify_canceled_order",
+            "vhost": "/",
+            "durable": true,
+            "auto_delete": false,
+            "arguments": {
                 "x-queue-type": "classic"
             }
         },
@@ -92,7 +119,7 @@
             }
         },
         {
-            "name": "product.refund_items",
+            "name": "product.refund",
             "vhost": "/",
             "durable": true,
             "auto_delete": false,
@@ -110,6 +137,15 @@
             }
         },
         {
+            "name": "payment.handle_payment_timeout",
+            "vhost": "/",
+            "durable": true,
+            "auto_delete": false,
+            "arguments": {
+                "x-queue-type": "classic"
+            }
+        },
+        {
             "name": "order.handle_payment_timeout",
             "vhost": "/",
             "durable": true,
@@ -119,7 +155,7 @@
             }
         },
         {
-            "name": "order.cancel_shipments",
+            "name": "notification.notify_payment_refunded",
             "vhost": "/",
             "durable": true,
             "auto_delete": false,
@@ -128,7 +164,7 @@
             }
         },
         {
-            "name": "notification.notify_cancelled_order",
+            "name": "order.cancel_shipments",
             "vhost": "/",
             "durable": true,
             "auto_delete": false,
@@ -166,27 +202,27 @@
     ],
     "exchanges": [
         {
-            "name": "order.cancelled.fanout",
+            "name": "order.topic",
             "vhost": "/",
-            "type": "fanout",
+            "type": "topic",
             "durable": true,
             "auto_delete": false,
             "internal": false,
             "arguments": {}
         },
         {
-            "name": "payment.confirmed.fanout",
+            "name": "payment.topic",
             "vhost": "/",
-            "type": "fanout",
+            "type": "topic",
             "durable": true,
             "auto_delete": false,
             "internal": false,
             "arguments": {}
         },
         {
-            "name": "payment.generated.fanout",
+            "name": "product.topic",
             "vhost": "/",
-            "type": "fanout",
+            "type": "topic",
             "durable": true,
             "auto_delete": false,
             "internal": false,
@@ -194,62 +230,124 @@
         }
     ],
     "bindings": [
-
         {
-            "source": "order.cancelled.fanout",
+            "source": "order.topic",
             "vhost": "/",
             "destination": "order.cancel_shipments",
             "destination_type": "queue",
-            "routing_key": "",
+            "routing_key": "order.canceled",
             "arguments": {}
         },
         {
-            "source": "order.cancelled.fanout",
+            "source": "payment.topic",
             "vhost": "/",
-            "destination": "notification.notify_cancelled_order",
+            "destination": "notification.notify_payment_refunded",
             "destination_type": "queue",
-            "routing_key": "",
+            "routing_key": "payment.refunded",
             "arguments": {}
         },
         {
-            "source": "payment.confirmed.fanout",
+            "source": "payment.topic",
             "vhost": "/",
-            "destination": "order.confirm_order_payment",
+            "destination": "notification.notify_payment_timeout",
             "destination_type": "queue",
-            "routing_key": "",
+            "routing_key": "payment.timeout",
             "arguments": {}
         },
         {
-            "source": "payment.generated.fanout",
+            "source": "order.topic",
+            "vhost": "/",
+            "destination": "payment.generate_payment",
+            "destination_type": "queue",
+            "routing_key": "order.created",
+            "arguments": {}
+        },
+        {
+            "source": "payment.topic",
             "vhost": "/",
             "destination": "notification.notify_payment_generated",
             "destination_type": "queue",
-            "routing_key": "",
+            "routing_key": "payment.generated",
             "arguments": {}
         },
-
         {
-            "source": "payment.confirmed.fanout",
+            "source": "order.topic",
+            "vhost": "/",
+            "destination": "order.create_shipping",
+            "destination_type": "queue",
+            "routing_key": "order.created",
+            "arguments": {}
+        },
+        {
+            "source": "payment.topic",
             "vhost": "/",
             "destination": "notification.notify_payment_confirmed",
             "destination_type": "queue",
-            "routing_key": "",
+            "routing_key": "payment.confirmed",
             "arguments": {}
         },
         {
-            "source": "payment.generated.fanout",
+            "source": "order.topic",
+            "vhost": "/",
+            "destination": "notification.notify_shipping_dispatched",
+            "destination_type": "queue",
+            "routing_key": "order.dispatched",
+            "arguments": {}
+        },
+        {
+            "source": "payment.topic",
+            "vhost": "/",
+            "destination": "order.handle_payment_timeout",
+            "destination_type": "queue",
+            "routing_key": "payment.timeout",
+            "arguments": {}
+        },
+        {
+            "source": "order.topic",
+            "vhost": "/",
+            "destination": "notification.notify_canceled_order",
+            "destination_type": "queue",
+            "routing_key": "order.canceled",
+            "arguments": {}
+        },
+        {
+            "source": "order.topic",
+            "vhost": "/",
+            "destination": "product.refund",
+            "destination_type": "queue",
+            "routing_key": "order.canceled",
+            "arguments": {}
+        },
+        {
+            "source": "payment.topic",
+            "vhost": "/",
+            "destination": "order.confirm_payment",
+            "destination_type": "queue",
+            "routing_key": "payment.confirmed",
+            "arguments": {}
+        },
+        {
+            "source": "payment.topic",
             "vhost": "/",
             "destination": "payment.wait_pending_payment",
             "destination_type": "queue",
-            "routing_key": "",
+            "routing_key": "payment.generated",
             "arguments": {}
         },
         {
-            "source": "order.cancelled.fanout",
+            "source": "order.topic",
             "vhost": "/",
-            "destination": "product.refund_items",
+            "destination": "payment.refund",
             "destination_type": "queue",
-            "routing_key": "",
+            "routing_key": "order.canceled",
+            "arguments": {}
+        },
+        {
+            "source": "order.topic",
+            "vhost": "/",
+            "destination": "order.create_order",
+            "destination_type": "queue",
+            "routing_key": "order.checked",
             "arguments": {}
         }
     ]

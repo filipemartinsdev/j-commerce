@@ -1,12 +1,12 @@
 package com.orders.application.service;
 
-import com.orders.application.dto.ShippingRequest;
 import com.orders.application.dto.ShippingResponse;
 import com.orders.application.exception.*;
-import com.orders.application.message.CreateShippingMessage;
-import com.orders.application.message.NotifyShippingDispatchedMessage;
+import com.orders.application.message.SalesOrderCreatedMessage;
+import com.orders.application.message.SalesOrderDispatchedMessage;
 import com.orders.application.service.mapper.ShippingMapper;
 import com.orders.domain.entity.*;
+import com.orders.infra.messaging.MessageBrokerProducer;
 import com.orders.infra.persistence.DeliveryAddressRepository;
 import com.orders.infra.persistence.SalesOrderRepository;
 import com.orders.infra.persistence.ShippingRepository;
@@ -14,7 +14,6 @@ import com.orders.infra.persistence.ShippingStatusRepository;
 import io.github.responsekit.core.PagedResponse;
 import io.github.responsekit.spring.PagedResponseFactory;
 import jakarta.transaction.Transactional;
-import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
@@ -40,7 +39,7 @@ public class AdminShippingService {
         this.messageBrokerProducer = messageBrokerProducer;
     }
 
-    public void createShippingFromMessage(CreateShippingMessage message) {
+    public void createShipping(SalesOrderCreatedMessage message) {
         DeliveryAddress deliveryAddress = deliveryAddressRepository.findById(message.deliveryAddressId())
                 .orElseThrow(() -> new DeliveryAddressNotFoundException("Delivery address not found with ID: " + message.deliveryAddressId()));
 
@@ -64,21 +63,25 @@ public class AdminShippingService {
         Shipping shipping = shippingRepository.findById(shippingId)
                 .orElseThrow(() -> new ShippingNotFoundException("Shipping not found with ID: " + shippingId));
 
-        if(!isShippingInTransit(shipping))
-            throw new CantCheckOutShippingException("Shipping is not in transit");
+        var fromStatus = ShippingStatus.Value.byId(shipping.getStatus().getId());
+        var toStatus = ShippingStatus.Value.DELIVERED;
+
+        if (!ShippingStatus.canTransition(fromStatus, toStatus))
+            throw new CantTransitionShippingStatusException("Can't transition shipping status from " + fromStatus + " to " + toStatus);
 
         shipping.setStatus(shippingStatusRepository.getReferenceById(ShippingStatus.Value.DELIVERED.getId()));
 
         shippingRepository.save(shipping);
     }
 
-    private boolean isShippingInTransit(Shipping shipping) {
-        return shipping.getStatus().getId().equals(ShippingStatus.Value.IN_TRANSIT.getId());
-    }
-
     public void cancelShipmentsBySalesOrderId(UUID salesOrderId){
         SalesOrder salesOrder = salesOrderRepository.findById(salesOrderId)
                 .orElseThrow(() -> new SalesOrderNotFoundException("SalesOrder not found by ID: " + salesOrderId));
+
+        SalesOrderStatus.Value orderStatus = SalesOrderStatus.Value.byId(salesOrder.getStatus().getId());
+
+        if (!orderStatus.equals(SalesOrderStatus.Value.CANCELLED))
+            throw new CantTransitionShippingStatusException("Can't cancel shipping from a non canceled order");
 
         for (Shipping shipping : salesOrder.getShipments())
             shipping.setStatus(shippingStatusRepository.getReferenceById(ShippingStatus.Value.CANCELLED.getId()));
@@ -91,22 +94,14 @@ public class AdminShippingService {
         Shipping shipping = shippingRepository.findById(shippingId)
                 .orElseThrow(() -> new ShippingNotFoundException("Shipping not found with ID: " + shippingId));
 
-        if (isShippingCancelled(shipping))
-            throw new CantCancelShippingException("Shipping is cancelled");
+        var fromStatus = ShippingStatus.Value.byId(shipping.getStatus().getId());
+        var toStatus = ShippingStatus.Value.CANCELLED;
 
-        if (isShippingDelivered(shipping))
-            throw new CantCancelShippingException("Shipping is delivered");
+        if (!ShippingStatus.canTransition(fromStatus, toStatus))
+            throw new CantTransitionShippingStatusException("Can't transition shipping status from " + fromStatus + " to " + toStatus);
 
         shipping.setStatus(shippingStatusRepository.getReferenceById(ShippingStatus.Value.CANCELLED.getId()));
         shippingRepository.save(shipping);
-    }
-
-    private boolean isShippingDelivered(Shipping shipping){
-        return shipping.getStatus().getId().equals(ShippingStatus.Value.DELIVERED.getId());
-    }
-
-    private boolean isShippingCancelled(Shipping shipping){
-        return shipping.getStatus().getId().equals(ShippingStatus.Value.CANCELLED.getId());
     }
 
     public PagedResponse<ShippingResponse> getAll(Pageable pageable) {
@@ -128,62 +123,42 @@ public class AdminShippingService {
         Shipping shipping = shippingRepository.findById(id)
                 .orElseThrow(() -> new ShippingNotFoundException("Shipping not found by ID: " + id));
 
-        if(isShippingDispatched(shipping) || !isShippingPending(shipping))
-            throw new CantDispatchShippingException("Shipping was already been dispatched");
+        if (!shipping.getSalesOrder().getStatus().getId().equals(SalesOrderStatus.Value.CONFIRMED.getId()))
+            throw new CantDispatchShippingException("Can't dispatch shipping status from a non confirmed order");
 
-        if(!isOrderConfirmed(shipping.getSalesOrder()))
-            throw new CantDispatchShippingException("Order hasn't been confirmed yet");
+        var fromStatus = ShippingStatus.Value.byId(shipping.getStatus().getId());
+        var toStatus = ShippingStatus.Value.DISPATCHED;
 
-        updateShippingStatusToDispatched(shipping);
+        if (!ShippingStatus.canTransition(fromStatus, toStatus))
+            throw new CantTransitionShippingStatusException("Can't transition shipping status from " + fromStatus + " to " + toStatus);
 
-        messageBrokerProducer.produceNotifyShippingDispatched(
-                new NotifyShippingDispatchedMessage(
-                        shipping.getSalesOrder().getUserId(), salesOrderRepository.getSalesOrderValue(shipping.getSalesOrder().getId())
+        shipping.setStatus(
+                shippingStatusRepository.getReferenceById(ShippingStatus.Value.DISPATCHED.getId())
+        );
+        shippingRepository.save(shipping);
+
+        messageBrokerProducer.produceOrderDispatched(
+                new SalesOrderDispatchedMessage(
+                        shipping.getSalesOrder().getId(),
+                        shipping.getSalesOrder().getUserId(),
+                        shipping.getDeliveryAddress().getId(),
+                        salesOrderRepository.getSalesOrderValue(shipping.getSalesOrder().getId())
                 )
         );
     }
 
-    public void startShipping(UUID id, UUID driverId) {
-        Shipping shipping = shippingRepository.findById(id)
-                .orElseThrow(() -> new ShippingNotFoundException("Shipping not found by ID: " + id));
+    public void startShipping(UUID shippingId, UUID driverId) {
+        Shipping shipping = shippingRepository.findById(shippingId)
+                .orElseThrow(() -> new ShippingNotFoundException("Shipping not found by ID: " + shippingId));
 
-        if (isShippingInTransit(shipping) || hasDriver(shipping))
-            throw new CantCheckInShippingException("Shipping is already in transit");
+        var fromStatus = ShippingStatus.Value.byId(shipping.getStatus().getId());
+        var toStatus = ShippingStatus.Value.IN_TRANSIT;
 
-        if (isShippingCancelled(shipping))
-            throw new CantCheckInShippingException("Shipping is cancelled");
-
-        if (isShippingDelivered(shipping))
-            throw new CantCheckInShippingException("Shipping is delivered");
-
-        if (!isShippingDispatched(shipping))
-            throw new CantCheckInShippingException("Shipping wasn't been dispatched yet");
+        if (!ShippingStatus.canTransition(fromStatus, toStatus))
+            throw  new CantTransitionShippingStatusException("Can't transition shipping status from " + fromStatus + " to " + toStatus);
 
         shipping.setDriverId(driverId);
         shipping.setStatus(shippingStatusRepository.getReferenceById(ShippingStatus.Value.IN_TRANSIT.getId()));
-        shippingRepository.save(shipping);
-    }
-
-    private boolean isShippingPending(Shipping shipping) {
-        return shipping.getStatus().getId().equals(ShippingStatus.Value.PENDING.getId());
-    }
-
-    private boolean hasDriver(Shipping shipping) {
-        return shipping.getDriverId() != null;
-    }
-
-    private boolean isShippingDispatched(Shipping shipping){
-        return shipping.getStatus().getId().equals(ShippingStatus.Value.DISPATCHED.getId());
-    }
-
-    private boolean isOrderConfirmed(SalesOrder salesOrder) {
-        return salesOrder.getStatus().getId().equals(SalesOrderStatus.Value.CONFIRMED.getId());
-    }
-
-    private void updateShippingStatusToDispatched(Shipping shipping) {
-        shipping.setStatus(
-                shippingStatusRepository.getReferenceById(ShippingStatus.Value.DISPATCHED.getId())
-        );
         shippingRepository.save(shipping);
     }
 

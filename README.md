@@ -275,48 +275,49 @@ The entire project is following the principle of **Soft Delete**. No data is del
 
 ## Messaging
 
-The entire order flow is based on asynchronous communication, using **Spring AMQP** to integrate the **RabbitMQ** Message Broker.
+The entire order flow is based on asynchronous communication, using **Spring AMQP** and **Quarkus Messaging RabbitMQ** to integrate the **RabbitMQ** Message Broker.
 
 ### Exchanges
 
-| Name                       | Description                                                 | Destin Queues                                                                                             |
-|----------------------------|-------------------------------------------------------------|-----------------------------------------------------------------------------------------------------------|
-| `amqp.direct`              | Default exchange to set direct queues                       | `order.create_order`, `order.create_shipping`, `payment.generate_payment`, `order.handle_payment_timeout` |
-| `payment.generated.fanout` | Fanout exchange to notify that a payment has been generated | `payment.wait_pending_payment`, `notification_notify_payment_generated`                                   | 
-| `payment.confirmed.fanout` | Fanout exchange to notify that a payment has been confirmed | `order.confirm_order_payment`, `notification.notify_payment_confirmed`                                    |
-| `order.cancelled.fanout`   | Fanout exchange to cancel an order                          | `order.cancel_shipments`, `product.refund_items`, `notification.notify_order_cancelled`                   |
+| Name                     | Description                             | Routing Keys                                                                  |
+|--------------------------|-----------------------------------------|-------------------------------------------------------------------------------|
+| `order.topic`            | Topic exchange to handle order events   | `order.checked`, `order.created`, `order.canceled`, `order.dispatched`        | 
+| `payment.topic`          | Topic exchange to handle payment events | `payment.generated`, `payment.confirmed`, `payment.timeout`, `payment.refunded` |
 
 
 ### Queues
 
-| Name                                      | Description                                       |
-|-------------------------------------------|---------------------------------------------------|
-| `order.create_order`                      | Create an order from shopping cart                |
-| `order.handle_payment_timeout`            | Cancel order when payment expires                 |
-| `order.confirm_order_payment`             | Confirm payment of order                          |
-| `payment.generate_payment`                | Generate payment for order                        |
-| `payment.wait_pending_payment`            | Set TTL of 1 day for payment                      |
-| `notification.notify_payment_generated`   | Notify the user that a payment has been generated |
-| `notification.notify_payment_confirmed`   | Notify the user that payment has been made        |
-| `notification.notify_shipping_dispatched` | Notify the user that shipping has been dispatched |
-| `order.create_shipping`                   | Create shipping for order                         |
-| `order.cancel_shipments`                  | Cancel shipments from order                       |
+| Name                                      | Description                              |
+|-------------------------------------------|------------------------------------------|
+| `order.create_order`                      | Create an order from shopping cart       |
+| `order.create_shipping`                   | Create shipping for order                |
+| `order.handle_payment_timeout`            | Cancel order when payment expires        |
+| `order.confirm_payment`                   | Confirm payment of order                 |
+| `order.cancel_shipments`                  | Cancel all shipments from order          |
+| `payment.generate_payment`                | Generate payment for order               |
+| `payment.wait_pending_payment`            | Set TTL of 1 day for payment             |
+| `payment.handle_payment_timeout`          | Handle payment timeout after the TTL     |
+| `payment.refund`                          | Refund all payments from order           |
+| `product.refund`                          | Refund all products from order           |
+| `notification.notify_payment_generated`   | Notify that a payment has been generated |
+| `notification.notify_payment_confirmed`   | Notify that payment has been made        |
+| `notification.notify_payment_timeout`     | Notify that payment exceded the TTL      |
+| `notification.notify_payment_refunded`    | Notify that payment has been refunded    |
+| `notification.notify_shipping_dispatched` | Notify that shipping has been dispatched |
+| `notification.notify_canceled_order`      | Notify that order has been canceled      |
 
 
-![messaging_exchange_default.png](images/messaging/messaging_exchange_default.png)
+![order_exchange.png](images/messaging/order_topic.png)
 
-![messaging_exchange_payment_generated.png](images/messaging/messaging_exchange_payment_generated.png)
+![payment_exchange.png](images/messaging/payment_topic.png)
 
-![messaging_exchange_payment_confirmed.png](images/messaging/messaging_exchange_payment_confirmed.png)
-
-![messaging_exchange_order_cancelled.png](images/messaging/messaging_exchange_order_cancelled.png)
 
 
 ### Purchase confirmation
 
 The payment (mock invoice) is generated and notified, through a robust asynchronous messaging flow.
 
-![client_purchase_successful.png](images/uml/client_purchase_successful.png)
+![client_purchase_successful.png](images/messaging/purchase.png)
 
 ## License
 

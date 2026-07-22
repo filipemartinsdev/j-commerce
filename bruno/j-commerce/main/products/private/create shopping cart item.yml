@@ -11,7 +11,7 @@ http:
     data: |-
       {
         "productSKUId": "369ec07b-7799-479b-bf15-6e6e87e6f874",
-        "units": 5
+        "units": 7
       }
   auth: inherit
 

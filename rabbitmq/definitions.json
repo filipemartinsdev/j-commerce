@@ -96,7 +96,7 @@
             "arguments": {
                 "x-dead-letter-exchange": "",
                 "x-dead-letter-routing-key": "payment.handle_payment_timeout",
-                "x-message-ttl": 86400,
+                "x-message-ttl": 86400000,
                 "x-queue-type": "classic"
             }
         },

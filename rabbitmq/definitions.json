@@ -24,7 +24,7 @@
             "metadata": {
                 "description": "Default virtual host",
                 "tags": [],
-                "default_queue_type": "classic"
+                "default_queue_type": "quorum"
             },
             "tags": []
         }
@@ -58,149 +58,336 @@
             "durable": true,
             "auto_delete": false,
             "arguments": {
-                "x-queue-type": "classic"
+                "x-dead-letter-exchange": "dlx.direct",
+                "x-dead-letter-routing-key": "payment.refund.dlq",
+                "x-queue-type": "quorum"
             }
         },
+        {
+            "name": "payment.refund.dlq",
+            "vhost": "/",
+            "durable": true,
+            "auto_delete": false,
+            "arguments": {
+                "x-queue-type": "quorum"
+            }
+        },
+
         {
             "name": "order.confirm_payment",
             "vhost": "/",
             "durable": true,
             "auto_delete": false,
             "arguments": {
-                "x-queue-type": "classic"
+                "x-dead-letter-exchange": "dlx.direct",
+                "x-dead-letter-routing-key": "order.confirm_payment.dlq",
+                "x-queue-type": "quorum"
             }
         },
+        {
+            "name": "order.confirm_payment.dlq",
+            "vhost": "/",
+            "durable": true,
+            "auto_delete": false,
+            "arguments": {
+                "x-queue-type": "quorum"
+            }
+        },
+
         {
             "name": "notification.notify_payment_timeout",
             "vhost": "/",
             "durable": true,
             "auto_delete": false,
             "arguments": {
-                "x-queue-type": "classic"
+                "x-dead-letter-exchange": "dlx.direct",
+                "x-dead-letter-routing-key": "notification.notify_payment_timeout.dlq",
+                "x-queue-type": "quorum"
             }
         },
+        {
+            "name": "notification.notify_payment_timeout.dlq",
+            "vhost": "/",
+            "durable": true,
+            "auto_delete": false,
+            "arguments": {
+                "x-queue-type": "quorum"
+            }
+        },
+
         {
             "name": "payment.generate_payment",
             "vhost": "/",
             "durable": true,
             "auto_delete": false,
             "arguments": {
-                "x-queue-type": "classic"
+                "x-queue-type": "quorum",
+                "x-dead-letter-exchange": "dlx.direct",
+                "x-dead-letter-routing-key": "payment.generate_payment.dlq"
             }
         },
+        {
+            "name": "payment.generate_payment.dlq",
+            "vhost": "/",
+            "durable": true,
+            "auto_delete": false,
+            "arguments": {
+                "x-queue-type": "quorum"
+            }
+        },
+
         {
             "name": "payment.wait_pending_payment",
             "vhost": "/",
             "durable": true,
             "auto_delete": false,
             "arguments": {
-                "x-dead-letter-exchange": "",
+                "x-dead-letter-exchange": "dlx.direct",
                 "x-dead-letter-routing-key": "payment.handle_payment_timeout",
                 "x-message-ttl": 86400000,
-                "x-queue-type": "classic"
+                "x-queue-type": "quorum"
             }
         },
+
         {
             "name": "notification.notify_canceled_order",
             "vhost": "/",
             "durable": true,
             "auto_delete": false,
             "arguments": {
-                "x-queue-type": "classic"
+                "x-queue-type": "quorum",
+                "x-dead-letter-exchange": "dlx.direct",
+                "x-dead-letter-routing-key": "notification.notify_canceled_order.dlq"
+            }
+        },        {
+            "name": "notification.notify_canceled_order.dlq",
+            "vhost": "/",
+            "durable": true,
+            "auto_delete": false,
+            "arguments": {
+                "x-queue-type": "quorum"
             }
         },
+
         {
             "name": "notification.notify_payment_generated",
             "vhost": "/",
             "durable": true,
             "auto_delete": false,
             "arguments": {
-                "x-queue-type": "classic"
+                "x-queue-type": "quorum",
+                "x-dead-letter-exchange": "dlx.direct",
+                "x-dead-letter-routing-key": "notification.notify_payment_generated.dlq"
+            }
+        },        {
+            "name": "notification.notify_payment_generated.dlq",
+            "vhost": "/",
+            "durable": true,
+            "auto_delete": false,
+            "arguments": {
+                "x-queue-type": "quorum"
             }
         },
+
         {
             "name": "product.refund",
             "vhost": "/",
             "durable": true,
             "auto_delete": false,
             "arguments": {
-                "x-queue-type": "classic"
+                "x-queue-type": "quorum",
+                "x-dead-letter-exchange": "dlx.direct",
+                "x-dead-letter-routing-key": "product.refund.dlq"
             }
         },
+        {
+            "name": "product.refund.dlq",
+            "vhost": "/",
+            "durable": true,
+            "auto_delete": false,
+            "arguments": {
+                "x-queue-type": "quorum"
+            }
+        },
+
         {
             "name": "notification.notify_shipping_dispatched",
             "vhost": "/",
             "durable": true,
             "auto_delete": false,
             "arguments": {
-                "x-queue-type": "classic"
+                "x-queue-type": "quorum",
+                "x-dead-letter-exchange": "dlx.direct",
+                "x-dead-letter-routing-key": "notification.notify_shipping_dispatched.dlq"
             }
         },
+        {
+            "name": "notification.notify_shipping_dispatched.dlq",
+            "vhost": "/",
+            "durable": true,
+            "auto_delete": false,
+            "arguments": {
+                "x-queue-type": "quorum"
+            }
+        },
+
         {
             "name": "payment.handle_payment_timeout",
             "vhost": "/",
             "durable": true,
             "auto_delete": false,
             "arguments": {
-                "x-queue-type": "classic"
+                "x-queue-type": "quorum",
+                "x-dead-letter-exchange": "dlx.direct",
+                "x-dead-letter-routing-key": "payment.handle_payment_timeout.dlq"
             }
         },
+        {
+            "name": "payment.handle_payment_timeout.dlq",
+            "vhost": "/",
+            "durable": true,
+            "auto_delete": false,
+            "arguments": {
+                "x-queue-type": "quorum"
+            }
+        },
+
         {
             "name": "order.handle_payment_timeout",
             "vhost": "/",
             "durable": true,
             "auto_delete": false,
             "arguments": {
-                "x-queue-type": "classic"
+                "x-queue-type": "quorum",
+                "x-dead-letter-exchange": "dlx.direct",
+                "x-dead-letter-routing-key": "order.handle_payment_timeout.dlq"
             }
         },
+        {
+            "name": "order.handle_payment_timeout.dlq",
+            "vhost": "/",
+            "durable": true,
+            "auto_delete": false,
+            "arguments": {
+                "x-queue-type": "quorum"
+            }
+        },
+
         {
             "name": "notification.notify_payment_refunded",
             "vhost": "/",
             "durable": true,
             "auto_delete": false,
             "arguments": {
-                "x-queue-type": "classic"
+                "x-queue-type": "quorum",
+                "x-dead-letter-exchange": "dlx.direct",
+                "x-dead-letter-routing-key": "notification.notify_payment_refunded.dlq"
             }
         },
+        {
+            "name": "notification.notify_payment_refunded.dlq",
+            "vhost": "/",
+            "durable": true,
+            "auto_delete": false,
+            "arguments": {
+                "x-queue-type": "quorum"
+            }
+        },
+
         {
             "name": "order.cancel_shipments",
             "vhost": "/",
             "durable": true,
             "auto_delete": false,
             "arguments": {
-                "x-queue-type": "classic"
+                "x-queue-type": "quorum",
+                "x-dead-letter-exchange": "dlx.direct",
+                "x-dead-letter-routing-key": "order.cancel_shipments.dlq"
             }
         },
+        {
+            "name": "order.cancel_shipments.dlq",
+            "vhost": "/",
+            "durable": true,
+            "auto_delete": false,
+            "arguments": {
+                "x-queue-type": "quorum"
+            }
+        },
+
         {
             "name": "order.create_shipping",
             "vhost": "/",
             "durable": true,
             "auto_delete": false,
             "arguments": {
-                "x-queue-type": "classic"
+                "x-queue-type": "quorum",
+                "x-dead-letter-exchange": "dlx.direct",
+                "x-dead-letter-routing-key": "order.create_shipping.dlq"
             }
         },
+        {
+            "name": "order.create_shipping.dlq",
+            "vhost": "/",
+            "durable": true,
+            "auto_delete": false,
+            "arguments": {
+                "x-queue-type": "quorum"
+            }
+        },
+
         {
             "name": "order.create_order",
             "vhost": "/",
             "durable": true,
             "auto_delete": false,
             "arguments": {
-                "x-queue-type": "classic"
+                "x-queue-type": "quorum",
+                "x-dead-letter-exchange": "dlx.direct",
+                "x-dead-letter-routing-key": "order.create_order.dlq"
             }
         },
+        {
+            "name": "order.create_order.dlq",
+            "vhost": "/",
+            "durable": true,
+            "auto_delete": false,
+            "arguments": {
+                "x-queue-type": "quorum"
+            }
+        },
+
         {
             "name": "notification.notify_payment_confirmed",
             "vhost": "/",
             "durable": true,
             "auto_delete": false,
             "arguments": {
-                "x-queue-type": "classic"
+                "x-queue-type": "quorum",
+                "x-dead-letter-exchange": "dlx.direct",
+                "x-dead-letter-routing-key": "notification.notify_payment_confirmed.dlq"
+            }
+        },
+        {
+            "name": "notification.notify_payment_confirmed.dlq",
+            "vhost": "/",
+            "durable": true,
+            "auto_delete": false,
+            "arguments": {
+                "x-queue-type": "quorum"
             }
         }
     ],
     "exchanges": [
+        {
+            "name": "dlx.direct",
+            "vhost": "/",
+            "type": "direct",
+            "durable": true,
+            "auto_delete": false,
+            "internal": false,
+            "arguments": {}
+        },
         {
             "name": "order.topic",
             "vhost": "/",

@@ -37,9 +37,10 @@ spring:
         prefetch: 20
         retry:
           enabled: true
-          max-retries: 10
-          initial-interval: 2000ms
-          multiplier: 2.0
+          max-retries: 3
+          multiplier: 1.5
+          initial-interval: 500ms
+          max-interval: 2000ms
 
 management:
   endpoints:

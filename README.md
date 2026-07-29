@@ -276,7 +276,7 @@ The entire project is following the principle of **Soft Delete**. No data is del
 
 The entire order flow is based on asynchronous communication, using **Spring AMQP** and **Quarkus Messaging RabbitMQ** to integrate the **RabbitMQ** Message Broker.
 
-All queues have a respective Dead Letter Queue named as `<queue-name>.dql`. They aren't documented here. 
+All queues have a respective Dead Letter Queue named as `<queue-name>.dlq` (they aren't documented here).
 
 ### Exchanges
 

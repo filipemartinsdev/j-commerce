@@ -5,10 +5,11 @@ import com.notification.application.service.UserNotificationService;
 import com.notification.domain.entity.UserNotificationCategory;
 import io.vertx.core.json.JsonObject;
 import jakarta.enterprise.context.ApplicationScoped;
-import jakarta.transaction.Transactional;
+import org.eclipse.microprofile.faulttolerance.Retry;
 import org.eclipse.microprofile.reactive.messaging.Incoming;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import java.time.temporal.ChronoUnit;
 
 @ApplicationScoped
 public class MessageBrokerConsumer {
@@ -21,7 +22,7 @@ public class MessageBrokerConsumer {
     }
 
     @Incoming("payment-generated")
-    @Transactional
+    @Retry(maxRetries = 3, delay = 500, delayUnit = ChronoUnit.MILLIS)
     public void consumeNotifyPaymentGenerated(JsonObject payload) {
         NotifyPaymentGeneratedMessage message = payload.mapTo(NotifyPaymentGeneratedMessage.class);
 
@@ -34,7 +35,7 @@ public class MessageBrokerConsumer {
     }
 
     @Incoming("payment-confirmed")
-    @Transactional
+    @Retry(maxRetries = 3, delay = 500, delayUnit = ChronoUnit.MILLIS)
     public void consumeNotifyPaymentConfirmed(JsonObject payload) {
         NotifyPaymentConfirmedMessage message = payload.mapTo(NotifyPaymentConfirmedMessage.class);
 
@@ -47,7 +48,7 @@ public class MessageBrokerConsumer {
     }
 
     @Incoming("payment-timeout")
-    @Transactional
+    @Retry(maxRetries = 3, delay = 500, delayUnit = ChronoUnit.MILLIS)
     public void consumeNotifyPaymentTimeout(JsonObject payload) {
         NotifyPaymentTimeoutMessage message = payload.mapTo(NotifyPaymentTimeoutMessage.class);
 
@@ -60,7 +61,7 @@ public class MessageBrokerConsumer {
     }
 
     @Incoming("order-canceled")
-    @Transactional
+    @Retry(maxRetries = 3, delay = 500, delayUnit = ChronoUnit.MILLIS)
     public void consumeNotifyCanceledOrder(JsonObject payload) {
         NotifyOrderCanceledMessage message = payload.mapTo(NotifyOrderCanceledMessage.class);
 
@@ -73,7 +74,7 @@ public class MessageBrokerConsumer {
     }
 
     @Incoming("payment-refunded")
-    @Transactional
+    @Retry(maxRetries = 3, delay = 500, delayUnit = ChronoUnit.MILLIS)
     public void consumeNotifyRefundedPayment(JsonObject payload) {
         NotifyPaymentRefundedMessage message = payload.mapTo(NotifyPaymentRefundedMessage.class);
 
@@ -86,7 +87,7 @@ public class MessageBrokerConsumer {
     }
 
     @Incoming("shipping-dispatched")
-    @Transactional
+    @Retry(maxRetries = 3, delay = 500, delayUnit = ChronoUnit.MILLIS)
     public void consumeNotifyShippingDispatched(JsonObject payload){
         NotifyShippingDispatchedMessage message = payload.mapTo(NotifyShippingDispatchedMessage.class);
 

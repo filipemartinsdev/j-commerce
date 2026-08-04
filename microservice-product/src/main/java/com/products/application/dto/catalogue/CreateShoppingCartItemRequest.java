@@ -6,7 +6,7 @@ import jakarta.validation.constraints.Positive;
 import java.util.UUID;
 
 public record CreateShoppingCartItemRequest(
-        @NotNull UUID productSKUId,
+        @NotNull String SKU,
         @NotNull @Positive Integer units
 ) {
 }

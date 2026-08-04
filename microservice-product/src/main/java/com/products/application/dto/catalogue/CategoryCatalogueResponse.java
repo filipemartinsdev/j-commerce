@@ -1,7 +1,7 @@
 package com.products.application.dto.catalogue;
 
-public record WishlistItemResponse(
-        String productId,
+public record CategoryCatalogueResponse(
+        Long id,
         String name
 ) {
 }

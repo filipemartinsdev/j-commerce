@@ -1,12 +1,13 @@
 package com.products.application.dto.admin;
 
-import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.NotEmpty;
+import jakarta.validation.constraints.NotNull;
 
 import java.util.Optional;
 
-public record CreateProductRequest (
-        @NotBlank String name,
+public record CreateProductRequest(
+        @NotEmpty String name,
         Optional<String> description,
-        Integer categoryId
+        @NotNull Long categoryId
 ) {
 }

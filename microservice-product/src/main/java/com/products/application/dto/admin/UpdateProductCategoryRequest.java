@@ -1,7 +1,6 @@
 package com.products.application.dto.admin;
 
-public record StockMovementTypeResponse(
-        Integer id,
+public record UpdateProductCategoryRequest(
         String name
 ) {
 }

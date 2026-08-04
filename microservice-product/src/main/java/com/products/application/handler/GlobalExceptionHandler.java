@@ -1,184 +1,115 @@
 package com.products.application.handler;
 
 import com.products.application.exception.*;
-import io.github.responsekit.core.StandardResponse;
+import graphql.GraphQLError;
+import graphql.schema.DataFetchingEnvironment;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.http.HttpStatus;
-import org.springframework.http.ResponseEntity;
+import org.springframework.graphql.data.method.annotation.GraphQlExceptionHandler;
+import org.springframework.graphql.execution.ErrorType;
 import org.springframework.web.bind.annotation.ControllerAdvice;
-import org.springframework.web.bind.annotation.ExceptionHandler;
 
 @Slf4j
 @ControllerAdvice
 public class GlobalExceptionHandler {
-    @ExceptionHandler(Exception.class)
-    public ResponseEntity<StandardResponse<Void>> handleException(Exception e) {
+
+    @GraphQlExceptionHandler(Throwable.class)
+    public GraphQLError handleThrowable(Throwable e, DataFetchingEnvironment env){
         log.error(e.getMessage(), e);
-        return ResponseEntity
-                .status(HttpStatus.INTERNAL_SERVER_ERROR)
-                .body(StandardResponse.error().message(e.getMessage()).build());
+
+        return GraphQLError.newError()
+                .errorType(ErrorType.INTERNAL_ERROR)
+                .message("Internal server error")
+                .path(env.getExecutionStepInfo().getPath())
+                .location(env.getField().getSourceLocation())
+                .build();
     }
 
-    @ExceptionHandler(ProductNotFoundException.class)
-    public ResponseEntity<StandardResponse<Void>> handleProductNotFound(ProductNotFoundException e) {
-        return ResponseEntity
-                .status(HttpStatus.NOT_FOUND)
-                .body(StandardResponse.fail().message(e.getMessage()).build());
+    private GraphQLError buildError(ErrorType errorType, Exception e, DataFetchingEnvironment env){
+        return GraphQLError.newError()
+                .errorType(errorType)
+                .message(e.getMessage())
+                .path(env.getExecutionStepInfo().getPath())
+                .location(env.getField().getSourceLocation())
+                .build();
     }
 
-    @ExceptionHandler(ProductSKUPriceNotFoundException.class)
-    public ResponseEntity<StandardResponse<Void>> handleProductSKUPriceNotFound(ProductSKUPriceNotFoundException e) {
-        return ResponseEntity
-                .status(HttpStatus.NOT_FOUND)
-                .body(StandardResponse.fail().message(e.getMessage()).build());
+    @GraphQlExceptionHandler(BadGatewayException.class)
+    private GraphQLError handleBadGateway(BadGatewayException e, DataFetchingEnvironment env){
+        return buildError(ErrorType.INTERNAL_ERROR, e, env);
     }
 
-    @ExceptionHandler(ProductSKUNotFoundException.class)
-    public ResponseEntity<StandardResponse<Void>> handleProductSKUNotFound(ProductSKUNotFoundException e) {
-        return ResponseEntity
-                .status(HttpStatus.NOT_FOUND)
-                .body(StandardResponse.fail().message(e.getMessage()).build());
+    @GraphQlExceptionHandler(DeliveryAddressNotFoundException.class)
+    private GraphQLError handleDeliveryAddressNotFound(DeliveryAddressNotFoundException e, DataFetchingEnvironment env){
+        return buildError(ErrorType.NOT_FOUND, e, env);
     }
 
-    @ExceptionHandler(ProductStockNotFoundException.class)
-    public ResponseEntity<StandardResponse<Void>> handleProductStockNotFound(ProductStockNotFoundException e) {
-        return ResponseEntity
-                .status(HttpStatus.NOT_FOUND)
-                .body(StandardResponse.fail().message(e.getMessage()).build());
+    @GraphQlExceptionHandler(EmptyShoppingCartException.class)
+    private GraphQLError handleEmptyShoppingCart(EmptyShoppingCartException e, DataFetchingEnvironment env){
+        return buildError(ErrorType.BAD_REQUEST, e, env);
     }
 
-    @ExceptionHandler(ProductNotActiveException.class)
-    public ResponseEntity<StandardResponse<Void>> handleProductNotActive(ProductNotActiveException e) {
-        return ResponseEntity
-                .status(HttpStatus.BAD_REQUEST)
-                .body(StandardResponse.fail().message(e.getMessage()).build());
+    @GraphQlExceptionHandler(InvalidCatalogueQueryException.class)
+    private GraphQLError handleInvalidCatalogueQuery(InvalidCatalogueQueryException e, DataFetchingEnvironment env){
+        return buildError(ErrorType.BAD_REQUEST, e, env);
     }
 
-    @ExceptionHandler(SKUAlreadyInUseException.class)
-    public ResponseEntity<StandardResponse<Void>> handleSKUAlreadyInUse(SKUAlreadyInUseException e) {
-        return ResponseEntity
-                .status(HttpStatus.BAD_REQUEST)
-                .body(StandardResponse.fail().message(e.getMessage()).build());
+    @GraphQlExceptionHandler(InvalidStockMovementReasonException.class)
+    private GraphQLError handleInvalidStockMovementReason(InvalidStockMovementReasonException e, DataFetchingEnvironment env){
+        return buildError(ErrorType.BAD_REQUEST, e, env);
     }
 
-    @ExceptionHandler(InvalidProductPriceTypeException.class)
-    public ResponseEntity<StandardResponse<Void>> handleInvalidProductPriceType(ProductNotActiveException e) {
-        return ResponseEntity
-                .status(HttpStatus.BAD_REQUEST)
-                .body(StandardResponse.fail().message(e.getMessage()).build());
+    @GraphQlExceptionHandler(InvalidStockMovementTypeException.class)
+    private GraphQLError handleInvalidStockMovementType(InvalidStockMovementTypeException e, DataFetchingEnvironment env){
+        return buildError(ErrorType.BAD_REQUEST, e, env);
     }
 
-    @ExceptionHandler(InvalidProductCategoryException.class)
-    public ResponseEntity<StandardResponse<Void>> handleInvalidProductCategory(InvalidProductCategoryException e) {
-        return ResponseEntity
-                .status(HttpStatus.BAD_REQUEST)
-                .body(StandardResponse.fail().message(e.getMessage()).build());
+    @GraphQlExceptionHandler(ProductCategoryNotFoundException.class)
+    private GraphQLError handleProductCategoryNotFound(ProductCategoryNotFoundException e, DataFetchingEnvironment env){
+        return buildError(ErrorType.NOT_FOUND, e, env);
     }
 
-    @ExceptionHandler(CantDeleteProductException.class)
-    public ResponseEntity<StandardResponse<Void>> handleCantDeleteProduct(CantDeleteProductException e) {
-        return ResponseEntity
-                .status(HttpStatus.BAD_REQUEST)
-                .body(StandardResponse.fail().message(e.getMessage()).build());
+    @GraphQlExceptionHandler(ProductEmbeddingNotFoundException.class)
+    private GraphQLError handleProductEmbeddingNotFound(ProductEmbeddingNotFoundException e, DataFetchingEnvironment env){
+        return buildError(ErrorType.NOT_FOUND, e, env);
     }
 
-    @ExceptionHandler(ProductSKUWithoutBasePriceException.class)
-    public ResponseEntity<StandardResponse<Void>> handleProductSKUWithoutBasePrice(ProductSKUWithoutBasePriceException e) {
-        return ResponseEntity
-                .status(HttpStatus.BAD_REQUEST)
-                .body(StandardResponse.fail().message(e.getMessage()).build());
+    @GraphQlExceptionHandler(ProductNotFoundException.class)
+    private GraphQLError handleProductNotFound(ProductNotFoundException e, DataFetchingEnvironment env){
+        return buildError(ErrorType.NOT_FOUND, e, env);
     }
 
-    @ExceptionHandler(WishlistItemAlreadyExistsException.class)
-    public ResponseEntity<StandardResponse<Void>> handleWishlistItemAlreadyExists(WishlistItemAlreadyExistsException e) {
-        return ResponseEntity
-                .status(HttpStatus.BAD_REQUEST)
-                .body(StandardResponse.fail().message(e.getMessage()).build());
+    @GraphQlExceptionHandler(ProductOutOfStockException.class)
+    private GraphQLError handleProductOutOfStock(ProductOutOfStockException e, DataFetchingEnvironment env){
+        return buildError(ErrorType.BAD_REQUEST, e, env);
     }
 
-    @ExceptionHandler(ShoppingCartItemNotFoundException.class)
-    public ResponseEntity<StandardResponse<Void>> handleShoppingCartItemNotFound(ShoppingCartItemNotFoundException e) {
-        return ResponseEntity
-                .status(HttpStatus.NOT_FOUND)
-                .body(StandardResponse.fail().message(e.getMessage()).build());
+    @GraphQlExceptionHandler(ProductSKUNotFoundException.class)
+    private GraphQLError handleProductSKUNotFound(ProductSKUNotFoundException e, DataFetchingEnvironment env){
+        return buildError(ErrorType.NOT_FOUND, e, env);
     }
 
-    @ExceptionHandler(WishlistItemNotFoundException.class)
-    public ResponseEntity<StandardResponse<Void>> handleWishlistItemNotFound(WishlistItemNotFoundException e) {
-        return ResponseEntity
-                .status(HttpStatus.NOT_FOUND)
-                .body(StandardResponse.fail().message(e.getMessage()).build());
+    @GraphQlExceptionHandler(ShoppingCartItemAlreadyExistsException.class)
+    private GraphQLError handleShoppingCartItemAlreadyExists(ShoppingCartItemAlreadyExistsException e, DataFetchingEnvironment env){
+        return buildError(ErrorType.BAD_REQUEST, e, env);
     }
 
-    @ExceptionHandler(ShoppingCartItemAlreadyExistsException.class)
-    public ResponseEntity<StandardResponse<Void>> handleShoppingCartItemAlreadyExists(ShoppingCartItemAlreadyExistsException e) {
-        return ResponseEntity
-                .status(HttpStatus.BAD_REQUEST)
-                .body(StandardResponse.fail().message(e.getMessage()).build());
+    @GraphQlExceptionHandler(ShoppingCartItemNotFoundException.class)
+    private GraphQLError handleShoppingCartItemNotFound(ShoppingCartItemNotFoundException e, DataFetchingEnvironment env){
+        return buildError(ErrorType.NOT_FOUND, e, env);
     }
 
-    @ExceptionHandler(ProductOutOfStockException.class)
-    public ResponseEntity<StandardResponse<Void>> handleProductOutOfStock(ProductOutOfStockException e) {
-        return ResponseEntity
-                .status(HttpStatus.UNPROCESSABLE_CONTENT)
-                .body(StandardResponse.fail().message(e.getMessage()).build());
+    @GraphQlExceptionHandler(SKUAlreadyExistsException.class)
+    private GraphQLError handleSKUAlreadyExists(SKUAlreadyExistsException e, DataFetchingEnvironment env){
+        return buildError(ErrorType.BAD_REQUEST, e, env);
     }
 
-    @ExceptionHandler(EmptyShoppingCartException.class)
-    public ResponseEntity<StandardResponse<Void>> handleEmptyShoppingCartException(EmptyShoppingCartException e) {
-        return ResponseEntity
-                .status(HttpStatus.BAD_REQUEST)
-                .body(StandardResponse.fail().message(e.getMessage()).build());
+    @GraphQlExceptionHandler(WishlistItemAlreadyExistsException.class)
+    private GraphQLError handleWishlistItemAlreadyExists(WishlistItemAlreadyExistsException e, DataFetchingEnvironment env){
+        return buildError(ErrorType.BAD_REQUEST, e, env);
     }
 
-    @ExceptionHandler(DeliveryAddressNotFoundException.class)
-    public ResponseEntity<StandardResponse<Void>> handleDeliveryAddressNotFound(DeliveryAddressNotFoundException e) {
-        return ResponseEntity
-                .status(HttpStatus.NOT_FOUND)
-                .body(StandardResponse.fail().message(e.getMessage()).build());
-    }
-    
-    @ExceptionHandler(ProductCategoryNotFoundException.class)
-    public ResponseEntity<StandardResponse<Void>> handleProductCategoryNotFound(ProductCategoryNotFoundException e) {
-        return ResponseEntity
-                .status(HttpStatus.NOT_FOUND)
-                .body(StandardResponse.fail().message(e.getMessage()).build());
-    }
-
-    @ExceptionHandler(InvalidEntityMapperException.class)
-    public ResponseEntity<StandardResponse<Void>> handleInvalidEntityMapper(InvalidEntityMapperException exception){
-        log.error(exception.getMessage(), exception);
-        return ResponseEntity
-                .status(HttpStatus.INTERNAL_SERVER_ERROR)
-                .body(StandardResponse.error().message(exception.getMessage()).build());
-    }
-
-    @ExceptionHandler(NullResponsePageException.class)
-    public ResponseEntity<StandardResponse<Void>> handleNullResponsePage(NullResponsePageException exception){
-        log.error(exception.getMessage(), exception);
-        return ResponseEntity
-                .status(HttpStatus.INTERNAL_SERVER_ERROR)
-                .body(StandardResponse.error().message(exception.getMessage()).build());
-    }
-
-    @ExceptionHandler(BadGatewayException.class)
-    public ResponseEntity<StandardResponse<Void>> handleBadGateway(BadGatewayException exception){
-        return ResponseEntity
-                .status(HttpStatus.BAD_GATEWAY)
-                .body(StandardResponse.error().message(exception.getMessage()).build());
-    }
-
-    @ExceptionHandler(CursorEncodingException.class)
-    public ResponseEntity<StandardResponse<Void>> handleCursorEncoding(CursorEncodingException exception){
-        return ResponseEntity
-                .status(HttpStatus.BAD_REQUEST)
-                .body(StandardResponse.fail().message(exception.getMessage()).build());
-    }
-
-    @ExceptionHandler(CursorDecodingException.class)
-    public ResponseEntity<StandardResponse<Void>> handleCursorDecoding(CursorDecodingException exception){
-        return ResponseEntity
-                .status(HttpStatus.BAD_REQUEST)
-                .body(StandardResponse.fail().message(exception.getMessage()).build());
+    @GraphQlExceptionHandler(WishlistItemNotFoundException.class)
+    private GraphQLError handleWishlistItemNotFound(WishlistItemNotFoundException e, DataFetchingEnvironment env){
+        return buildError(ErrorType.NOT_FOUND, e, env);
     }
 }

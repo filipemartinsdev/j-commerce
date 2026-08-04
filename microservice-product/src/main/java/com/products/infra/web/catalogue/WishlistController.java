@@ -1,81 +1,68 @@
 package com.products.infra.web.catalogue;
 
-import com.products.application.dto.catalogue.CreateWishlistItemRequest;
+import com.products.application.dto.Response;
 import com.products.application.dto.catalogue.WishlistItemResponse;
+import com.products.application.service.ScrollSubrangeExtractor;
 import com.products.application.service.WishlistService;
-import com.products.docs.WishlistControllerDocs;
-import io.github.responsekit.core.PagedResponse;
-import io.github.responsekit.core.StandardResponse;
-import jakarta.validation.Valid;
-import org.springframework.data.domain.Pageable;
-import org.springframework.http.HttpStatus;
-import org.springframework.http.ResponseEntity;
+import org.springframework.data.domain.Limit;
+import org.springframework.data.domain.ScrollPosition;
+import org.springframework.data.domain.Window;
+import org.springframework.graphql.data.method.annotation.Argument;
+import org.springframework.graphql.data.method.annotation.MutationMapping;
+import org.springframework.graphql.data.method.annotation.QueryMapping;
+import org.springframework.graphql.data.query.ScrollSubrange;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.security.oauth2.jwt.Jwt;
-import org.springframework.web.bind.annotation.*;
+import org.springframework.stereotype.Controller;
 
 import java.util.UUID;
 
-@RestController
-@RequestMapping("/api/v1/wishlist")
-public class WishlistController implements WishlistControllerDocs {
+@Controller
+public class WishlistController {
     private final WishlistService wishlistService;
+    private final ScrollSubrangeExtractor scrollSubrangeExtractor;
 
-    public WishlistController(WishlistService wishlistService) {
+    public WishlistController(WishlistService wishlistService, ScrollSubrangeExtractor scrollSubrangeExtractor) {
         this.wishlistService = wishlistService;
-    }
-
-    @GetMapping
-    public ResponseEntity<StandardResponse<PagedResponse<WishlistItemResponse>>> getWishlist(
-            @AuthenticationPrincipal Jwt jwt,
-            Pageable pageable
-    ){
-        UUID authenticatedUserId = UUID.fromString(jwt.getSubject());
-
-        return ResponseEntity
-                .status(HttpStatus.OK)
-                .body(StandardResponse.success(
-                        wishlistService.getAllItems(authenticatedUserId, pageable)
-                ).build());
+        this.scrollSubrangeExtractor = scrollSubrangeExtractor;
     }
 
 
-    @PostMapping
-    public ResponseEntity<Void> addItemToWishlist(
-            @Valid @RequestBody CreateWishlistItemRequest request,
-            @AuthenticationPrincipal Jwt jwt
-    ) {
-        UUID authenticatedUserId = UUID.fromString(jwt.getSubject());
+    @QueryMapping
+    @PreAuthorize("hasAuthority('SCOPE_USER')")
+    public Window<WishlistItemResponse> wishlist(ScrollSubrange subrange, @AuthenticationPrincipal Jwt jwt){
+        ScrollPosition position = scrollSubrangeExtractor.getPosition(subrange);
+        Limit limit = scrollSubrangeExtractor.getLimit(subrange);
+        UUID userId = UUID.fromString(jwt.getSubject());
 
-        wishlistService.createItem(request, authenticatedUserId);
-
-        return ResponseEntity
-                .status(HttpStatus.CREATED)
-                .build();
+        return wishlistService.get(userId, position, limit);
     }
 
-    @DeleteMapping("/{id}")
-    public ResponseEntity<Void> deleteItemFromWishlist(
-            @PathVariable UUID id,
-            @AuthenticationPrincipal Jwt jwt
-    ) {
-        UUID authenticatedUserId = UUID.fromString(jwt.getSubject());
-        wishlistService.deleteItem(id, authenticatedUserId);
+    @MutationMapping
+    @PreAuthorize("hasAuthority('SCOPE_USER')")
+    public Response addWishlistItem(@Argument String productId, @AuthenticationPrincipal Jwt jwt){
+        UUID userId = UUID.fromString(jwt.getSubject());
 
-        return ResponseEntity
-                .status(HttpStatus.OK)
-                .build();
+        wishlistService.add(userId, productId);
+        return new Response(true, "Item added successfully");
     }
 
-    @DeleteMapping
-    public ResponseEntity<Void> deleteAllItems (
-            @AuthenticationPrincipal Jwt jwt
-    ) {
-        UUID authenticatedUserId = UUID.fromString(jwt.getSubject());
-        wishlistService.deleteAllItemsByUserId(authenticatedUserId);
+    @MutationMapping
+    @PreAuthorize("hasAuthority('SCOPE_USER')")
+    public Response removeWishlistItem(@Argument String productId, @AuthenticationPrincipal Jwt jwt){
+        UUID userId = UUID.fromString(jwt.getSubject());
 
-        return ResponseEntity
-                .status(HttpStatus.OK)
-                .build();
+        wishlistService.remove(userId, productId);
+        return new Response(true, "Item removed successfully");
+    }
+
+    @MutationMapping
+    @PreAuthorize("hasAuthority('SCOPE_USER')")
+    public Response clearWishlist(@AuthenticationPrincipal Jwt jwt){
+        UUID userId = UUID.fromString(jwt.getSubject());
+
+        wishlistService.clear(userId);
+        return new Response(true, "Wishlist cleared successfully");
     }
 }

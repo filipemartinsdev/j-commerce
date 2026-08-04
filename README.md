@@ -15,11 +15,11 @@ E-Commerce platform
 
 ![Static Badge](https://img.shields.io/badge/Java-21-red?logo=openjdk)
 ![Static Badge](https://img.shields.io/badge/Kotlin-2.3-7F52FF?logo=kotlin)
-![Static Badge](https://img.shields.io/badge/Spring_Boot-4.0-green?logo=springboot)
-![Static Badge](https://img.shields.io/badge/Quarkus-3.5-4695EB?logo=quarkus)
+![Static Badge](https://img.shields.io/badge/Spring_Boot-4.x-green?logo=springboot)
+![Static Badge](https://img.shields.io/badge/Quarkus-3.x-4695EB?logo=quarkus)
 ![Static Badge](https://img.shields.io/badge/Caddy-2.11-1F88C0?logo=caddy)
 ![Static Badge](https://img.shields.io/badge/PostgreSQL-17-0D96F6?logo=postgresql&logoColor=0D96F6)
-![Static Badge](https://img.shields.io/badge/MongoDB-7.0-47A248?logo=mongodb)
+![Static Badge](https://img.shields.io/badge/MongoDB-8.0-47A248?logo=mongodb)
 
 ![Static Badge](https://img.shields.io/badge/Redis-7.4-FF4438?logo=redis)
 ![Static Badge](https://img.shields.io/badge/RabbitMQ-4-FF6600?logo=rabbitmq)
@@ -33,9 +33,10 @@ E-Commerce platform
 
 1. [Identity](/microservice-identity/README.md) - Authentication and user profile management.
 2. [Product](/microservice-product/README.md) - Product catalogue, stock level and wishlist.
-3. [Order](/microservice-order/README.md) - Orders life cycle and shopping cart.
-4. [Notification v2](/microservice-notification-v2/README.md) - User notifications management.
-5. [Payment Worker](/worker-payment/README.md) - Payment status management (mock).
+3. [Product](/microservice-product/README.md) - Product catalogue, stock level and wishlist.
+4. [Order](/microservice-order/README.md) - Orders life cycle and shopping cart.
+5. [Notification v2](/microservice-notification-v2/README.md) - User notifications management.
+6. [Payment Worker](/worker-payment/README.md) - Payment status management (mock).
 
 ---
 

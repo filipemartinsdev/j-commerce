@@ -1,0 +1,252 @@
+type Query {
+#    Catalogue
+    categories: [ProductCategoryCatalogue!]!
+    catalogue(categoryId: ID!, first: Int, after: String): CatalogueConnection!
+    catalogueProduct(productId: String!): ProductCatalogue!
+    catalogueSearch(query: String!, categoryId: ID): CatalogueSearchResponse!
+
+    wishlist(first: Int, after: String): WishlistConnection!
+    shoppingCart: ShoppingCart!
+
+#    Admin
+    products(categoryId: ID, first: Int, after: String): ProductConnection!
+    product(id: ID!): Product!
+    productCategories: [ProductCategory!]!
+    stockMovements(SKU: ID, typeId: ID, first: Int, after: String): StockMovementConnection!
+}
+
+type Mutation {
+#    Catalogue
+    addWishlistItem(productId: ID!): Response!
+    removeWishlistItem(productId: ID!): Response!
+    clearWishlist: Response!
+
+    addShoppingCartItem(SKU: ID!, units: Int!): Response!
+    removeShoppingCartItem(SKU: ID!): Response!
+    clearShoppingCart: Response!
+    confirmShoppingCart(deliveryAddressId: ID!): Response!
+
+#    Admin
+    createProduct(request: CreateProductRequest!): Product!
+    updateProduct(id: ID!, request: UpdateProductRequest!): Product!
+    deleteProduct(id: ID!): Response!
+
+    createProductCategory(request: CreateProductCategoryRequest!): ProductCategory!
+
+    createSKU(productId: ID!, request: CreateSKURequest!): Product!
+    updateSKU(SKU: ID!, request: UpdateSKURequest!): Product!
+    deleteSKU(SKU: ID!): Product!
+
+    createStockMovement(request: CreateStockMovementRequest!): StockMovement!
+}
+
+# Catalogue / General
+
+scalar Instant
+
+type Response {
+    success: Boolean!
+    message: String
+}
+
+type ProductCategoryCatalogue {
+    id: ID!
+    name: String!
+}
+
+type ProductCategory {
+    id: ID!
+    name: String!
+    createdAt: Instant!
+    createdBy: ID!
+    updatedAt: Instant
+    updatedBy: ID
+}
+
+type PageInfo {
+    startCursor: String
+    endCursor: String
+    hasPreviousPage: Boolean!
+    hasNextPage: Boolean!
+}
+
+type CatalogueConnection {
+    pageInfo: PageInfo!
+    edges: [ProductCatalogueEdge!]!
+}
+
+type ProductCatalogueEdge {
+    cursor: String!
+    node: ProductCatalogue!
+}
+
+type ProductCatalogue {
+    id: ID!
+    name: String!
+    description: String
+    category: ProductCategoryCatalogue!
+    SKUs: [ProductSKUCatalogue!]!
+}
+
+type ProductSKUCatalogue {
+    SKU: ID!
+    name: String!
+    currentPrice: Price!
+    stock: Int!
+    attributes: [Attribute!]
+}
+
+type Attribute {
+    name: String!
+    value: String!
+}
+
+type Price {
+    type: String!,
+    value: Float!
+}
+
+type CatalogueSearchResponse {
+    products: [ProductCatalogue!]!
+    similarQuery: String!
+}
+
+type WishlistConnection {
+    pageInfo: PageInfo!
+    edges: [WishlistEdge!]!
+}
+
+type WishlistEdge {
+    cursor: String!
+    node: WishlistItem!
+}
+
+type WishlistItem {
+    productId: ID!
+    productName: String!
+}
+
+type ShoppingCart {
+    items: [ShoppingCartItem!]!
+    totalAmount: Float!
+}
+
+type ShoppingCartItem {
+    SKU: ID!
+    productName: String!
+    price: Float!
+    units: Int!
+    amount: Float!
+}
+
+# Only Admin
+
+type ProductConnection {
+    pageInfo: PageInfo!
+    edges: [ProductEdge!]!
+}
+
+type ProductEdge {
+    cursor: String!
+    node: Product!
+}
+
+type Product {
+    id: ID!
+    name: String!
+    description: String
+    category: ProductCategory!
+    SKUs: [ProductSKU!]!
+    createdAt: Instant!
+    createdBy: ID!
+    updatedAt: Instant
+    updatedBy: ID
+}
+
+type ProductSKU {
+    SKU: ID!
+    name: String!
+    price: Price!
+    stock: Int!
+    currentPrice: Price
+    attributes: [Attribute!]
+    createdAt: Instant!
+    createdBy: ID!
+    updatedAt: Instant
+    updatedBy: ID
+}
+
+type StockMovementConnection {
+    pageInfo: PageInfo!
+    edges: [StockMovementEdge!]!
+}
+
+type StockMovementEdge {
+    cursor: String!
+    node: StockMovement!
+}
+
+type StockMovement {
+    id: ID!
+    SKU: ID!
+    units: Int!
+    description: String
+    type: StockMovementType!
+    reason: StockMovementReason!
+    createdAt: Instant!
+    createdBy: ID!
+}
+
+type StockMovementType {
+    id: ID!
+    name: String!
+}
+
+type StockMovementReason {
+    id: ID!
+    name: String!
+}
+
+
+
+input CreateProductRequest {
+    name: String!
+    description: String
+    categoryId: ID!
+}
+
+input UpdateProductRequest {
+    name: String
+    description: String
+    categoryId: String
+}
+
+input CreateProductCategoryRequest {
+    id: ID!
+    name: String!
+}
+
+input CreateSKURequest {
+    SKU: ID!
+    name: String!
+    attributes: [AttributeRequest!]
+}
+
+input AttributeRequest {
+    name: String!
+    value: String!
+}
+
+input UpdateSKURequest {
+    name: String
+    attributes: [AttributeRequest!]
+}
+
+input CreateStockMovementRequest {
+    SKU: ID!
+    units: Int!
+    typeId: ID!
+    reasonId: ID!
+    description: String
+}
+

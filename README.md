@@ -15,11 +15,11 @@ E-Commerce platform
 
 ![Static Badge](https://img.shields.io/badge/Java-21-red?logo=openjdk)
 ![Static Badge](https://img.shields.io/badge/Kotlin-2.3-7F52FF?logo=kotlin)
-![Static Badge](https://img.shields.io/badge/Maven-3.9-orange?logo=apachemaven)
 ![Static Badge](https://img.shields.io/badge/Spring_Boot-4.0-green?logo=springboot)
 ![Static Badge](https://img.shields.io/badge/Quarkus-3.5-4695EB?logo=quarkus)
 ![Static Badge](https://img.shields.io/badge/Caddy-2.11-1F88C0?logo=caddy)
 ![Static Badge](https://img.shields.io/badge/PostgreSQL-17-0D96F6?logo=postgresql&logoColor=0D96F6)
+![Static Badge](https://img.shields.io/badge/MongoDB-7.0-47A248?logo=mongodb)
 
 ![Static Badge](https://img.shields.io/badge/Redis-7.4-FF4438?logo=redis)
 ![Static Badge](https://img.shields.io/badge/RabbitMQ-4-FF6600?logo=rabbitmq)
@@ -59,6 +59,7 @@ E-Commerce platform
 - Quarkus
 - Docker
 - PostgreSQL + PgVector
+- MongoDB
 - Redis
 - RabbitMQ
 - Prometheus
@@ -108,40 +109,33 @@ E-Commerce platform
 
 The HTTPS will be automatically configured with Caddy, and services will be available at:
 
-| Service               | URL                            |
-|-----------------------|--------------------------------|
-| Identity              | https://localhost/identity     |
-| Product               | https://localhost/product      |
-| Order                 | https://localhost/order        |
-| Notification          | https://localhost/notification |
-| Grafana               | http://localhost:3000          |
-| Prometheus Panel      | http://localhost:9090          |
-| RabbitMQ Panel        | http://localhost:15672         |
-| Identity Database     | localhost:5432                 |
-| Product Database      | localhost:5433                 |
-| Order Database        | localhost:5434                 |
-| Notification Database | localhost:5435                 |
+| Service               | URL                            | Connection   |
+|-----------------------|--------------------------------|--------------|
+| Identity              | https://localhost/identity     | RESTful      |
+| Product               | https://localhost/product      | GraphQL/HTTP |
+| Pricing               | https://localhost/pricing      | RESTful      |
+| Order                 | https://localhost/order        | RESTful      |
+| Notification          | https://localhost/notification | RESTful      |
+| Grafana               | http://localhost:3000          | Web          |
+| Prometheus Panel      | http://localhost:9090          | Web          |
+| RabbitMQ Panel        | http://localhost:15672         | Web          |
+| Identity Database     | localhost:5432                 | PostgreSQL   |
+| Vector Database       | localhost:5433                 | PostgreSQL   |
+| Pricing Database      | localhost:5434                 | PostgreSQL   |
+| Order Database        | localhost:5435                 | PostgreSQL   |
+| Notification Database | localhost:5436                 | PostgreSQL   |
+| Payment Database      | localhost:5436                 | PostgreSQL   |
+| Product Database      | localhost:27017                | MongoDB      |
 
-The Swagger UI for each microservice will be available at:
+The interactive documentation for each microservice will be available at:
 
-| Service       | URL                                         |
-|---------------|---------------------------------------------|
-| Identity      | http://localhost:8080/swagger-ui/index.html |
-| Product       | http://localhost:8081/swagger-ui/index.html |
-| Order         | http://localhost:8082/swagger-ui/index.html |
-| Notification  | http://localhost:8083/q/swagger-ui          |
-
-## Default Users
-
-The Identity microservice creates default users via Flyway migration:
-
-| Email               | Password     | Roles                   |
-|---------------------|--------------|-------------------------|
-| admin@gmail.com     | admin123     | `USER`, `ADMIN`         |
-| common@gmail.com    | common123    | `USER`                  |
-| stockman@gmail.com  | stockman123  | `USER`, `STOCK_MANAGER` |
-| driver@gmail.com    | driver123    | `USER`, `DRIVER`        |
-| logistics@gmail.com | logistics123 | `USER`, `LOGISTICS`     |
+| Service      | URL                                         |
+|--------------|---------------------------------------------|
+| Identity     | http://localhost:8080/swagger-ui/index.html |
+| Product      | http://localhost:8081/graphiql              |
+| Pricing      | http://localhost:8082/swagger-ui/index.html |
+| Order        | http://localhost:8083/swagger-ui/index.html |
+| Notification | http://localhost:8084/q/swagger-ui          |
 
 
 > You can also use `docker-compose-mock.yaml` for tests, that contains a mocked catalogue.
@@ -183,7 +177,7 @@ Services will be available at:
 
 ## Architecture
 
-The system has a concise list of C4 Model diagrams for architecture documentation. 
+The system was modeled with concise C4 diagrams.
 
 ### System context
 
@@ -197,80 +191,9 @@ The system has a concise list of C4 Model diagrams for architecture documentatio
 
 ![c4_model_2_items.png](images/c4/c4_model_2_items.png)
 
-### Authentication
+## Authentication
 
-Authentication is implemented as a distributed model with one dedicated authorization service and multiple resource servers.
-
-#### Auth Server
-
-The `microservice-identity` is responsible for the full authentication lifecycle:
-
-- Registers users and stores encrypted passwords with `BCrypt`.
-- Authenticates users with email and password.
-- Issues signed JWTs for both access and refresh flows.
-- Exposes the public key through `/.well-known/jwks.json` so other services can validate tokens without sharing secrets.
-
-JWT signing uses an RSA key pair:
-
-- The private key (`app.key`) stays only in the identity service and is used to sign tokens.
-- The public key (`app.pub`) is exposed as JWKS and consumed by the other microservices.
-- This keeps token issuance centralized while token validation remains decentralized.
-
-After a successful login, the identity service returns:
-
-- An access token with a short lifetime (`3600` seconds / 1 hour).
-- A refresh token with a longer lifetime (`1209600` seconds / 14 days).
-
-The generated JWTs contain the claims used by the platform:
-
-- `sub`: authenticated user id (`UUID`).
-- `scope`: user role (`USER`, `ADMIN`, `STOCK_MANAGER`).
-- `token_type`: distinguishes `access` from `refresh`.
-- `iss`, `iat`, `exp`: issuer and token timestamps.
-- `jti`: present on refresh tokens and linked to the persisted refresh token record.
-
-Refresh tokens are also persisted in the identity database. When `/api/v1/auth/refresh` is called, the service validates the JWT signature, checks that `token_type` is `refresh`, revokes the current refresh token, and issues a new access/refresh pair. This makes refresh token rotation explicit and prevents reuse of the same persisted token.
-
-#### Resource Servers
-
-The `product`, `order`, `payment`, `notification`, and protected endpoints inside `identity` itself act as resource servers.
-
-Each service is configured with the JWKS endpoint from `microservice-identity`:
-
-```yaml
-spring:
-  security:
-    oauth2:
-      resourceserver:
-        jwt:
-          jwk-set-uri: http://identity:8080/.well-known/jwks.json
-```
-
-<img src="images/uml/auth_servers.png" width="620">
-
-With this setup, every resource server validates JWT signatures locally using the public RSA key obtained from the auth service. No shared symmetric secret is required between services.
-
-Authorization is then enforced from the JWT claims:
-
-- Any protected endpoint requires a valid bearer token.
-- The authenticated user is identified from `sub`.
-- Role-based access is derived from `scope`, which Spring Security maps to authorities such as `SCOPE_ADMIN`.
-- Admin routes such as `/admin/**` require elevated scope, while user-specific routes read the authenticated user id directly from the validated JWT.
-
-In practice, the flow is:
-
-1. The client authenticates against `microservice-identity`.
-2. The identity service signs and returns JWTs using its RSA private key.
-3. The client sends the access token to other microservices as a bearer token.
-4. Each microservice fetches the public key from the JWKS endpoint and validates the token locally.
-5. The service authorizes the request based on `sub` and `scope`, without calling the auth service for every request.
-
-## Database
-
-The entire project is following the principle of **Soft Delete**. No data is deleted, only marked as _inactive_. This approach exists to: 
-
-- Create an **auditable** application.
-- Reduce the processing of **batch and cascading deletes** in the database.
+Authentication is implemented as a distributed model with one dedicated authorization service and multiple resource servers. The `microservice-identity` is responsible for the full authentication lifecycle. See the full authentication flow [here](microservice-identity/README.md).
 
 ## Messaging
 
@@ -299,6 +222,7 @@ All queues have a respective Dead Letter Queue named as `<queue-name>.dlq` (they
 | `payment.generate_payment`                | Generate payment for order               |
 | `payment.wait_pending_payment`            | Set TTL of 1 day for payment             |
 | `payment.handle_payment_timeout`          | Handle payment timeout after the TTL     |
+| `payment.decrease_stock`                  | Decrease stock for outbound products     |
 | `payment.refund`                          | Refund all payments from order           |
 | `product.refund`                          | Refund all products from order           |
 | `notification.notify_payment_generated`   | Notify that a payment has been generated |

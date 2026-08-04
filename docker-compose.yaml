@@ -53,7 +53,7 @@ services:
 
   product_db:
     container_name: product_db
-    image: mongo:latest
+    image: mongo:8
     restart: unless-stopped
     ports:
       - "27017:27017"

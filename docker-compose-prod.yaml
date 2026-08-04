@@ -50,7 +50,7 @@ services:
 
   product_db:
     container_name: product_db
-    image: mongo:latest
+    image: mongo:8
     restart: unless-stopped
     environment:
       MONGO_INITDB_DATABASE: ${PG_PRODUCT_DATABASE:-product}

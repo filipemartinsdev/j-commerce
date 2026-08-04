@@ -1,72 +1,18 @@
 package com.products.application.service;
 
-import com.products.application.dto.catalogue.CreateWishlistItemRequest;
 import com.products.application.dto.catalogue.WishlistItemResponse;
-import com.products.application.exception.ProductSKUNotFoundException;
-import com.products.application.exception.WishlistItemAlreadyExistsException;
-import com.products.application.exception.WishlistItemNotFoundException;
-import com.products.application.service.mapper.WishlistItemMapper;
-import com.products.domain.entity.ProductSKU;
-import com.products.domain.entity.WishlistItem;
-import com.products.domain.entity.WishlistItemSummaryView;
-import com.products.infra.persistence.ProductSKURepository;
-import com.products.infra.persistence.WishlistItemSummaryViewRepository;
-import com.products.infra.persistence.WishlistItemRepository;
-import io.github.responsekit.core.PagedResponse;
-import io.github.responsekit.spring.PagedResponseFactory;
-import org.springframework.data.domain.Page;
-import org.springframework.data.domain.Pageable;
-import org.springframework.stereotype.Service;
+import org.springframework.data.domain.Limit;
+import org.springframework.data.domain.ScrollPosition;
+import org.springframework.data.domain.Window;
 
 import java.util.UUID;
 
-@Service
-public class WishlistService {
-    private final WishlistItemRepository wishlistItemRepository;
-    private final ProductSKURepository productSKURepository;
-    private final WishlistItemSummaryViewRepository wishlistItemProductSKUResumeRepository;
-    private final WishlistItemMapper wishlistItemMapper;
-    private final ProductDiscountCalculator productDiscountCalculator;
+public interface WishlistService {
+    Window<WishlistItemResponse> get(UUID userId, ScrollPosition position, Limit limit);
 
-    public WishlistService(WishlistItemRepository wishlistItemRepository, ProductSKURepository productSKURepository, WishlistItemSummaryViewRepository wishlistItemProductSKUResumeRepository, WishlistItemMapper wishlistItemMapper, ProductDiscountCalculator productDiscountCalculator) {
-        this.wishlistItemRepository = wishlistItemRepository;
-        this.productSKURepository = productSKURepository;
-        this.wishlistItemProductSKUResumeRepository = wishlistItemProductSKUResumeRepository;
-        this.wishlistItemMapper = wishlistItemMapper;
-        this.productDiscountCalculator = productDiscountCalculator;
-    }
+    void add(UUID userId, String productId);
 
-    public PagedResponse<WishlistItemResponse> getAllItems(UUID authenticatedUser, Pageable pageable){
-        Page<WishlistItemSummaryView> page = wishlistItemProductSKUResumeRepository.findAllByUserId(authenticatedUser, pageable);
+    void remove(UUID userId, String productId);
 
-        return PagedResponseFactory.fromPage(page, (entity) -> {
-                int discount = productDiscountCalculator.getDiscountPercent(entity.getOriginalPrice(), entity.getCurrentPrice());
-                return wishlistItemMapper.toResponse(entity);
-        });
-    }
-    public void createItem(CreateWishlistItemRequest request, UUID authenticatedUserId) {
-        ProductSKU productSKU = productSKURepository.findById(request.productSKUId())
-                .orElseThrow(() -> new ProductSKUNotFoundException("ProductSKU not found with ID: "+request.productSKUId()));
-
-        WishlistItem item = new WishlistItem();
-        item.setUserId(authenticatedUserId);
-        item.setProductSKU(productSKU);
-
-        if (wishlistItemRepository.existsByProductSKUIdAndUserId(productSKU.getId(), authenticatedUserId))
-            throw new WishlistItemAlreadyExistsException("This product is already on wishlist");
-
-        wishlistItemRepository.save(item);
-    }
-
-    public void deleteItem(UUID id, UUID authenticatedUserId) {
-        WishlistItem item = wishlistItemRepository.findActiveByIdAndUserId(id, authenticatedUserId)
-                .orElseThrow(() -> new WishlistItemNotFoundException("WishlistItem not found with ID: "+id));
-
-        item.setIsActive(false);
-        wishlistItemRepository.save(item);
-    }
-
-    public void deleteAllItemsByUserId(UUID userId) {
-        wishlistItemRepository.markAllAsInactiveByUserId(userId);
-    }
+    void clear(UUID userId);
 }

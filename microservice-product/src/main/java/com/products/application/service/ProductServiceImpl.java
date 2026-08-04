@@ -1,0 +1,187 @@
+package com.products.application.service;
+
+import com.products.application.dto.admin.*;
+import com.products.application.exception.ProductNotFoundException;
+import com.products.application.exception.ProductSKUNotFoundException;
+import com.products.application.exception.SKUAlreadyExistsException;
+import com.products.domain.entity.Product;
+import com.products.domain.entity.ProductCategory;
+import com.products.infra.persistence.ProductRepository;
+import com.products.application.dto.admin.UpdateProductSKURequest;
+import jakarta.transaction.Transactional;
+import org.springframework.data.domain.Limit;
+import org.springframework.data.domain.ScrollPosition;
+import org.springframework.data.domain.Window;
+import org.springframework.stereotype.Service;
+
+import java.time.Instant;
+import java.util.List;
+import java.util.UUID;
+
+@Service
+public class ProductServiceImpl implements ProductService {
+    private final ProductRepository productRepository;
+    private final ProductCategoryService productCategoryService;
+    private final ProductEmbeddingService productEmbeddingService;
+
+    public ProductServiceImpl(ProductRepository productRepository, ProductCategoryService productCategoryService, ProductEmbeddingService productEmbeddingService) {
+        this.productRepository = productRepository;
+        this.productCategoryService = productCategoryService;
+        this.productEmbeddingService = productEmbeddingService;
+    }
+
+    @Override
+    public Window<Product> getAllProducts(ScrollPosition position, Limit limit) {
+        return productRepository.findAllByOrderById(position, limit);
+    }
+
+    @Override
+    public Window<Product> getAllProductsByCategory(Long categoryId, ScrollPosition position, Limit limit) {
+        return productRepository.findAllByCategoryIdOrderById(categoryId, position, limit);
+    }
+
+    @Override
+    public Product getProductById(String id) {
+        return productRepository.findById(id)
+                .orElseThrow(() -> new ProductNotFoundException("Product not found by ID: "+id));
+    }
+
+    @Override
+    @Transactional
+    public Product createProduct(CreateProductRequest request, UUID userId) {
+        var product = new Product();
+        product.setName(request.name());
+        product.setCreatedBy(userId);
+
+        var category = productCategoryService.getById(request.categoryId());
+
+        product.setCategory(new Product.CategorySummary(
+                category.getId(),
+                category.getName()
+        ));
+
+        if(request.description().isPresent())
+            product.setDescription(request.description().get());
+
+        var createdProduct = productRepository.save(product);
+
+        productEmbeddingService.createFromProduct(product);
+
+        return createdProduct;
+    }
+
+    @Override
+    @Transactional
+    public Product updateProduct(String id, UpdateProductRequest request, UUID userId) {
+        var product = productRepository.findById(id)
+                .orElseThrow(() -> new ProductNotFoundException("Product not found by ID: "+id));
+
+        if (request.name().isPresent())
+            product.setName(request.name().get());
+
+        if (request.description().isPresent())
+            product.setDescription(request.description().get());
+
+        if (request.categoryId().isPresent()){
+            var category = productCategoryService.getById(request.categoryId().get());
+
+            product.setCategory(new Product.CategorySummary(
+                    category.getId(),
+                    category.getName()
+            ));
+        }
+
+        product.setUpdatedAt(Instant.now());
+        product.setUpdatedBy(userId);
+
+        var createdProduct = productRepository.save(product);
+
+        productEmbeddingService.updateFromProduct(product);
+
+        return createdProduct;
+    }
+
+    @Override
+    @Transactional
+    public void deleteProduct(String id, UUID userId) {
+        var product = productRepository.findById(id)
+                .orElseThrow(() -> new ProductNotFoundException("Product not found by ID: "+id));
+
+        productRepository.delete(product);
+
+        productEmbeddingService.delete(product.getId());
+    }
+
+    @Override
+    public List<ProductCategory> getAllCategories() {
+        return productCategoryService.getAll();
+    }
+
+    @Override
+    public ProductCategory createProductCategory(CreateProductCategoryRequest request, UUID userId) {
+        return productCategoryService.create(request, userId);
+    }
+
+    @Override
+    public Product createSKU(String productId, CreateProductSKURequest request, UUID userId) {
+        var product = productRepository.findById(productId)
+                .orElseThrow(() -> new ProductNotFoundException("Product not found by ID: "+productId));
+
+        if (product.hasSKU(request.SKU()))
+            throw new SKUAlreadyExistsException("SKU already exists");
+
+        var SKU = assembleSKU(request, userId);
+        product.getSKUs().add(SKU);
+
+        return productRepository.save(product);
+    }
+
+    private Product.ProductSKU assembleSKU(CreateProductSKURequest request, UUID userId) {
+        var SKU = new Product.ProductSKU();
+        SKU.setSKU(request.SKU());
+        SKU.setName(request.name());
+        SKU.setAttributes(request.attributes()
+                .stream()
+                .map(attributeRequest ->
+                        new Product.ProductSKU.Attribute(attributeRequest.name(), attributeRequest.value()))
+                .toList()
+        );
+        SKU.setCreatedBy(userId);
+        return SKU;
+    }
+
+    @Override
+    public Product updateSKU(String SKU, UpdateProductSKURequest request, UUID userId) {
+        var product = productRepository.findBySKU(SKU)
+                .orElseThrow(() -> new ProductNotFoundException("Product not found with SKU: "+SKU));
+
+        var productSKU = product.findSKU(SKU)
+                .orElseThrow(() -> new ProductSKUNotFoundException("SKU not found: "+SKU));
+
+        if(request.name().isPresent())
+            productSKU.setName(request.name().get());
+
+        if(request.attributes().isPresent())
+            productSKU.setAttributes(request.attributes().get()
+                    .stream()
+                    .map(attribute -> new Product.ProductSKU.Attribute(attribute.name(), attribute.value()))
+                    .toList()
+            );
+
+        return productRepository.save(product);
+    }
+
+    @Override
+    public Product deleteSKU(String SKU, UUID userId) {
+        var product = productRepository.findBySKU(SKU)
+                .orElseThrow(() -> new ProductNotFoundException("Product not found with SKU: "+SKU));
+
+        boolean removed = product.getSKUs()
+                .removeIf(element -> element.getSKU().equals(SKU));
+
+        if (removed)
+            return productRepository.save(product);
+        else
+            throw new ProductSKUNotFoundException("SKU not found: "+SKU);
+    }
+}

@@ -8,6 +8,7 @@ import lombok.Data;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 
+@Deprecated
 @Data @NoArgsConstructor @AllArgsConstructor
 @Entity @Table(name = "product_price_type")
 public class PriceType {

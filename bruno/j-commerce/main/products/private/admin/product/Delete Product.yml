@@ -1,0 +1,25 @@
+info:
+  name: Delete Product
+  type: graphql
+  seq: 7
+
+graphql:
+  method: POST
+  url: https://localhost/product/api/v2/graphql
+  body:
+    query: |-
+      mutation {
+      	deleteProduct(
+          id: "6a71f1ca856687ce856d4284"
+        ){
+          success
+          message
+        }
+      }
+  auth: inherit
+
+settings:
+  encodeUrl: true
+  timeout: 0
+  followRedirects: true
+  maxRedirects: 5

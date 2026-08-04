@@ -1,0 +1,47 @@
+info:
+  name: Update Product
+  type: graphql
+  seq: 6
+
+graphql:
+  method: POST
+  url: https://localhost/product/api/v2/graphql
+  body:
+    query: |-
+      mutation {
+      	updateProduct(
+          id: "6a71f221856687ce856d4285", 
+          request: {
+          	name: "Play Station 4 Controller"
+            description: "A nice controller to have"
+          	categoryId: "1"
+        }) {
+          id
+          name
+          description
+          category {
+            id
+            name
+          }
+          SKUs {
+            name
+      			SKU
+            attributes {
+              name
+              value
+            }
+            stock
+          }
+          createdAt
+          createdBy
+          updatedAt
+          updatedBy
+      	}
+      }
+  auth: inherit
+
+settings:
+  encodeUrl: true
+  timeout: 0
+  followRedirects: true
+  maxRedirects: 5

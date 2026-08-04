@@ -1,0 +1,33 @@
+info:
+  name: Remove Wishlist Item
+  type: graphql
+  seq: 8
+
+graphql:
+  method: POST
+  url: https://localhost/product/api/v2/graphql
+  body:
+    query: |-
+      mutation {
+      	removeWishlistItem(productId: "") {
+          edges {
+            node {
+              id
+              productName
+            }
+          }
+          pageInfo {
+            startCursor
+            endCursor
+            hasPreviousPage
+            hasNextPage
+          }
+        }
+      }
+  auth: inherit
+
+settings:
+  encodeUrl: true
+  timeout: 0
+  followRedirects: true
+  maxRedirects: 5

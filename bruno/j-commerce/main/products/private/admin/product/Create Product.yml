@@ -1,0 +1,48 @@
+info:
+  name: Create Product
+  type: graphql
+  seq: 4
+
+graphql:
+  method: POST
+  url: https://localhost/product/api/v2/graphql
+  body:
+    query: |-
+      mutation {
+      	createProduct(request: {
+          name: "Play Station 4 Controller"
+          categoryId: 1
+        }) {
+          id
+          name
+          description
+          category {
+            id
+            name
+          }
+          SKUs {
+            SKU
+            name
+            stock
+            currentPrice {
+              type
+              value
+            }
+            attributes {
+              name
+              value
+            }
+          }
+          createdAt
+          createdBy
+          updatedAt
+          updatedBy
+        }
+      }
+  auth: inherit
+
+settings:
+  encodeUrl: true
+  timeout: 0
+  followRedirects: true
+  maxRedirects: 5

@@ -1,0 +1,47 @@
+info:
+  name: Catalogue Search
+  type: graphql
+  seq: 4
+
+graphql:
+  method: POST
+  url: https://localhost/product/api/v2/graphql
+  body:
+    query: |-
+      query {
+      	catalogueSearch(
+          # categoryId: "1"
+          # query: "gamer"
+        ) {
+          similarQuery
+          products {
+            id
+            name
+            description
+            category {
+              id
+              name
+            }
+            SKUs {
+              SKU
+              name
+              stock
+              currentPrice {
+                type
+                value
+              }
+              attributes {
+                name
+                value
+              }
+            }
+          }
+      	}
+      }
+  auth: inherit
+
+settings:
+  encodeUrl: true
+  timeout: 0
+  followRedirects: true
+  maxRedirects: 5

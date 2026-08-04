@@ -1,0 +1,41 @@
+info:
+  name: Create Stock Movement
+  type: graphql
+  seq: 2
+
+graphql:
+  method: POST
+  url: https://localhost/product/api/v2/graphql
+  body:
+    query: |-
+      mutation {
+      	createStockMovement(request: {
+          SKU: "DS4-B"
+          description: "test"
+          units: 10
+          typeId: 1
+          reasonId: 1
+        }) {
+          id
+          SKU
+          units
+          description
+          type {
+            id
+            name
+          }
+          reason {
+            id
+            name
+          }
+          createdAt
+          createdBy
+        }
+      }
+  auth: inherit
+
+settings:
+  encodeUrl: true
+  timeout: 0
+  followRedirects: true
+  maxRedirects: 5

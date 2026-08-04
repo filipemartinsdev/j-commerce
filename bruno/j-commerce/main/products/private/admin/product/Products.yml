@@ -1,0 +1,58 @@
+info:
+  name: Products
+  type: graphql
+  seq: 3
+
+graphql:
+  method: POST
+  url: https://localhost/product/api/v2/graphql
+  body:
+    query: |-
+      query {
+      	products(
+          first: 20
+          # after: "S19bImphdmEudXRpbC5Db2xsZWN0aW9ucyRVbm1vZGlmaWFibGVNYXAiLHsiaWQiOiI2YTcyMDdlYzcwMzY5OTZmOTc2Yjk4NDUifV0="
+        ) {
+          edges {
+            node {
+              id
+              name
+              description
+              category {
+                id
+                name
+              }
+              SKUs {
+                SKU
+                name
+                stock
+                currentPrice {
+                  type
+                  value
+                }
+                attributes {
+                  name
+                  value
+                }
+              }
+              createdAt
+              createdBy
+              updatedAt
+              updatedBy
+            }
+          }
+          pageInfo {
+            startCursor
+            endCursor
+            hasPreviousPage
+            hasNextPage
+          }
+        }
+      }
+  auth: inherit
+
+settings:
+  encodeUrl: true
+  timeout: 0
+  followRedirects: true
+  maxRedirects: 5

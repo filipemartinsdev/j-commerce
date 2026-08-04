@@ -11,7 +11,7 @@ public record OrderCheckedMessage(
         UUID deliveryAddressId
 ) implements Serializable {
     public static record OrderItem(
-            UUID productSKUId,
+            String SKU,
             String name,
             Integer units,
             BigDecimal unitPrice

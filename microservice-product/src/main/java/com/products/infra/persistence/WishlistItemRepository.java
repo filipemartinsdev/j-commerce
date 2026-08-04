@@ -1,47 +1,22 @@
 package com.products.infra.persistence;
 
 import com.products.domain.entity.WishlistItem;
-import jakarta.transaction.Transactional;
-import org.springframework.data.jpa.repository.JpaRepository;
-import org.springframework.data.jpa.repository.Modifying;
-import org.springframework.data.jpa.repository.Query;
-import org.springframework.data.repository.query.Param;
+import org.springframework.data.domain.Limit;
+import org.springframework.data.domain.ScrollPosition;
+import org.springframework.data.domain.Window;
+import org.springframework.data.mongodb.repository.MongoRepository;
+import org.springframework.data.mongodb.repository.Query;
 
 import java.util.Optional;
 import java.util.UUID;
 
-public interface WishlistItemRepository extends JpaRepository<WishlistItem, UUID> {
-    @Transactional
-    @Modifying
-    @Query(
-            """
-            UPDATE WishlistItem w
-            SET w.isActive = FALSE
-            WHERE w.isActive IS TRUE
-            AND w.userId = :userId
-            """
-    )
-    void markAllAsInactiveByUserId(@Param("userId") UUID userId);
+public interface WishlistItemRepository extends MongoRepository<WishlistItem, String> {
+    @Query(value = "{ userId: ?0 }")
+    Window<WishlistItem> findAllByUserId(UUID userId, ScrollPosition position, Limit limit);
 
-    @Query(
-            """
-            SELECT COUNT(w) > 0
-            FROM WishlistItem w
-            WHERE w.isActive IS TRUE
-            AND w.userId = :userId
-            AND w.productSKU.id = :productSKUId
-            """
-    )
-    boolean existsByProductSKUIdAndUserId(@Param("productSKUId") UUID productSKUId, @Param("userId") UUID userId);
+    void deleteAllByUserId(UUID userId);
 
-    @Query(
-            """
-            SELECT w
-            FROM WishlistItem w
-            WHERE w.id = :id
-            AND w.userId = :userId
-            AND w.isActive IS TRUE
-            """
-    )
-    Optional<WishlistItem> findActiveByIdAndUserId(@Param("id") UUID id, @Param("userId") UUID userId);
+    Optional<WishlistItem> findByUserIdAndProductId(UUID userId, String productId);
+
+    boolean existsByUserIdAndProductId(UUID userId, String productId);
 }

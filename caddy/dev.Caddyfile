@@ -25,6 +25,19 @@ localhost {
         }
     }
 
+    handle_path /pricing/* {
+        reverse_proxy pricing:8080
+
+        rate_limit {
+            zone dynamic_zone {
+                key     {http.request.remote.host}
+                events  30
+                window  1m
+            }
+        }
+    }
+
+
     handle_path /order/* {
         reverse_proxy order:8080
 

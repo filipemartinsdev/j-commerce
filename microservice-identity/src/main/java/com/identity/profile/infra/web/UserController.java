@@ -6,6 +6,7 @@ import com.identity.profile.docs.UserControllerDocs;
 import io.github.responsekit.core.StandardResponse;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.security.oauth2.jwt.Jwt;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -24,6 +25,7 @@ public class UserController implements UserControllerDocs {
     }
 
     @GetMapping("/me")
+    @PreAuthorize("isAuthenticated()")
     public ResponseEntity<StandardResponse<UserProfileResponse>> getAuthenticatedUser(@AuthenticationPrincipal Jwt authenticatedJWT) {
         UUID authenticatedUserId = UUID.fromString(authenticatedJWT.getSubject());
 

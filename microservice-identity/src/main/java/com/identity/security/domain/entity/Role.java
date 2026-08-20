@@ -19,18 +19,16 @@ public class Role {
 
     @Getter
     public static enum Value {
-        USER(1, "USER"),
-        ADMIN(2, "ADMIN"),
-        STOCK_MANAGER(3, "STOCK_MANAGER"),
-        DRIVER(4, "DRIVER"),
-        LOGISTICS(5, "LOGISTICS");
+        USER(1),
+        ADMIN(2),
+        STOCK_MANAGER(3),
+        DRIVER(4),
+        LOGISTICS(5);
 
         private final int id;
-        private final String name;
 
-        Value(int id, String name) {
+        Value(int id) {
             this.id = id;
-            this.name = name;
         }
 
         public static Value fromId(int id) {

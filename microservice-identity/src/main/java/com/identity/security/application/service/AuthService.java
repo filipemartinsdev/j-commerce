@@ -104,27 +104,23 @@ public class AuthService {
         if (!passwordEncoder.matches(request.password(), userCredentials.getEncryptedPassword()))
             throw new ForbiddenOperationException("Wrong password");
 
-        return generateTokens(userCredentials.getUserId(), getScopeByRoleList(userCredentials.getRoles()));
+        return generateTokens(
+                userCredentials.getUserId(),
+                userCredentials.getRoles()
+                        .stream()
+                        .map(Role::getName)
+                        .toList()
+        );
     }
 
-    private String getScopeByRoleList(List<Role> roleList){
-        StringBuilder stringBuilder = new StringBuilder();
-
-        for (Role role : roleList) {
-            stringBuilder.append(role.getName()).append(" ");
-        }
-
-        return stringBuilder.toString();
-    }
-
-    private LoginResponse generateTokens(UUID userId, String scope){
-        TokenResponse accessToken = generateAccessToken(userId, scope);
-        TokenResponse refreshToken = generateRefreshToken(userId, scope);
+    private LoginResponse generateTokens(UUID userId, List<String> roles){
+        TokenResponse accessToken = generateAccessToken(userId, roles);
+        TokenResponse refreshToken = generateRefreshToken(userId, roles);
 
         return new LoginResponse(accessToken, refreshToken);
     }
 
-    private TokenResponse generateAccessToken(UUID userId, String scope){
+    private TokenResponse generateAccessToken(UUID userId, List<String> roles){
         Instant now = Instant.now();
         Instant expiration = now.plusSeconds(ACCESS_TOKEN_EXPIRATION_SECONDS);
 
@@ -134,7 +130,8 @@ public class AuthService {
                 .expiresAt(expiration)
                 .subject(userId.toString())
                 .claim("token_type", "access")
-                .claim("scope", scope)
+//                .claim("scope", scope)
+                .claim("roles", roles)
                 .build();
 
         String jwtValue = jwtEncoder.encode(
@@ -144,7 +141,7 @@ public class AuthService {
         return new TokenResponse(jwtValue, expiration);
     }
 
-    private TokenResponse generateRefreshToken(UUID userId, String scope){
+    private TokenResponse generateRefreshToken(UUID userId, List<String> roles){
         Instant now = Instant.now();
         Instant expiration = now.plusSeconds(REFRESH_TOKEN_EXPIRATION_SECONDS);
 
@@ -162,7 +159,8 @@ public class AuthService {
                 .expiresAt(expiration)
                 .subject(userId.toString())
                 .claim("token_type", "refresh")
-                .claim("scope", scope)
+//                .claim("scope", scope)
+                .claim("roles", roles)
                 .build();
 
         String jwtValue = jwtEncoder.encode(
@@ -189,7 +187,13 @@ public class AuthService {
 
         revokeRefreshToken(tokenId);
 
-        return generateTokens(userId, getScopeByRoleList(user.getRoles()));
+        return generateTokens(
+                userId,
+                user.getRoles()
+                        .stream()
+                        .map(Role::getName)
+                        .toList()
+        );
     }
 
     private Jwt decodeToken(String token) {

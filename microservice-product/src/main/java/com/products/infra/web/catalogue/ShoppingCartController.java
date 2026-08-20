@@ -24,14 +24,14 @@ public class ShoppingCartController {
 
 
     @QueryMapping
-    @PreAuthorize("hasAuthority('SCOPE_USER')")
+    @PreAuthorize("hasRole('USER')")
     public ShoppingCartResponse shoppingCart(@AuthenticationPrincipal Jwt jwt){
         UUID userId = UUID.fromString(jwt.getSubject());
         return shoppingCartService.get(userId);
     }
 
     @MutationMapping
-    @PreAuthorize("hasAuthority('SCOPE_USER')")
+    @PreAuthorize("hasRole('USER')")
     public Response addShoppingCartItem(
             @Argument String SKU,
             @Argument Integer units,
@@ -44,7 +44,7 @@ public class ShoppingCartController {
     }
 
     @MutationMapping
-    @PreAuthorize("hasAuthority('SCOPE_USER')")
+    @PreAuthorize("hasRole('USER')")
     public Response removeShoppingCartItem(
             @Argument String SKU,
             @AuthenticationPrincipal Jwt jwt
@@ -56,7 +56,7 @@ public class ShoppingCartController {
     }
 
     @MutationMapping
-    @PreAuthorize("hasAuthority('SCOPE_USER')")
+    @PreAuthorize("hasRole('USER')")
     public Response clearShoppingCart(
             @AuthenticationPrincipal Jwt jwt
     ){
@@ -67,7 +67,7 @@ public class ShoppingCartController {
     }
 
     @MutationMapping
-    @PreAuthorize("hasAuthority('SCOPE_USER')")
+    @PreAuthorize("hasRole('USER')")
     public Response confirmShoppingCart(
             @Argument UUID deliveryAddressId,
             @AuthenticationPrincipal Jwt jwt

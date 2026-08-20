@@ -77,6 +77,8 @@ public class Product {
         @NotNull @Min(0)
         private Long stock = 0L;
 
+        private Price basePrice;
+
         private Price currentPrice;
 
         private List<Attribute> attributes;
@@ -95,7 +97,7 @@ public class Product {
         @Data @AllArgsConstructor @NoArgsConstructor
         public static class Price {
             @NotEmpty @Length(max = 255)
-            private String type;
+            private String label;
 
             @NotNull @Positive
             private BigDecimal value;

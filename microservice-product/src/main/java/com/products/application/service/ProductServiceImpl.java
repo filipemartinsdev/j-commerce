@@ -4,8 +4,11 @@ import com.products.application.dto.admin.*;
 import com.products.application.exception.ProductNotFoundException;
 import com.products.application.exception.ProductSKUNotFoundException;
 import com.products.application.exception.SKUAlreadyExistsException;
+import com.products.application.message.SKUCreatedMessage;
+import com.products.application.message.SKUDeletedMessage;
 import com.products.domain.entity.Product;
 import com.products.domain.entity.ProductCategory;
+import com.products.infra.messaging.MessageBrokerProducer;
 import com.products.infra.persistence.ProductRepository;
 import com.products.application.dto.admin.UpdateProductSKURequest;
 import jakarta.transaction.Transactional;
@@ -23,11 +26,13 @@ public class ProductServiceImpl implements ProductService {
     private final ProductRepository productRepository;
     private final ProductCategoryService productCategoryService;
     private final ProductEmbeddingService productEmbeddingService;
+    private final MessageBrokerProducer messageBrokerProducer;
 
-    public ProductServiceImpl(ProductRepository productRepository, ProductCategoryService productCategoryService, ProductEmbeddingService productEmbeddingService) {
+    public ProductServiceImpl(ProductRepository productRepository, ProductCategoryService productCategoryService, ProductEmbeddingService productEmbeddingService, MessageBrokerProducer messageBrokerProducer) {
         this.productRepository = productRepository;
         this.productCategoryService = productCategoryService;
         this.productEmbeddingService = productEmbeddingService;
+        this.messageBrokerProducer = messageBrokerProducer;
     }
 
     @Override
@@ -94,11 +99,11 @@ public class ProductServiceImpl implements ProductService {
         product.setUpdatedAt(Instant.now());
         product.setUpdatedBy(userId);
 
-        var createdProduct = productRepository.save(product);
+        var updatedProduct = productRepository.save(product);
 
-        productEmbeddingService.updateFromProduct(product);
+        productEmbeddingService.updateFromProduct(updatedProduct);
 
-        return createdProduct;
+        return updatedProduct;
     }
 
     @Override
@@ -110,6 +115,13 @@ public class ProductServiceImpl implements ProductService {
         productRepository.delete(product);
 
         productEmbeddingService.delete(product.getId());
+
+        produceSKUsDeleted(product);
+    }
+
+    private void produceSKUsDeleted(Product product) {
+        for (Product.ProductSKU productSKU : product.getSKUs())
+            messageBrokerProducer.produceSKUDeleted(new SKUDeletedMessage(productSKU.getSKU()));
     }
 
     @Override
@@ -133,7 +145,11 @@ public class ProductServiceImpl implements ProductService {
         var SKU = assembleSKU(request, userId);
         product.getSKUs().add(SKU);
 
-        return productRepository.save(product);
+        var updatedProduct = productRepository.save(product);
+
+        produceSKUCreated(request.SKU());
+
+        return updatedProduct;
     }
 
     private Product.ProductSKU assembleSKU(CreateProductSKURequest request, UUID userId) {
@@ -149,6 +165,11 @@ public class ProductServiceImpl implements ProductService {
         SKU.setCreatedBy(userId);
         return SKU;
     }
+
+    private void produceSKUCreated(String sku) {
+        messageBrokerProducer.produceSKUCreated(new SKUCreatedMessage(sku));
+    }
+
 
     @Override
     public Product updateSKU(String SKU, UpdateProductSKURequest request, UUID userId) {
@@ -179,9 +200,16 @@ public class ProductServiceImpl implements ProductService {
         boolean removed = product.getSKUs()
                 .removeIf(element -> element.getSKU().equals(SKU));
 
-        if (removed)
-            return productRepository.save(product);
+        if (removed) {
+            var updatedProduct = productRepository.save(product);
+            produceSKUDeleted(SKU);
+            return updatedProduct;
+        }
         else
             throw new ProductSKUNotFoundException("SKU not found: "+SKU);
+    }
+
+    private void produceSKUDeleted(String sku) {
+        messageBrokerProducer.produceSKUDeleted(new SKUDeletedMessage(sku));
     }
 }

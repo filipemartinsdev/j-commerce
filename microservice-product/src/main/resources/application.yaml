@@ -73,6 +73,8 @@ broker:
   exchanges:
     orderTopic:
       name: order.topic
+    productTopic:
+      name: product.topic
 
 feign:
   clients:

@@ -33,7 +33,7 @@ public class ProductController {
     }
 
     @QueryMapping
-    @PreAuthorize("hasAnyAuthority('SCOPE_STOCK_MANAGER', 'SCOPE_LOGISTICS', 'SCOPE_ADMIN')")
+    @PreAuthorize("hasAnyRole('STOCK_MANAGER', 'LOGISTICS', 'ADMIN')")
     public Window<Product> products(
             @Argument Long categoryId,
             ScrollSubrange scrollSubrange
@@ -48,7 +48,7 @@ public class ProductController {
     }
 
     @QueryMapping
-    @PreAuthorize("hasAnyAuthority('SCOPE_STOCK_MANAGER', 'SCOPE_LOGISTICS', 'SCOPE_ADMIN')")
+    @PreAuthorize("hasAnyRole('STOCK_MANAGER', 'LOGISTICS', 'ADMIN')")
     public Product product(
             @Argument String id
     ){
@@ -56,7 +56,7 @@ public class ProductController {
     }
 
     @MutationMapping
-    @PreAuthorize("hasAnyAuthority('SCOPE_ADMIN')")
+    @PreAuthorize("hasAnyRole('ADMIN')")
     public Product createProduct(
             @Argument CreateProductRequest request,
             @AuthenticationPrincipal Jwt jwt
@@ -66,7 +66,7 @@ public class ProductController {
     }
 
     @MutationMapping
-    @PreAuthorize("hasAnyAuthority('SCOPE_STOCK_MANAGER', 'SCOPE_ADMIN')")
+    @PreAuthorize("hasAnyRole('STOCK_MANAGER', 'ADMIN')")
     public Product updateProduct(
             @Argument String id,
             @Argument UpdateProductRequest request,
@@ -77,7 +77,7 @@ public class ProductController {
     }
 
     @MutationMapping
-    @PreAuthorize("hasAuthority('SCOPE_ADMIN')")
+    @PreAuthorize("hasRole('ADMIN')")
     public Response deleteProduct(
             @Argument String id,
             @AuthenticationPrincipal Jwt jwt
@@ -89,13 +89,13 @@ public class ProductController {
     }
 
     @QueryMapping
-    @PreAuthorize("hasAnyAuthority('SCOPE_STOCK_MANAGER', 'SCOPE_LOGISTICS', 'SCOPE_ADMIN')")
+    @PreAuthorize("hasAnyRole('STOCK_MANAGER', 'LOGISTICS', 'ADMIN')")
     public List<ProductCategory> productCategories(){
         return productService.getAllCategories();
     }
 
     @MutationMapping
-    @PreAuthorize("hasAuthority('SCOPE_ADMIN')")
+    @PreAuthorize("hasRole('ADMIN')")
     public ProductCategory createProductCategory(
             @Argument CreateProductCategoryRequest request,
             @AuthenticationPrincipal Jwt jwt
@@ -105,7 +105,7 @@ public class ProductController {
     }
 
     @MutationMapping
-    @PreAuthorize("hasAnyAuthority('SCOPE_STOCK_MANAGER', 'SCOPE_ADMIN')")
+    @PreAuthorize("hasAnyRole('STOCK_MANAGER', 'ADMIN')")
     public Product createSKU(
             @Argument String productId,
             @Argument CreateProductSKURequest request,
@@ -116,7 +116,7 @@ public class ProductController {
     }
 
     @MutationMapping
-    @PreAuthorize("hasAnyAuthority('SCOPE_STOCK_MANAGER', 'SCOPE_ADMIN')")
+    @PreAuthorize("hasAnyRole('STOCK_MANAGER', 'ADMIN')")
     public Product updateSKU(
             @Argument String SKU,
             @Argument UpdateProductSKURequest request,
@@ -127,7 +127,7 @@ public class ProductController {
     }
 
     @MutationMapping
-    @PreAuthorize("hasAnyAuthority('SCOPE_STOCK_MANAGER', 'SCOPE_ADMIN')")
+    @PreAuthorize("hasAnyRole('STOCK_MANAGER', 'ADMIN')")
     public Product deleteSKU(
             @Argument String SKU,
             @AuthenticationPrincipal Jwt jwt

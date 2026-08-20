@@ -27,19 +27,19 @@ public class CatalogueController {
     }
 
     @QueryMapping
-    @PreAuthorize("hasAuthority('SCOPE_USER')")
+    @PreAuthorize("hasRole('USER')")
     public List<CategoryCatalogueResponse> categories(){
         return catalogueService.getAllCategories();
     }
 
     @QueryMapping
-    @PreAuthorize("hasAuthority('SCOPE_USER')")
+    @PreAuthorize("hasRole('USER')")
     public ProductCatalogueResponse catalogueProduct(@Argument String id){
         return catalogueService.getProductById(id);
     }
 
     @QueryMapping
-    @PreAuthorize("hasAuthority('SCOPE_USER')")
+    @PreAuthorize("hasRole('USER')")
     public Window<ProductCatalogueResponse> catalogue(
             @Argument Long categoryId,
             ScrollSubrange subrange
@@ -62,7 +62,7 @@ public class CatalogueController {
     }
 
     @QueryMapping
-    @PreAuthorize("hasAuthority('SCOPE_USER')")
+    @PreAuthorize("hasRole('USER')")
     public CatalogueSearchResponse catalogueSearch(
             @Argument String query,
             @Argument Long categoryId

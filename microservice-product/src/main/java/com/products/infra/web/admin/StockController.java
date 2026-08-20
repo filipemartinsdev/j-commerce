@@ -29,7 +29,7 @@ public class StockController {
     }
 
     @QueryMapping
-    @PreAuthorize("hasAnyAuthority('SCOPE_STOCK_MANAGER', 'SCOPE_LOGISTICS', 'SCOPE_ADMIN')")
+    @PreAuthorize("hasAnyRole('STOCK_MANAGER', 'LOGISTICS', 'ADMIN')")
     public Window<StockMovement> stockMovements(
             @Argument String SKU,
             @Argument Integer typeId,
@@ -61,7 +61,7 @@ public class StockController {
     }
 
     @MutationMapping
-    @PreAuthorize("hasAnyAuthority('SCOPE_STOCK_MANAGER', 'SCOPE_LOGISTICS', 'SCOPE_ADMIN')")
+    @PreAuthorize("hasAnyRole('STOCK_MANAGER', 'LOGISTICS', 'ADMIN')")
     public StockMovement createStockMovement(
             @Argument CreateStockMovementRequest request,
             @AuthenticationPrincipal Jwt jwt

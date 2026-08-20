@@ -30,7 +30,7 @@ public class WishlistController {
 
 
     @QueryMapping
-    @PreAuthorize("hasAuthority('SCOPE_USER')")
+    @PreAuthorize("hasRole('USER')")
     public Window<WishlistItemResponse> wishlist(ScrollSubrange subrange, @AuthenticationPrincipal Jwt jwt){
         ScrollPosition position = scrollSubrangeExtractor.getPosition(subrange);
         Limit limit = scrollSubrangeExtractor.getLimit(subrange);
@@ -40,7 +40,7 @@ public class WishlistController {
     }
 
     @MutationMapping
-    @PreAuthorize("hasAuthority('SCOPE_USER')")
+    @PreAuthorize("hasRole('USER')")
     public Response addWishlistItem(@Argument String productId, @AuthenticationPrincipal Jwt jwt){
         UUID userId = UUID.fromString(jwt.getSubject());
 
@@ -49,7 +49,7 @@ public class WishlistController {
     }
 
     @MutationMapping
-    @PreAuthorize("hasAuthority('SCOPE_USER')")
+    @PreAuthorize("hasRole('USER')")
     public Response removeWishlistItem(@Argument String productId, @AuthenticationPrincipal Jwt jwt){
         UUID userId = UUID.fromString(jwt.getSubject());
 
@@ -58,7 +58,7 @@ public class WishlistController {
     }
 
     @MutationMapping
-    @PreAuthorize("hasAuthority('SCOPE_USER')")
+    @PreAuthorize("hasRole('USER')")
     public Response clearWishlist(@AuthenticationPrincipal Jwt jwt){
         UUID userId = UUID.fromString(jwt.getSubject());
 

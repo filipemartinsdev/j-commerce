@@ -11,11 +11,13 @@
 
 	<properties>
 		<java.version>21</java.version>
-	</properties>
+	<kotlin.version>2.4.0</kotlin.version>
+    </properties>
 
-	<modules>
+    <modules>
 		<module>microservice-identity</module>
 		<module>microservice-product</module>
+		<module>microservice-pricing</module>
 		<module>microservice-order</module>
 		<module>microservice-notification-v2</module>
 		<module>worker-payment</module>

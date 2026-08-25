@@ -29,7 +29,7 @@ public interface ProductRepository extends MongoRepository<Product, String> {
     Optional<Product> findBySKUWithLock(String SKU);
 
     @Query(
-            value = "{ 'SKUs.SKU': ?0 }", fields = "{ SKUs: true, _id: false }"
+            value = "{ 'SKUs.SKU': ?0 }", fields = "{ SKUs: true, id: false }"
     )
     Optional<SKUProjection> findSKU(String SKU);
 
@@ -39,19 +39,19 @@ public interface ProductRepository extends MongoRepository<Product, String> {
     Optional<Product> findBySKU(String SKU);
 
     @Query(
-            value = "{ 'SKUs.currentPrice': { $exists: true, $ne: null }, _id: { $in: ?0 } }"
+            value = "{ 'SKUs.currentPrice': { $exists: true, $ne: null }, id: { $in: ?0 } }"
     )
     List<Product> findAllWithPriceById(List<String> ids);
 
     @Query(
             value = "{ 'SKUs.currentPrice': { $exists: true, $ne: null } }",
-            sort = "{ _id: 1 }"
+            sort = "{ id: 1 }"
     )
     Window<Product> findAllWithPrice(ScrollPosition scrollPosition, Limit limit);
 
     @Query(
             value = "{ 'SKUs.currentPrice': { $exists: true, $ne: null }, category.id: ?0 }",
-            sort = "{ _id: 1 }"
+            sort = "{ id: 1 }"
     )
     Window<Product> findAllWithPriceByCategory(Long categoryId, ScrollPosition scrollPosition, Limit limit);
 }

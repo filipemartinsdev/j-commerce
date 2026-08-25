@@ -1,0 +1,27 @@
+info:
+  name: Product Categories
+  type: graphql
+  seq: 1
+
+graphql:
+  method: POST
+  url: https://localhost/product/api/v2/graphql
+  body:
+    query: |
+      query {
+      	productCategories {
+          id
+          name
+          createdAt
+          createdBy
+          updatedAt
+          updatedBy
+        }
+      }
+  auth: inherit
+
+settings:
+  encodeUrl: true
+  timeout: 0
+  followRedirects: true
+  maxRedirects: 5

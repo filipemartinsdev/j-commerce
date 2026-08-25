@@ -84,7 +84,7 @@ public class DeliveryAddressControllerTests {
 
         mockMvc.perform(get("/api/v1/delivery-addresses")
                         .with(jwt().jwt(jwt -> jwt.subject(userId.toString()))
-                                .authorities(new SimpleGrantedAuthority("SCOPE_USER"))))
+                                .authorities(new SimpleGrantedAuthority("ROLE_USER"))))
                 .andExpect(status().isOk())
                 .andExpect(content().json(expectedJSON));
     }
@@ -97,11 +97,11 @@ public class DeliveryAddressControllerTests {
     }
 
     @Test
-    @DisplayName("Should return status code 403 if wrong scope")
+    @DisplayName("Should return status code 403 if wrong role")
     void getAllAddressesByUserTestCase3() throws Exception {
         mockMvc.perform(get("/api/v1/delivery-addresses")
                         .with(jwt().jwt(jwt -> jwt.subject(UUID.randomUUID().toString()))
-                                .authorities(new SimpleGrantedAuthority("SCOPE_STOCK_MANAGER"))))
+                                .authorities(new SimpleGrantedAuthority("ROLE_STOCK_MANAGER"))))
                 .andExpect(status().isForbidden());
     }
 
@@ -135,7 +135,7 @@ public class DeliveryAddressControllerTests {
 
         mockMvc.perform(get("/api/v1/delivery-addresses/{id}", addressId)
                         .with(jwt().jwt(jwt -> jwt.subject(userId.toString()))
-                                .authorities(new SimpleGrantedAuthority("SCOPE_USER"))))
+                                .authorities(new SimpleGrantedAuthority("ROLE_USER"))))
                 .andExpect(status().isOk())
                 .andExpect(content().json(expectedJSON));
     }
@@ -150,13 +150,13 @@ public class DeliveryAddressControllerTests {
     }
 
     @Test
-    @DisplayName("Should return status code 403 if wrong scope")
+    @DisplayName("Should return status code 403 if wrong role")
     void getAddressByIdTestCase3() throws Exception {
         UUID addressId = UUID.randomUUID();
 
         mockMvc.perform(get("/api/v1/delivery-addresses/{id}", addressId)
                         .with(jwt().jwt(jwt -> jwt.subject(UUID.randomUUID().toString()))
-                                .authorities(new SimpleGrantedAuthority("SCOPE_STOCK_MANAGER"))))
+                                .authorities(new SimpleGrantedAuthority("ROLE_STOCK_MANAGER"))))
                 .andExpect(status().isForbidden());
     }
 
@@ -171,7 +171,7 @@ public class DeliveryAddressControllerTests {
 
         mockMvc.perform(get("/api/v1/delivery-addresses/{id}", addressId)
                         .with(jwt().jwt(jwt -> jwt.subject(userId.toString()))
-                                .authorities(new SimpleGrantedAuthority("SCOPE_USER"))))
+                                .authorities(new SimpleGrantedAuthority("ROLE_USER"))))
                 .andExpect(status().isNotFound());
     }
 
@@ -221,7 +221,7 @@ public class DeliveryAddressControllerTests {
                         .content(requestBody)
                         .contentType(MediaType.APPLICATION_JSON)
                         .with(jwt().jwt(jwt -> jwt.subject(userId.toString()))
-                                .authorities(new SimpleGrantedAuthority("SCOPE_USER"))))
+                                .authorities(new SimpleGrantedAuthority("ROLE_USER"))))
                 .andExpect(status().isCreated())
                 .andExpect(content().json(expectedJSON));
     }
@@ -273,7 +273,7 @@ public class DeliveryAddressControllerTests {
                         .content(requestBody)
                         .contentType(MediaType.APPLICATION_JSON)
                         .with(jwt().jwt(jwt -> jwt.subject(userId.toString()))
-                                .authorities(new SimpleGrantedAuthority("SCOPE_USER"))))
+                                .authorities(new SimpleGrantedAuthority("ROLE_USER"))))
                 .andExpect(status().isCreated())
                 .andExpect(content().json(expectedJSON));
     }
@@ -303,7 +303,7 @@ public class DeliveryAddressControllerTests {
     }
 
     @Test
-    @DisplayName("Should return status code 403 if wrong scope")
+    @DisplayName("Should return status code 403 if wrong role")
     void createAddressTestCase4() throws Exception {
         var request = new CreateDeliveryAddressRequest(
                 false,
@@ -324,7 +324,7 @@ public class DeliveryAddressControllerTests {
                         .content(requestBody)
                         .contentType(MediaType.APPLICATION_JSON)
                         .with(jwt().jwt(jwt -> jwt.subject(UUID.randomUUID().toString()))
-                                .authorities(new SimpleGrantedAuthority("SCOPE_STOCK_MANAGER"))))
+                                .authorities(new SimpleGrantedAuthority("ROLE_STOCK_MANAGER"))))
                 .andExpect(status().isForbidden());
     }
 
@@ -338,7 +338,7 @@ public class DeliveryAddressControllerTests {
 
         mockMvc.perform(delete("/api/v1/delivery-addresses/{id}", addressId)
                         .with(jwt().jwt(jwt -> jwt.subject(userId.toString()))
-                                .authorities(new SimpleGrantedAuthority("SCOPE_USER"))))
+                                .authorities(new SimpleGrantedAuthority("ROLE_USER"))))
                 .andExpect(status().isCreated());
     }
 
@@ -352,13 +352,13 @@ public class DeliveryAddressControllerTests {
     }
 
     @Test
-    @DisplayName("Should return status code 403 if wrong scope")
+    @DisplayName("Should return status code 403 if wrong role")
     void deleteAddressTestCase3() throws Exception {
         UUID addressId = UUID.randomUUID();
 
         mockMvc.perform(delete("/api/v1/delivery-addresses/{id}", addressId)
                         .with(jwt().jwt(jwt -> jwt.subject(UUID.randomUUID().toString()))
-                                .authorities(new SimpleGrantedAuthority("SCOPE_STOCK_MANAGER"))))
+                                .authorities(new SimpleGrantedAuthority("ROLE_STOCK_MANAGER"))))
                 .andExpect(status().isForbidden());
     }
 
@@ -373,7 +373,7 @@ public class DeliveryAddressControllerTests {
 
         mockMvc.perform(delete("/api/v1/delivery-addresses/{id}", addressId)
                         .with(jwt().jwt(jwt -> jwt.subject(userId.toString()))
-                                .authorities(new SimpleGrantedAuthority("SCOPE_USER"))))
+                                .authorities(new SimpleGrantedAuthority("ROLE_USER"))))
                 .andExpect(status().isNotFound());
     }
 
@@ -422,7 +422,7 @@ public class DeliveryAddressControllerTests {
                         .content(requestBody)
                         .contentType(MediaType.APPLICATION_JSON)
                         .with(jwt().jwt(jwt -> jwt.subject(userId.toString()))
-                                .authorities(new SimpleGrantedAuthority("SCOPE_USER"))))
+                                .authorities(new SimpleGrantedAuthority("ROLE_USER"))))
                 .andExpect(status().isCreated())
                 .andExpect(content().json(expectedJSON));
     }
@@ -453,7 +453,7 @@ public class DeliveryAddressControllerTests {
     }
 
     @Test
-    @DisplayName("Should return status code 403 if wrong scope")
+    @DisplayName("Should return status code 403 if wrong role")
     void updateAddressTestCase3() throws Exception {
         UUID addressId = UUID.randomUUID();
 
@@ -475,7 +475,7 @@ public class DeliveryAddressControllerTests {
                         .content(requestBody)
                         .contentType(MediaType.APPLICATION_JSON)
                         .with(jwt().jwt(jwt -> jwt.subject(UUID.randomUUID().toString()))
-                                .authorities(new SimpleGrantedAuthority("SCOPE_ADMIN"))))
+                                .authorities(new SimpleGrantedAuthority("ROLE_ADMIN"))))
                 .andExpect(status().isForbidden());
     }
 
@@ -506,7 +506,7 @@ public class DeliveryAddressControllerTests {
                         .content(requestBody)
                         .contentType(MediaType.APPLICATION_JSON)
                         .with(jwt().jwt(jwt -> jwt.subject(userId.toString()))
-                                .authorities(new SimpleGrantedAuthority("SCOPE_USER"))))
+                                .authorities(new SimpleGrantedAuthority("ROLE_USER"))))
                 .andExpect(status().isNotFound());
     }
 }

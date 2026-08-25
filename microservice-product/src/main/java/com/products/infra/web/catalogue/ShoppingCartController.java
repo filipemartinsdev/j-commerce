@@ -1,89 +1,80 @@
 package com.products.infra.web.catalogue;
 
-import com.products.application.dto.catalogue.ConfirmShoppingCartRequest;
-import com.products.application.dto.catalogue.CreateShoppingCartItemRequest;
+import com.products.application.dto.Response;
 import com.products.application.dto.catalogue.ShoppingCartResponse;
 import com.products.application.service.ShoppingCartService;
-import com.products.docs.ShoppingCartControllerDocs;
-import io.github.responsekit.core.StandardResponse;
-import jakarta.validation.Valid;
-import org.springframework.http.HttpStatus;
-import org.springframework.http.ResponseEntity;
+import org.springframework.graphql.data.method.annotation.Argument;
+import org.springframework.graphql.data.method.annotation.MutationMapping;
+import org.springframework.graphql.data.method.annotation.QueryMapping;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.security.oauth2.jwt.Jwt;
-import org.springframework.web.bind.annotation.*;
+import org.springframework.stereotype.Controller;
 
 import java.util.UUID;
 
-@RestController
-@RequestMapping("/api/v1/shopping-cart")
-public class ShoppingCartController implements ShoppingCartControllerDocs {
+@Controller
+public class ShoppingCartController {
+
     private final ShoppingCartService shoppingCartService;
 
     public ShoppingCartController(ShoppingCartService shoppingCartService) {
         this.shoppingCartService = shoppingCartService;
     }
 
-    @GetMapping
-    public ResponseEntity<StandardResponse<ShoppingCartResponse>> getAllItems(
+
+    @QueryMapping
+    @PreAuthorize("hasRole('USER')")
+    public ShoppingCartResponse shoppingCart(@AuthenticationPrincipal Jwt jwt){
+        UUID userId = UUID.fromString(jwt.getSubject());
+        return shoppingCartService.get(userId);
+    }
+
+    @MutationMapping
+    @PreAuthorize("hasRole('USER')")
+    public Response addShoppingCartItem(
+            @Argument String SKU,
+            @Argument Integer units,
             @AuthenticationPrincipal Jwt jwt
     ){
-        UUID authenticatedUserId = UUID.fromString(jwt.getSubject());
-        return ResponseEntity
-                .status(HttpStatus.OK)
-                .body(StandardResponse.success(
-                        shoppingCartService.getAllItems(authenticatedUserId)
-                ).build());
+        UUID userId = UUID.fromString(jwt.getSubject());
+        shoppingCartService.add(userId, SKU, units);
+
+        return new Response(true, "Item added successfully");
     }
 
-    @PostMapping
-    public ResponseEntity<StandardResponse<Void>> create (
-            @AuthenticationPrincipal Jwt jwt,
-            @Valid @RequestBody CreateShoppingCartItemRequest request
-    ){
-        UUID authenticatedUserId = UUID.fromString(jwt.getSubject());
-        shoppingCartService.createItemByUserId(request, authenticatedUserId);
-
-        return ResponseEntity
-                .status(HttpStatus.CREATED)
-                .body(StandardResponse.success().build());
-    }
-
-    @DeleteMapping
-    public ResponseEntity<StandardResponse<Void>> deleteAllItems(
+    @MutationMapping
+    @PreAuthorize("hasRole('USER')")
+    public Response removeShoppingCartItem(
+            @Argument String SKU,
             @AuthenticationPrincipal Jwt jwt
     ){
-        UUID authenticatedUserId = UUID.fromString(jwt.getSubject());
-        shoppingCartService.deleteAllItemsByUserId(authenticatedUserId);
+        UUID userId = UUID.fromString(jwt.getSubject());
+        shoppingCartService.remove(userId, SKU);
 
-        return ResponseEntity
-                .status(HttpStatus.OK)
-                .body(StandardResponse.success().build());
+        return new Response(true, "Item removed successfully");
     }
 
-    @DeleteMapping("/{id}")
-    public ResponseEntity<StandardResponse<Void>> deleteById(
-            @AuthenticationPrincipal Jwt jwt,
-            @PathVariable UUID id
-    ){
-        UUID authenticatedUserId = UUID.fromString(jwt.getSubject());
-        shoppingCartService.deleteItemByProductSKUId(id, authenticatedUserId);
-
-        return ResponseEntity
-                .status(HttpStatus.OK)
-                .body(StandardResponse.success().build());
-    }
-
-    @PostMapping("/checkout")
-    public ResponseEntity<StandardResponse<Void>> confirm(
-            @Valid @RequestBody ConfirmShoppingCartRequest request,
+    @MutationMapping
+    @PreAuthorize("hasRole('USER')")
+    public Response clearShoppingCart(
             @AuthenticationPrincipal Jwt jwt
-    ) {
-        UUID authenticatedUserId = UUID.fromString(jwt.getSubject());
-        shoppingCartService.confirmShoppingCart(request, authenticatedUserId, "Bearer "+jwt.getTokenValue());
+    ){
+        UUID userId = UUID.fromString(jwt.getSubject());
+        shoppingCartService.clear(userId);
 
-        return ResponseEntity
-                .status(HttpStatus.CREATED)
-                .body(StandardResponse.success().build());
+        return new Response(true, "Shopping cart cleared successfully");
+    }
+
+    @MutationMapping
+    @PreAuthorize("hasRole('USER')")
+    public Response confirmShoppingCart(
+            @Argument UUID deliveryAddressId,
+            @AuthenticationPrincipal Jwt jwt
+    ){
+        UUID userId = UUID.fromString(jwt.getSubject());
+        shoppingCartService.confirm(userId, deliveryAddressId, "Bearer "+jwt.getTokenValue());
+
+        return new Response(true, "Shopping cart confirmed successfully");
     }
 }

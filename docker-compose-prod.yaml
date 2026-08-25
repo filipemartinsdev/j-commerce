@@ -49,35 +49,51 @@ services:
       DATA_SOURCE_PASS: ${PG_IDENTITY_PASSWORD:-identity}
 
   product_db:
-    image: pgvector/pgvector:pg17-trixie
     container_name: product_db
+    image: mongo:8
+    restart: unless-stopped
+    environment:
+      MONGO_INITDB_DATABASE: ${PG_PRODUCT_DATABASE:-product}
+      MONGO_INITDB_ROOT_USERNAME: ${PG_PRODUCT_USER:-product}
+      MONGO_INITDB_ROOT_PASSWORD: ${PG_PRODUCT_PASSWORD:-product}
+    deploy:
+      resources:
+        limits:
+          cpus: 0.5
+          memory: 500M
+    volumes:
+      - product_data:/data/db
+
+  vector_db:
+    image: pgvector/pgvector:pg17-trixie
+    container_name: vector_db
     deploy:
       resources:
         limits:
           cpus: 1
           memory: 600M
     environment:
-      POSTGRES_DB: ${PG_PRODUCT_DATABASE:-product}
-      POSTGRES_USER: ${PG_PRODUCT_USER:-product}
-      POSTGRES_PASSWORD: ${PG_PRODUCT_PASSWORD:-product}
+      POSTGRES_DB: ${PG_VECTOR_DATABASE:-vector}
+      POSTGRES_USER: ${PG_VECTOR_USER:-vector}
+      POSTGRES_PASSWORD: ${PG_VECTOR_PASSWORD:-vector}
     volumes:
-      - product_data:/var/lib/postgresql/data
+      - vector_data:/var/lib/postgresql/data
 
-  product_db_scraper:
-    image: prometheuscommunity/postgres-exporter
-    container_name: product_db_scraper
-    depends_on:
-      product_db:
-        condition: service_started
+  pricing_db:
+    image: postgres:17-alpine
+    container_name: pricing_db
     deploy:
       resources:
         limits:
-          cpus: 0.5
+          cpus: 1
           memory: 600M
     environment:
-      DATA_SOURCE_URI: product_db:5432/${PG_PRODUCT_DATABASE:-product}?sslmode=disable
-      DATA_SOURCE_USER: ${PG_PRODUCT_USER:-product}
-      DATA_SOURCE_PASS: ${PG_PRODUCT_PASSWORD:-product}
+      POSTGRES_DB: ${PG_PRICING_DATABASE:-pricing}
+      POSTGRES_USER: ${PG_PRICING_USER:-pricing}
+      POSTGRES_PASSWORD: ${PG_PRICING_PASSWORD:-pricing}
+      GRAPH_HOPPER_API_KEY:
+    volumes:
+      - pricing_data:/var/lib/postgresql/data
 
   order_db:
     image: postgres:17-alpine
@@ -113,8 +129,6 @@ services:
   payment_db:
     image: postgres:17-alpine
     container_name: payment_db
-    ports:
-      - "5436:5432"
     deploy:
       resources:
         limits:
@@ -182,8 +196,6 @@ services:
     restart: unless-stopped
     depends_on:
       identity_db_scraper:
-        condition: service_started
-      product_db_scraper:
         condition: service_started
       cadvisor:
         condition: service_started
@@ -258,6 +270,8 @@ services:
     depends_on:
       product_db:
         condition: service_started
+      vector_db:
+        condition: service_started
       rabbitmq:
         condition: service_started
       cache:
@@ -270,9 +284,14 @@ services:
           memory: 600M
     environment:
       JAVA_TOOL_OPTIONS: -Xmx256m
-      PG_URL: jdbc:postgresql://product_db:5432/${PG_PRODUCT_DATABASE:-product}
-      PG_USER: ${PG_PRODUCT_USER:-product}
-      PG_PASSWORD: ${PG_PRODUCT_PASSWORD:-product}
+      MONGO_HOST: product_db
+      MONGO_PORT: 27017
+      MONGO_USERNAME: ${PG_PRODUCT_USER:-product}
+      MONGO_PASSWORD: ${PG_PRODUCT_PASSWORD:-product}
+      MONGO_DATABASE: ${PG_PRODUCT_DATABASE:-product}
+      PG_URL: jdbc:postgresql://vector_db:5432/${PG_VECTOR_DATABASE:-vector}
+      PG_USER: ${PG_VECTOR_USER:-vector}
+      PG_PASSWORD: ${PG_VECTOR_PASSWORD:-vector}
       REDIS_URL: redis://cache:6379
       RABBITMQ_HOST: rabbitmq
       RABBITMQ_PORT: 5672
@@ -280,6 +299,31 @@ services:
       RABBITMQ_PASSWORD: ${RABBITMQ_PASSWORD:-admin}
       OPENAI_API_KEY:
       ACTIVE_PROFILE: prod
+
+  pricing:
+    container_name: pricing_service
+    build:
+      context: microservice-pricing
+      dockerfile: Dockerfile.jvm.build
+    restart: unless-stopped
+    depends_on:
+      rabbitmq:
+        condition: service_started
+      pricing_db:
+        condition: service_started
+    deploy:
+      resources:
+        limits:
+          cpus: 0.5
+          memory: 600M
+    environment:
+      PG_URL: jdbc:postgresql://pricing_db:5432/${PG_PRICING_DATABASE:-pricing}
+      PG_USER: ${PG_PRICING_USER:-pricing}
+      PG_PASSWORD: ${PG_PRICING_PASSWORD:-pricing}
+      RABBITMQ_HOST: rabbitmq
+      RABBITMQ_PORT: 5672
+      RABBITMQ_USER: ${RABBITMQ_USER:-admin}
+      RABBITMQ_PASSWORD: ${RABBITMQ_PASSWORD:-admin}
 
   order:
     container_name: order_service
@@ -367,6 +411,8 @@ volumes:
   caddy_config:
   identity_data:
   product_data:
+  vector_data:
+  pricing_data:
   order_data:
   cache_data:
   prometheus_data:

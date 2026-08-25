@@ -11,4 +11,9 @@
 
 ## Database
 
-![notification_db.png](../images/notification_db.png)
+- PostgreSQL 17
+- Flyway for migrations
+
+### Entity Relationship Diagram
+
+![Notification DB](../images/db/notification_db.png)

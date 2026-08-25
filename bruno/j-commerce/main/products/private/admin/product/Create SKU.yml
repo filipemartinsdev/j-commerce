@@ -1,0 +1,51 @@
+info:
+  name: Create SKU
+  type: graphql
+  seq: 8
+
+graphql:
+  method: POST
+  url: https://localhost/product/api/v2/graphql
+  body:
+    query: |-
+      mutation {
+      	createSKU(
+          productId: "6a8d8f8e96cb0f83eadd0045"
+          request: {
+            SKU: "DS4-B"
+            name: "Dualshok 4 Black"
+            attributes: [
+              {name: "color", value: "black"}
+            ]
+          }
+        ) {
+          id
+          name
+          description
+          category {
+            id
+            name
+          }
+          SKUs {
+            name
+      			SKU
+            attributes {
+              name
+              value
+            }
+            stock
+          }
+          createdAt
+          createdBy
+          updatedAt
+          updatedBy
+        }
+      }
+  auth: inherit
+
+settings:
+  encodeUrl: true
+  timeout: 0
+  followRedirects: true
+  maxRedirects: 5
+  forwardAuthorizationHeader: true

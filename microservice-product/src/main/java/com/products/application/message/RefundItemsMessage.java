@@ -11,7 +11,7 @@ public record RefundItemsMessage(
         BigDecimal value
 ) {
     public record OrderItem(
-            UUID productSKUId,
+            String SKU,
             Integer units
     ) {
     }

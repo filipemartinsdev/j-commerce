@@ -1,0 +1,23 @@
+info:
+  name: Clear Shopping Cart
+  type: graphql
+  seq: 12
+
+graphql:
+  method: POST
+  url: https://localhost/product/api/v2/graphql
+  body:
+    query: |-
+      mutation {
+      	clearShoppingCart() {
+      		success
+          message
+        }
+      }
+  auth: inherit
+
+settings:
+  encodeUrl: true
+  timeout: 0
+  followRedirects: true
+  maxRedirects: 5

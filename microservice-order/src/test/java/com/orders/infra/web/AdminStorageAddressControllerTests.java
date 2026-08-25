@@ -37,7 +37,7 @@ public class AdminStorageAddressControllerTests {
 
     @MockitoBean private StorageAddressService storageAddressService;
 
-    @WithMockUser(authorities = "SCOPE_ADMIN")
+    @WithMockUser(roles = "ADMIN")
     @Test @DisplayName("Should retrieve addresses and return status code 200")
     void getAllAddressesTestCase1() throws Exception {
         UUID addressId = UUID.randomUUID();
@@ -76,14 +76,14 @@ public class AdminStorageAddressControllerTests {
                 .andExpect(status().isUnauthorized());
     }
 
-    @WithMockUser(authorities = "SCOPE_USER")
-    @Test @DisplayName("Should return status code 403 if client scope is not DRIVER, LOGISTICS or ADMIN")
+    @WithMockUser(roles = "USER")
+    @Test @DisplayName("Should return status code 403 if client role is not DRIVER, LOGISTICS or ADMIN")
     void getAllAddressesTestCase3() throws Exception {
         mockMvc.perform(get("/admin/api/v1/storage-addresses"))
                 .andExpect(status().isForbidden());
     }
 
-    @WithMockUser(authorities = "SCOPE_LOGISTICS")
+    @WithMockUser(roles = "LOGISTICS")
     @Test @DisplayName("Should address and return status code 200")
     void getByIdTestCase1() throws Exception {
         UUID addressId = UUID.randomUUID();
@@ -118,8 +118,8 @@ public class AdminStorageAddressControllerTests {
                 .andExpect(status().isUnauthorized());
     }
 
-    @WithMockUser(authorities = "SCOPE_USER")
-    @Test @DisplayName("Should return status code 403 if client scope is not DRIVER, LOGISTICS or ADMIN")
+    @WithMockUser(roles = "USER")
+    @Test @DisplayName("Should return status code 403 if client role is not DRIVER, LOGISTICS or ADMIN")
     void getByIdTestCase3() throws Exception {
         UUID addressId = UUID.randomUUID();
 
@@ -127,7 +127,7 @@ public class AdminStorageAddressControllerTests {
                 .andExpect(status().isForbidden());
     }
 
-    @WithMockUser(authorities = "SCOPE_ADMIN")
+    @WithMockUser(roles = "ADMIN")
     @Test @DisplayName("Should address and return status code 200")
     void createTestCase1() throws Exception {
         UUID addressId = UUID.randomUUID();
@@ -193,8 +193,8 @@ public class AdminStorageAddressControllerTests {
                 ).andExpect(status().isUnauthorized());
     }
 
-    @WithMockUser(authorities = "SCOPE_DRIVER")
-    @Test @DisplayName("Should return status code 403 if client scope is not LOGISTICS or ADMIN")
+    @WithMockUser(roles = "DRIVER")
+    @Test @DisplayName("Should return status code 403 if client role is not LOGISTICS or ADMIN")
     void createTestCase3() throws Exception {
         var request = new StorageAddressRequest(
                 true,
@@ -217,7 +217,7 @@ public class AdminStorageAddressControllerTests {
                 ).andExpect(status().isForbidden());
     }
 
-    @WithMockUser(authorities = "SCOPE_ADMIN")
+    @WithMockUser(roles = "ADMIN")
     @Test @DisplayName("Should delete by ID and return status code 200")
     void deleteByIdTestCase1() throws Exception {
         UUID addressId = UUID.randomUUID();
@@ -236,8 +236,8 @@ public class AdminStorageAddressControllerTests {
                 .andExpect(status().isUnauthorized());
     }
 
-    @WithMockUser(authorities = "SCOPE_DRIVER")
-    @Test @DisplayName("Should return status code 403 if client scope is not LOGISTICS or ADMIN")
+    @WithMockUser(roles = "DRIVER")
+    @Test @DisplayName("Should return status code 403 if client role is not LOGISTICS or ADMIN")
     void deleteByIdTestCase3() throws Exception {
         UUID addressId = UUID.randomUUID();
 

@@ -9,6 +9,7 @@ import io.github.responsekit.core.StandardResponse;
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.security.oauth2.jwt.Jwt;
 import org.springframework.web.bind.annotation.*;
@@ -25,6 +26,7 @@ public class AdminShippingController implements AdminShippingControllerDocs{
     }
 
     @GetMapping
+    @PreAuthorize("hasAnyRole('LOGISTICS', 'ADMIN')")
     public ResponseEntity<StandardResponse<PagedResponse<ShippingResponse>>> getAll(
             @RequestParam(required = false) UUID salesOrderId,
             Pageable pageable
@@ -42,6 +44,7 @@ public class AdminShippingController implements AdminShippingControllerDocs{
     }
 
     @GetMapping("/{id}")
+    @PreAuthorize("hasAnyRole('LOGISTICS', 'ADMIN')")
     public ResponseEntity<StandardResponse<ShippingResponse>> getById(
             @PathVariable UUID id
     ){
@@ -53,6 +56,7 @@ public class AdminShippingController implements AdminShippingControllerDocs{
     }
 
     @PostMapping("/{id}")
+    @PreAuthorize("hasAnyRole('LOGISTICS', 'ADMIN')")
     public ResponseEntity<StandardResponse<Void>> dispatchShipping(
             @PathVariable UUID id
     ){
@@ -64,6 +68,7 @@ public class AdminShippingController implements AdminShippingControllerDocs{
     }
 
     @PostMapping("/{id}/check-in")
+    @PreAuthorize("hasAnyRole('LOGISTICS', 'ADMIN', 'DRIVER')")
     public ResponseEntity<StandardResponse<Void>> checkInShipping(
             @PathVariable UUID id,
             @AuthenticationPrincipal Jwt jwt
@@ -78,6 +83,7 @@ public class AdminShippingController implements AdminShippingControllerDocs{
     }
 
     @PostMapping("/{id}/check-out")
+    @PreAuthorize("hasAnyRole('LOGISTICS', 'DRIVER', 'ADMIN')")
     public ResponseEntity<StandardResponse<Void>> checkOutShipping(
             @PathVariable UUID id
     ){
@@ -89,6 +95,7 @@ public class AdminShippingController implements AdminShippingControllerDocs{
     }
 
     @DeleteMapping("/{id}")
+    @PreAuthorize("hasAnyRole('LOGISTICS', 'ADMIN')")
     public ResponseEntity<StandardResponse<Void>> cancelShipping(
             @PathVariable UUID id
     ){

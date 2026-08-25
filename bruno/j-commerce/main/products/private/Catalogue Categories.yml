@@ -1,0 +1,23 @@
+info:
+  name: Catalogue Categories
+  type: graphql
+  seq: 1
+
+graphql:
+  method: POST
+  url: https://localhost/product/api/v2/graphql
+  body:
+    query: |-
+      query {
+      	categories {
+        	id name
+        }
+      }
+  auth: inherit
+
+settings:
+  encodeUrl: true
+  timeout: 0
+  followRedirects: true
+  maxRedirects: 5
+  forwardAuthorizationHeader: true

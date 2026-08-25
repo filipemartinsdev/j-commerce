@@ -5,11 +5,14 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.http.HttpMethod;
 import org.springframework.security.config.Customizer;
+import org.springframework.security.config.annotation.method.configuration.EnableMethodSecurity;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.http.SessionCreationPolicy;
+import org.springframework.security.oauth2.server.resource.authentication.JwtAuthenticationConverter;
+import org.springframework.security.oauth2.server.resource.authentication.JwtGrantedAuthoritiesConverter;
 import org.springframework.security.web.SecurityFilterChain;
 
-@Configuration
+@Configuration @EnableMethodSecurity
 public class SecurityConfig {
 
     @Bean
@@ -25,13 +28,7 @@ public class SecurityConfig {
 
                 .authorizeHttpRequests(auth -> auth
                         .dispatcherTypeMatchers(DispatcherType.ERROR).permitAll()
-                        .requestMatchers("/admin/api/v1/stock/**").hasAnyAuthority("SCOPE_STOCK_MANAGER", "SCOPE_ADMIN")
-                        .requestMatchers(HttpMethod.GET, "/admin/api/v1/products/**").hasAnyAuthority("SCOPE_STOCK_MANAGER", "SCOPE_ADMIN")
-                        .requestMatchers(HttpMethod.GET, "/admin/api/v1/prices/**").hasAnyAuthority("SCOPE_STOCK_MANAGER", "SCOPE_ADMIN")
-                        .requestMatchers(HttpMethod.GET, "/admin/api/v1/skus/**").hasAnyAuthority("SCOPE_STOCK_MANAGER", "SCOPE_ADMIN")
-                        .requestMatchers("/admin/**").hasAuthority("SCOPE_ADMIN")
-                        .requestMatchers("/v3/api-docs/**", "/swagger-ui/**", "/h2-console/**").permitAll()
-                        .requestMatchers("/api/v1/register", "/api/v1/login", "/api/v1/refresh").permitAll()
+                        .requestMatchers("/graphiql/**", "/api/v2/graphql").permitAll()
                         .requestMatchers("/actuator/**").permitAll()
                         .anyRequest().authenticated()
                 )
@@ -41,5 +38,18 @@ public class SecurityConfig {
                 )
 
                 .build();
+    }
+
+    @Bean
+    public JwtAuthenticationConverter jwtAuthenticationConverter(){
+        JwtGrantedAuthoritiesConverter grantedAuthoritiesConverter = new JwtGrantedAuthoritiesConverter();
+
+        grantedAuthoritiesConverter.setAuthoritiesClaimName("roles");
+        grantedAuthoritiesConverter.setAuthorityPrefix("ROLE_");
+
+        JwtAuthenticationConverter converter = new JwtAuthenticationConverter();
+        converter.setJwtGrantedAuthoritiesConverter(grantedAuthoritiesConverter);
+
+        return converter;
     }
 }

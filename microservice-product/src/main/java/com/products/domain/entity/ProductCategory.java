@@ -1,29 +1,33 @@
 package com.products.domain.entity;
 
-import jakarta.persistence.*;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 import org.hibernate.validator.constraints.Length;
+import org.springframework.data.annotation.Id;
+import org.springframework.data.mongodb.core.mapping.Document;
 
-@Entity @Table(name = "product_category")
+import java.time.Instant;
+import java.util.UUID;
+
+@Document(collection = "productCategories")
 @Data @NoArgsConstructor @AllArgsConstructor
 public class ProductCategory {
     @Id
-    private Integer id;
+    private Long id;
 
     @NotBlank @Length(max = 50)
     private String name;
 
-    @Length(max = 255)
-    private String description;
+    @NotNull
+    private Instant createdAt = Instant.now();
 
     @NotNull
-    @Column(name = "is_active")
-    private Boolean isActive = true;
+    private UUID createdBy;
+
+    private Instant updatedAt;
+
+    private UUID updatedBy;
 }
-
-
-

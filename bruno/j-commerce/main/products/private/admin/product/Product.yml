@@ -1,0 +1,37 @@
+info:
+  name: Product
+  type: graphql
+  seq: 5
+
+graphql:
+  method: POST
+  url: https://localhost/product/api/v2/graphql
+  body:
+    query: |-
+      query {
+      	product(id: "6a8cb5a43d6cbce046befb20") {
+          id
+          name
+          description
+          SKUs {
+            name
+            SKU
+            currentPrice {
+              label
+      				value
+            }
+            stock
+          }
+          createdAt
+          createdBy
+          updatedAt
+          updatedBy
+        }
+      }
+  auth: inherit
+
+settings:
+  encodeUrl: true
+  timeout: 0
+  followRedirects: true
+  maxRedirects: 5

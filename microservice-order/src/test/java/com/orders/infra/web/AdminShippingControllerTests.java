@@ -36,7 +36,7 @@ public class AdminShippingControllerTests {
 
     @MockitoBean private AdminShippingService adminShippingService;
 
-    @WithMockUser(authorities = "SCOPE_ADMIN")
+    @WithMockUser(roles = "ADMIN")
     @Test @DisplayName("Should retrieve shipments and return status code 200")
     void getAllTestCase1() throws Exception {
         UUID shippingId = UUID.randomUUID();
@@ -75,14 +75,14 @@ public class AdminShippingControllerTests {
                 .andExpect(status().isUnauthorized());
     }
 
-    @WithMockUser(authorities = "SCOPE_USER")
+    @WithMockUser(roles = "USER")
     @Test @DisplayName("Should return status code 403 if client scope is not ADMIN, LOGISTICS or DRIVER")
     void getAllTestCase3() throws Exception {
         mockMvc.perform(get("/admin/api/v1/shippings"))
                 .andExpect(status().isForbidden());
     }
 
-    @WithMockUser(authorities = "SCOPE_ADMIN")
+    @WithMockUser(roles = "ADMIN")
     @Test @DisplayName("Should dispatch and return status code 200")
     void dispatchShippingTestCase1() throws Exception {
         UUID shippingId = UUID.randomUUID();
@@ -106,7 +106,7 @@ public class AdminShippingControllerTests {
                 .andExpect(status().isUnauthorized());
     }
 
-    @WithMockUser(authorities = "SCOPE_DRIVER")
+    @WithMockUser(roles = "DRIVER")
     @Test @DisplayName("Should return status code 403 if client scope is not ADMIN or LOGISTICS")
     void dispatchShippingTestCase3() throws Exception {
         UUID shippingId = UUID.randomUUID();
@@ -128,7 +128,7 @@ public class AdminShippingControllerTests {
 
         mockMvc.perform(post("/admin/api/v1/shippings/{id}/check-in", shippingId)
                         .with(jwt().jwt(jwt -> jwt.subject(driverId.toString()))
-                                .authorities(new SimpleGrantedAuthority("SCOPE_DRIVER")))
+                                .authorities(new SimpleGrantedAuthority("ROLE_DRIVER")))
         ).andExpect(status().isOk())
           .andExpect(content().json(expectedJSON));
     }
@@ -151,7 +151,7 @@ public class AdminShippingControllerTests {
         ).andExpect(status().isForbidden());
     }
 
-    @WithMockUser(authorities = "SCOPE_DRIVER")
+    @WithMockUser(roles = "DRIVER")
     @Test @DisplayName("Should check-out and return status code 200")
     void checkOutShippingTestCase1() throws Exception {
         UUID shippingId = UUID.randomUUID();
@@ -175,8 +175,8 @@ public class AdminShippingControllerTests {
                 .andExpect(status().isUnauthorized());
     }
 
-    @WithMockUser(authorities = "SCOPE_ADMIN")
-    @Test @DisplayName("Should return status code 403 if client scope is not DRIVER")
+    @WithMockUser(roles = "USER")
+    @Test @DisplayName("Should return status code 403 if wrong role")
     void checkOutShippingTestCase3() throws Exception {
         UUID shippingId = UUID.randomUUID();
 
@@ -184,7 +184,7 @@ public class AdminShippingControllerTests {
                 .andExpect(status().isForbidden());
     }
 
-    @WithMockUser(authorities = "SCOPE_LOGISTICS")
+    @WithMockUser(roles = "LOGISTICS")
     @Test @DisplayName("Should cancel shipping and return status code 200")
     void cancelShippingTestCase1() throws Exception {
         UUID shippingId = UUID.randomUUID();
@@ -208,7 +208,7 @@ public class AdminShippingControllerTests {
                 .andExpect(status().isUnauthorized());
     }
 
-    @WithMockUser(authorities = "SCOPE_STOCK_MANAGER")
+    @WithMockUser(roles = "STOCK_MANAGER")
     @Test @DisplayName("Should return status code 403 if client scope is not DRIVER, LOGISTICS or ADMIN")
     void cancelShippingTestCase3() throws Exception {
         UUID shippingId = UUID.randomUUID();

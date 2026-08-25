@@ -1,0 +1,49 @@
+info:
+  name: Stock Movements
+  type: graphql
+  seq: 1
+
+graphql:
+  method: POST
+  url: https://localhost/product/api/v2/graphql
+  body:
+    query: |-
+      query {
+      	stockMovements(
+          # SKU: ""
+          # typeId: ""
+          first: 20
+          # after: "S19bImphdmEudXRpbC5Db2xsZWN0aW9ucyRVbm1vZGlmaWFibGVNYXAiLHsiaWQiOlsiamF2YS5sYW5nLkxvbmciLDJdfV0="
+        ) {
+          edges {
+            node {
+              id
+              SKU
+              units
+              type {
+                id
+                name
+              }
+              reason {
+                id
+                name
+              }
+              createdAt
+              createdBy
+            }
+          }
+          pageInfo {
+            startCursor
+            endCursor
+            hasPreviousPage
+            hasNextPage
+          }
+        }
+      }
+  auth: inherit
+
+settings:
+  encodeUrl: true
+  timeout: 0
+  followRedirects: true
+  maxRedirects: 5

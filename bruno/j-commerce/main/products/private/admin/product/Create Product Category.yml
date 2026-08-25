@@ -1,0 +1,30 @@
+info:
+  name: Create Product Category
+  type: graphql
+  seq: 2
+
+graphql:
+  method: POST
+  url: https://localhost/product/api/v2/graphql
+  body:
+    query: |
+      mutation {
+      	createProductCategory(request: {
+          id: 1
+          name: "any"
+        }) {
+          id
+          name
+          createdAt
+          createdBy
+          updatedAt
+          updatedBy
+        }
+      }
+  auth: inherit
+
+settings:
+  encodeUrl: true
+  timeout: 0
+  followRedirects: true
+  maxRedirects: 5

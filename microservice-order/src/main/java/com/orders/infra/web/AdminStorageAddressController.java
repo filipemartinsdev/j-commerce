@@ -11,6 +11,7 @@ import jakarta.validation.Valid;
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.UUID;
@@ -25,6 +26,7 @@ public class AdminStorageAddressController implements AdminStorageAddressControl
     }
 
     @GetMapping
+    @PreAuthorize("hasAnyRole('LOGISTICS', 'ADMIN')")
     public ResponseEntity<StandardResponse<PagedResponse<StorageAddressResponse>>> getAllAddresses(Pageable pageable) {
         return ResponseEntity
                 .status(HttpStatus.OK)
@@ -32,6 +34,7 @@ public class AdminStorageAddressController implements AdminStorageAddressControl
     }
 
     @GetMapping("/{id}")
+    @PreAuthorize("hasAnyRole('LOGISTICS', 'ADMIN')")
     public ResponseEntity<StandardResponse<StorageAddressResponse>> getById(
             @PathVariable UUID id
     ) {
@@ -41,6 +44,7 @@ public class AdminStorageAddressController implements AdminStorageAddressControl
     }
 
     @PostMapping
+    @PreAuthorize("hasAnyRole('LOGISTICS', 'ADMIN')")
     public ResponseEntity<StandardResponse<StorageAddressResponse>> create(
             @Valid @RequestBody StorageAddressRequest request,
             @RequestParam(defaultValue = "false") Boolean byCoordinates
@@ -58,6 +62,7 @@ public class AdminStorageAddressController implements AdminStorageAddressControl
     }
 
     @DeleteMapping("/{id}")
+    @PreAuthorize("hasAnyRole('LOGISTICS', 'ADMIN')")
     public ResponseEntity<Void> deleteById(
             @PathVariable UUID id
     ) {

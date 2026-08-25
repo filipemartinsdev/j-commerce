@@ -5,11 +5,17 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.http.HttpMethod;
 import org.springframework.security.config.Customizer;
+import org.springframework.security.config.annotation.method.configuration.EnableMethodSecurity;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
+import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.config.http.SessionCreationPolicy;
+import org.springframework.security.oauth2.server.resource.authentication.JwtAuthenticationConverter;
+import org.springframework.security.oauth2.server.resource.authentication.JwtGrantedAuthoritiesConverter;
 import org.springframework.security.web.SecurityFilterChain;
 
 @Configuration
+@EnableWebSecurity
+@EnableMethodSecurity(proxyTargetClass = true)
 public class SecurityConfig {
 
     @Bean
@@ -28,16 +34,7 @@ public class SecurityConfig {
                         .requestMatchers("/v3/api-docs/**", "/swagger-ui/**", "/h2-console/**").permitAll()
                         .requestMatchers("/api/v1/register", "/api/v1/login", "/api/v1/refresh").permitAll()
                         .requestMatchers("/actuator/**").permitAll()
-
-                        .requestMatchers(HttpMethod.GET, "/admin/api/v1/shippings/**").hasAnyAuthority("SCOPE_DRIVER", "SCOPE_LOGISTICS", "SCOPE_ADMIN")
-                        .requestMatchers("/admin/api/v1/shippings/*/check-in").hasAuthority("SCOPE_DRIVER")
-                        .requestMatchers("/admin/api/v1/shippings/*/check-out").hasAuthority("SCOPE_DRIVER")
-                        .requestMatchers("/admin/api/v1/shippings/**").hasAnyAuthority("SCOPE_LOGISTICS", "SCOPE_ADMIN")
-
-                        .requestMatchers(HttpMethod.GET, "/admin/api/v1/storage-addresses/**").hasAnyAuthority("SCOPE_DRIVER", "SCOPE_LOGISTICS", "SCOPE_ADMIN")
-                        .requestMatchers("/admin/api/v1/storage-addresses/**").hasAnyAuthority("SCOPE_LOGISTICS", "SCOPE_ADMIN")
-                        .requestMatchers("/admin/**").hasAuthority("SCOPE_ADMIN")
-                        .anyRequest().hasAuthority("SCOPE_USER")
+                        .anyRequest().authenticated()
                 )
 
                 .oauth2ResourceServer(oauth -> oauth
@@ -45,5 +42,18 @@ public class SecurityConfig {
                 )
 
                 .build();
+    }
+
+    @Bean
+    public JwtAuthenticationConverter jwtAuthenticationConverter(){
+        JwtGrantedAuthoritiesConverter grantedAuthoritiesConverter = new JwtGrantedAuthoritiesConverter();
+
+        grantedAuthoritiesConverter.setAuthoritiesClaimName("roles");
+        grantedAuthoritiesConverter.setAuthorityPrefix("ROLE_");
+
+        JwtAuthenticationConverter converter = new JwtAuthenticationConverter();
+        converter.setJwtGrantedAuthoritiesConverter(grantedAuthoritiesConverter);
+
+        return converter;
     }
 }

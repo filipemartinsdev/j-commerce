@@ -1,0 +1,44 @@
+info:
+  name: Catalogue product
+  type: graphql
+  seq: 3
+
+graphql:
+  method: POST
+  url: https://localhost/product/api/v2/graphql
+  body:
+    query: |-
+      query {
+      	catalogueProduct(
+      		productId: ""
+        ) {
+          id
+          name
+          description
+          category {
+            id
+            name
+          }
+          SKUs {
+            SKU
+            name
+            stock
+            currentPrice {
+              label
+              value
+            }
+            attributes {
+              name
+              value
+            }
+          }
+        }
+      }
+  auth: inherit
+
+settings:
+  encodeUrl: true
+  timeout: 0
+  followRedirects: true
+  maxRedirects: 5
+  forwardAuthorizationHeader: true

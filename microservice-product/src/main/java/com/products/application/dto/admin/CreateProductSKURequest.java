@@ -1,14 +1,23 @@
 package com.products.application.dto.admin;
 
-import jakarta.validation.constraints.NotBlank;
-import jakarta.validation.constraints.NotNull;
+import jakarta.validation.constraints.NotEmpty;
 
-import java.util.Optional;
-import java.util.UUID;
+import java.util.List;
 
-public record CreateProductSKURequest (
-        @NotNull UUID productId,
-        @NotBlank String name,
-        @NotBlank String SKU
+public record CreateProductSKURequest(
+        @NotEmpty
+        String SKU,
+
+        @NotEmpty
+        String name,
+
+        List<Attribute> attributes
 ) {
+    public static record Attribute (
+            @NotEmpty
+            String name,
+
+            @NotEmpty
+            String value
+    ) {}
 }

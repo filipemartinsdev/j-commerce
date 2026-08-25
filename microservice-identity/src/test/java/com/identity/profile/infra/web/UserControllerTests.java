@@ -10,17 +10,18 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.webmvc.test.autoconfigure.WebMvcTest;
 import org.springframework.context.annotation.Import;
 import org.springframework.security.test.context.support.WithMockUser;
-import org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.MockMvc;
 
 import java.time.Instant;
 import java.util.UUID;
 
-import static org.mockito.Mockito.*;
+import static org.mockito.Mockito.doThrow;
+import static org.mockito.Mockito.when;
 import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.jwt;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 @WebMvcTest(UserController.class)
 @Import(SecurityConfig.class)
@@ -30,7 +31,7 @@ public class UserControllerTests {
     @MockitoBean private UserProfileService userProfileService;
 
     @Test @DisplayName("Should return user profile and status code 200")
-    @WithMockUser(authorities = "SCOPE_USER")
+    @WithMockUser(roles = "USER")
     void getAuthenticatedUserTestCase1() throws Exception {
         UUID userId = UUID.randomUUID();
         Instant createdAt = Instant.now();
@@ -68,7 +69,7 @@ public class UserControllerTests {
     }
 
     @Test @DisplayName("Should return status code 404 if user profile not found")
-    @WithMockUser(authorities = "SCOPE_USER")
+    @WithMockUser(roles = "USER")
     void getAuthenticatedUserTestCase2() throws Exception {
         UUID userId = UUID.randomUUID();
 

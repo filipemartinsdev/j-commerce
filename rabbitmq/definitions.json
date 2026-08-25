@@ -53,6 +53,15 @@
     "policies": [],
     "queues": [
         {
+            "name": "pricing.apply_price.dlq",
+            "vhost": "/",
+            "durable": true,
+            "auto_delete": false,
+            "arguments": {
+                "x-queue-type": "quorum"
+            }
+        },
+        {
             "name": "payment.refund",
             "vhost": "/",
             "durable": true,
@@ -95,6 +104,17 @@
             }
         },
         {
+            "name": "pricing.delete_product",
+            "vhost": "/",
+            "durable": true,
+            "auto_delete": false,
+            "arguments": {
+                "x-dead-letter-exchange": "dlx.direct",
+                "x-dead-letter-routing-key": "pricing.delete_product.dlq",
+                "x-queue-type": "quorum"
+            }
+        },
+        {
             "name": "order.handle_payment_timeout.dlq",
             "vhost": "/",
             "durable": true,
@@ -115,6 +135,17 @@
             }
         },
         {
+            "name": "notification.notify_canceled_order",
+            "vhost": "/",
+            "durable": true,
+            "auto_delete": false,
+            "arguments": {
+                "x-dead-letter-exchange": "dlx.direct",
+                "x-dead-letter-routing-key": "notification.notify_canceled_order.dlq",
+                "x-queue-type": "quorum"
+            }
+        },
+        {
             "name": "payment.wait_pending_payment",
             "vhost": "/",
             "durable": true,
@@ -127,17 +158,6 @@
             }
         },
         {
-            "name": "notification.notify_canceled_order",
-            "vhost": "/",
-            "durable": true,
-            "auto_delete": false,
-            "arguments": {
-                "x-dead-letter-exchange": "dlx.direct",
-                "x-dead-letter-routing-key": "notification.notify_canceled_order.dlq",
-                "x-queue-type": "quorum"
-            }
-        },
-        {
             "name": "notification.notify_payment_generated",
             "vhost": "/",
             "durable": true,
@@ -145,6 +165,26 @@
             "arguments": {
                 "x-dead-letter-exchange": "dlx.direct",
                 "x-dead-letter-routing-key": "notification.notify_payment_generated.dlq",
+                "x-queue-type": "quorum"
+            }
+        },
+        {
+            "name": "pricing.apply_price",
+            "vhost": "/",
+            "durable": true,
+            "auto_delete": false,
+            "arguments": {
+                "x-dead-letter-exchange": "dlx.direct",
+                "x-dead-letter-routing-key": "pricing.apply_price.dlq",
+                "x-queue-type": "quorum"
+            }
+        },
+        {
+            "name": "pricing.delete_product.dlq",
+            "vhost": "/",
+            "durable": true,
+            "auto_delete": false,
+            "arguments": {
                 "x-queue-type": "quorum"
             }
         },
@@ -178,6 +218,15 @@
             }
         },
         {
+            "name": "pricing.register_product.dlq",
+            "vhost": "/",
+            "durable": true,
+            "auto_delete": false,
+            "arguments": {
+                "x-queue-type": "quorum"
+            }
+        },
+        {
             "name": "notification.notify_shipping_dispatched",
             "vhost": "/",
             "durable": true,
@@ -199,6 +248,15 @@
         },
         {
             "name": "order.create_order.dlq",
+            "vhost": "/",
+            "durable": true,
+            "auto_delete": false,
+            "arguments": {
+                "x-queue-type": "quorum"
+            }
+        },
+        {
+            "name": "product.decrease_stock.dlq",
             "vhost": "/",
             "durable": true,
             "auto_delete": false,
@@ -271,6 +329,17 @@
             }
         },
         {
+            "name": "product.decrease_stock",
+            "vhost": "/",
+            "durable": true,
+            "auto_delete": false,
+            "arguments": {
+                "x-dead-letter-exchange": "dlx.direct",
+                "x-dead-letter-routing-key": "product.decrease_stock.dlq",
+                "x-queue-type": "quorum"
+            }
+        },
+        {
             "name": "order.create_order",
             "vhost": "/",
             "durable": true,
@@ -296,6 +365,17 @@
             "durable": true,
             "auto_delete": false,
             "arguments": {
+                "x-queue-type": "quorum"
+            }
+        },
+        {
+            "name": "product.update_price",
+            "vhost": "/",
+            "durable": true,
+            "auto_delete": false,
+            "arguments": {
+                "x-dead-letter-exchange": "dlx.direct",
+                "x-dead-letter-routing-key": "product.update_price.dlq",
                 "x-queue-type": "quorum"
             }
         },
@@ -347,6 +427,26 @@
             }
         },
         {
+            "name": "product.update_price.dlq",
+            "vhost": "/",
+            "durable": true,
+            "auto_delete": false,
+            "arguments": {
+                "x-queue-type": "quorum"
+            }
+        },
+        {
+            "name": "pricing.register_product",
+            "vhost": "/",
+            "durable": true,
+            "auto_delete": false,
+            "arguments": {
+                "x-dead-letter-exchange": "dlx.direct",
+                "x-dead-letter-routing-key": "pricing.register_product.dlq",
+                "x-queue-type": "quorum"
+            }
+        },
+        {
             "name": "payment.generate_payment.dlq",
             "vhost": "/",
             "durable": true,
@@ -394,6 +494,15 @@
             "arguments": {}
         },
         {
+            "name": "pricing.topic",
+            "vhost": "/",
+            "type": "topic",
+            "durable": true,
+            "auto_delete": false,
+            "internal": false,
+            "arguments": {}
+        },
+        {
             "name": "product.topic",
             "vhost": "/",
             "type": "topic",
@@ -407,9 +516,145 @@
         {
             "source": "payment.topic",
             "vhost": "/",
-            "destination": "order.confirm_payment",
+            "destination": "notification.notify_payment_generated",
             "destination_type": "queue",
-            "routing_key": "payment.confirmed",
+            "routing_key": "payment.generated",
+            "arguments": {}
+        },
+        {
+            "source": "dlx.direct",
+            "vhost": "/",
+            "destination": "order.create_shipping.dlq",
+            "destination_type": "queue",
+            "routing_key": "order.create_shipping.dlq",
+            "arguments": {}
+        },
+        {
+            "source": "dlx.direct",
+            "vhost": "/",
+            "destination": "order.create_order.dlq",
+            "destination_type": "queue",
+            "routing_key": "order.create_order.dlq",
+            "arguments": {}
+        },
+        {
+            "source": "order.topic",
+            "vhost": "/",
+            "destination": "payment.generate_payment",
+            "destination_type": "queue",
+            "routing_key": "order.created",
+            "arguments": {}
+        },
+        {
+            "source": "payment.topic",
+            "vhost": "/",
+            "destination": "payment.wait_pending_payment",
+            "destination_type": "queue",
+            "routing_key": "payment.generated",
+            "arguments": {}
+        },
+        {
+            "source": "dlx.direct",
+            "vhost": "/",
+            "destination": "pricing.delete_product.dlq",
+            "destination_type": "queue",
+            "routing_key": "pricing.delete_product.dlq",
+            "arguments": {}
+        },
+        {
+            "source": "order.topic",
+            "vhost": "/",
+            "destination": "notification.notify_canceled_order",
+            "destination_type": "queue",
+            "routing_key": "order.canceled",
+            "arguments": {}
+        },
+        {
+            "source": "order.topic",
+            "vhost": "/",
+            "destination": "order.cancel_shipments",
+            "destination_type": "queue",
+            "routing_key": "order.canceled",
+            "arguments": {}
+        },
+        {
+            "source": "dlx.direct",
+            "vhost": "/",
+            "destination": "notification.notify_payment_refunded.dlq",
+            "destination_type": "queue",
+            "routing_key": "notification.notify_payment_refunded.dlq",
+            "arguments": {}
+        },
+        {
+            "source": "order.topic",
+            "vhost": "/",
+            "destination": "payment.refund",
+            "destination_type": "queue",
+            "routing_key": "order.canceled",
+            "arguments": {}
+        },
+        {
+            "source": "order.topic",
+            "vhost": "/",
+            "destination": "order.create_order",
+            "destination_type": "queue",
+            "routing_key": "order.checked",
+            "arguments": {}
+        },
+        {
+            "source": "dlx.direct",
+            "vhost": "/",
+            "destination": "product.update_price.dlq",
+            "destination_type": "queue",
+            "routing_key": "product.update_price.dlq",
+            "arguments": {}
+        },
+        {
+            "source": "product.topic",
+            "vhost": "/",
+            "destination": "pricing.delete_product",
+            "destination_type": "queue",
+            "routing_key": "product.sku.deleted",
+            "arguments": {}
+        },
+        {
+            "source": "order.topic",
+            "vhost": "/",
+            "destination": "product.refund",
+            "destination_type": "queue",
+            "routing_key": "order.canceled",
+            "arguments": {}
+        },
+        {
+            "source": "dlx.direct",
+            "vhost": "/",
+            "destination": "pricing.register_product.dlq",
+            "destination_type": "queue",
+            "routing_key": "pricing.register_product.dlq",
+            "arguments": {}
+        },
+        {
+            "source": "dlx.direct",
+            "vhost": "/",
+            "destination": "product.decrease_stock.dlq",
+            "destination_type": "queue",
+            "routing_key": "product.decrease_stock.dlq",
+            "arguments": {}
+        },
+        {
+            "source": "pricing.topic",
+            "vhost": "/",
+            "destination": "product.update_price",
+            "destination_type": "queue",
+            "routing_key": "price.updated",
+            "arguments": {}
+        },
+        {
+            "source": "dlx.direct",
+            "vhost": "/",
+            "destination": "order.confirm_payment.dlq",
+            "destination_type": "queue",
+            "routing_key": "order.confirm_payment.dlq",
             "arguments": {}
         },
         {
@@ -421,19 +666,11 @@
             "arguments": {}
         },
         {
-            "source": "payment.topic",
-            "vhost": "/",
-            "destination": "notification.notify_payment_generated",
-            "destination_type": "queue",
-            "routing_key": "payment.generated",
-            "arguments": {}
-        },
-        {
             "source": "dlx.direct",
             "vhost": "/",
-            "destination": "notification.notify_canceled_order.dlq",
+            "destination": "notification.notify_payment_timeout.dlq",
             "destination_type": "queue",
-            "routing_key": "notification.notify_canceled_order.dlq",
+            "routing_key": "notification.notify_payment_timeout.dlq",
             "arguments": {}
         },
         {
@@ -453,14 +690,6 @@
             "arguments": {}
         },
         {
-            "source": "payment.topic",
-            "vhost": "/",
-            "destination": "notification.notify_payment_refunded",
-            "destination_type": "queue",
-            "routing_key": "payment.refunded",
-            "arguments": {}
-        },
-        {
             "source": "dlx.direct",
             "vhost": "/",
             "destination": "notification.notify_shipping_dispatched.dlq",
@@ -469,67 +698,19 @@
             "arguments": {}
         },
         {
-            "source": "dlx.direct",
+            "source": "payment.topic",
             "vhost": "/",
-            "destination": "notification.notify_payment_confirmed.dlq",
+            "destination": "order.handle_payment_timeout",
             "destination_type": "queue",
-            "routing_key": "notification.notify_payment_confirmed.dlq",
-            "arguments": {}
-        },
-        {
-            "source": "dlx.direct",
-            "vhost": "/",
-            "destination": "order.create_order.dlq",
-            "destination_type": "queue",
-            "routing_key": "order.create_order.dlq",
-            "arguments": {}
-        },
-        {
-            "source": "order.topic",
-            "vhost": "/",
-            "destination": "payment.refund",
-            "destination_type": "queue",
-            "routing_key": "order.canceled",
-            "arguments": {}
-        },
-        {
-            "source": "dlx.direct",
-            "vhost": "/",
-            "destination": "product.refund.dlq",
-            "destination_type": "queue",
-            "routing_key": "product.refund.dlq",
-            "arguments": {}
-        },
-        {
-            "source": "order.topic",
-            "vhost": "/",
-            "destination": "product.refund",
-            "destination_type": "queue",
-            "routing_key": "order.canceled",
-            "arguments": {}
-        },
-        {
-            "source": "order.topic",
-            "vhost": "/",
-            "destination": "notification.notify_canceled_order",
-            "destination_type": "queue",
-            "routing_key": "order.canceled",
+            "routing_key": "payment.timeout",
             "arguments": {}
         },
         {
             "source": "payment.topic",
             "vhost": "/",
-            "destination": "payment.wait_pending_payment",
+            "destination": "order.confirm_payment",
             "destination_type": "queue",
-            "routing_key": "payment.generated",
-            "arguments": {}
-        },
-        {
-            "source": "dlx.direct",
-            "vhost": "/",
-            "destination": "notification.notify_payment_timeout.dlq",
-            "destination_type": "queue",
-            "routing_key": "notification.notify_payment_timeout.dlq",
+            "routing_key": "payment.confirmed",
             "arguments": {}
         },
         {
@@ -543,41 +724,49 @@
         {
             "source": "dlx.direct",
             "vhost": "/",
+            "destination": "order.handle_payment_timeout.dlq",
+            "destination_type": "queue",
+            "routing_key": "order.handle_payment_timeout.dlq",
+            "arguments": {}
+        },
+        {
+            "source": "dlx.direct",
+            "vhost": "/",
+            "destination": "notification.notify_canceled_order.dlq",
+            "destination_type": "queue",
+            "routing_key": "notification.notify_canceled_order.dlq",
+            "arguments": {}
+        },
+        {
+            "source": "pricing.topic",
+            "vhost": "/",
+            "destination": "pricing.apply_price",
+            "destination_type": "queue",
+            "routing_key": "price.checked",
+            "arguments": {}
+        },
+        {
+            "source": "dlx.direct",
+            "vhost": "/",
             "destination": "notification.notify_payment_generated.dlq",
             "destination_type": "queue",
             "routing_key": "notification.notify_payment_generated.dlq",
             "arguments": {}
         },
         {
-            "source": "dlx.direct",
-            "vhost": "/",
-            "destination": "order.create_shipping.dlq",
-            "destination_type": "queue",
-            "routing_key": "order.create_shipping.dlq",
-            "arguments": {}
-        },
-        {
-            "source": "dlx.direct",
-            "vhost": "/",
-            "destination": "notification.notify_payment_refunded.dlq",
-            "destination_type": "queue",
-            "routing_key": "notification.notify_payment_refunded.dlq",
-            "arguments": {}
-        },
-        {
             "source": "payment.topic",
             "vhost": "/",
-            "destination": "order.handle_payment_timeout",
+            "destination": "notification.notify_payment_refunded",
             "destination_type": "queue",
-            "routing_key": "payment.timeout",
+            "routing_key": "payment.refunded",
             "arguments": {}
         },
         {
-            "source": "order.topic",
+            "source": "dlx.direct",
             "vhost": "/",
-            "destination": "order.cancel_shipments",
+            "destination": "product.refund.dlq",
             "destination_type": "queue",
-            "routing_key": "order.canceled",
+            "routing_key": "product.refund.dlq",
             "arguments": {}
         },
         {
@@ -591,17 +780,9 @@
         {
             "source": "dlx.direct",
             "vhost": "/",
-            "destination": "order.handle_payment_timeout.dlq",
+            "destination": "notification.notify_payment_confirmed.dlq",
             "destination_type": "queue",
-            "routing_key": "order.handle_payment_timeout.dlq",
-            "arguments": {}
-        },
-        {
-            "source": "order.topic",
-            "vhost": "/",
-            "destination": "order.create_order",
-            "destination_type": "queue",
-            "routing_key": "order.checked",
+            "routing_key": "notification.notify_payment_confirmed.dlq",
             "arguments": {}
         },
         {
@@ -613,19 +794,11 @@
             "arguments": {}
         },
         {
-            "source": "order.topic",
+            "source": "product.topic",
             "vhost": "/",
-            "destination": "payment.generate_payment",
+            "destination": "pricing.register_product",
             "destination_type": "queue",
-            "routing_key": "order.created",
-            "arguments": {}
-        },
-        {
-            "source": "dlx.direct",
-            "vhost": "/",
-            "destination": "order.confirm_payment.dlq",
-            "destination_type": "queue",
-            "routing_key": "order.confirm_payment.dlq",
+            "routing_key": "product.sku.created",
             "arguments": {}
         }
     ]

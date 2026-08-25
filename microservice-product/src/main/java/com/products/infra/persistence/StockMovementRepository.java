@@ -1,12 +1,16 @@
 package com.products.infra.persistence;
 
 import com.products.domain.entity.StockMovement;
-import org.springframework.data.domain.Page;
-import org.springframework.data.domain.Pageable;
-import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.domain.*;
+import org.springframework.data.mongodb.repository.MongoRepository;
 
-import java.util.UUID;
+public interface StockMovementRepository extends MongoRepository<StockMovement, String> {
+    Window<StockMovement> findAllByOrderById(ScrollPosition position, Limit limit);
 
-public interface StockMovementRepository extends JpaRepository<StockMovement, UUID> {
-    Page<StockMovement> findAllByProductSKU_id(UUID productStock_productSKU_id, Pageable pageable);
+    Window<StockMovement> findAllBySKUOrderById(String SKU, ScrollPosition position, Limit limit);
+
+    Window<StockMovement> findAllByTypeIdOrderById(Integer typeId, ScrollPosition position, Limit limit);
+
+    Window<StockMovement> findAllBySKUAndTypeIdOrderById(String SKU, Integer typeId, ScrollPosition position, Limit limit);
 }
+

@@ -2,112 +2,72 @@ package com.products.config;
 
 import com.products.domain.entity.Product;
 import com.products.domain.entity.ProductCategory;
-import com.products.domain.entity.ProductSKU;
-import com.products.domain.entity.ProductSKUPrice;
-import com.products.infra.persistence.*;
-import jakarta.transaction.Transactional;
+import com.products.infra.persistence.ProductCategoryRepository;
+import com.products.infra.persistence.ProductRepository;
 import lombok.extern.slf4j.Slf4j;
 import net.datafaker.Faker;
 import org.springframework.boot.CommandLineRunner;
 import org.springframework.context.annotation.Bean;
-import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Profile;
-import org.springframework.jdbc.core.JdbcTemplate;
+import org.springframework.data.mongodb.core.MongoTemplate;
+import org.springframework.stereotype.Component;
 
 import java.math.BigDecimal;
 import java.util.ArrayList;
+import java.util.List;
 import java.util.UUID;
-import java.util.concurrent.ThreadLocalRandom;
 
 @Slf4j
-@Configuration @Profile("mock")
+@Component @Profile("mock")
 public class MockDatabaseSeeder {
     private final int BATCH_SIZE = 1000;
     private final long PRODUCT_COUNT = 100_000;
+    private final long TOTAL_BATCHES = PRODUCT_COUNT / BATCH_SIZE;
     private final UUID ADMIN_ID = UUID.randomUUID();
-
-    private final Faker faker;
-    private final JdbcTemplate jdbcTemplate;
-    private final ProductRepository productRepository;
-    private final ProductSKUPriceRepository productSKUPriceRepository;
-    private final ProductCategoryRepository productCategoryRepository;
-    private final PriceTypeRepository priceTypeRepository;
-    private final ProductSKURepository productSKURepository;
-
-    public MockDatabaseSeeder(JdbcTemplate jdbcTemplate, ProductRepository productRepository, ProductSKUPriceRepository productSKUPriceRepository, ProductCategoryRepository productCategoryRepository, PriceTypeRepository priceTypeRepository, ProductSKURepository productSKURepository) {
-        this.jdbcTemplate = jdbcTemplate;
-        this.faker = new Faker();
-        this.productRepository = productRepository;
-        this.productSKUPriceRepository = productSKUPriceRepository;
-        this.productCategoryRepository = productCategoryRepository;
-        this.priceTypeRepository = priceTypeRepository;
-        this.productSKURepository = productSKURepository;
-    }
+    private final Faker faker = new Faker();
 
     @Bean
-    public CommandLineRunner seed(){
+    public CommandLineRunner seed(ProductRepository productRepository, MongoTemplate mongoTemplate, ProductCategoryRepository productCategoryRepository){
         if (productRepository.count() != 0) return args -> {};
 
         log.info("Creating catalogue mock with {} products", PRODUCT_COUNT);
 
         return args -> {
-            String productSQL = """
-            INSERT INTO product (id, name, description, category_id, embedding, created_at, updated_at, is_active)
-            VALUES (?, ?, NULL, 1, NULL, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP, TRUE)
-            """;
+            List<Product> productBatch = new ArrayList<>(BATCH_SIZE);
 
-            String skuSQL = """
-            INSERT INTO product_sku (id, product_id, sku, name, created_at, updated_at, is_active)
-            VALUES (?, ?, ?, ?, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP, TRUE)
-            """;
-
-            String priceSQL = """
-            INSERT INTO product_sku_price (id, product_sku_id, price, price_type_id, start_at, end_at, created_at, is_active)
-            VALUES (?, ?, ?, 1, CURRENT_TIMESTAMP, NULL, CURRENT_TIMESTAMP, TRUE)
-            """;
-
-            String stockSQL = """
-            INSERT INTO product_stock (id, product_sku_id, units, created_at, created_by, updated_at, is_active)
-            VALUES (?, ?, ?, CURRENT_TIMESTAMP, ?, CURRENT_TIMESTAMP, TRUE)
-            """;
-
-            var productArgs = new ArrayList<Object[]>();
-            var skuArgs = new ArrayList<Object[]>();
-            var priceArgs = new ArrayList<Object[]>();
-            var stockArgs = new ArrayList<Object[]>();
+            var category = new ProductCategory();
+            category.setId(1L);
+            category.setName("mock");
+            category.setCreatedBy(ADMIN_ID);
+            productCategoryRepository.save(category);
 
             for (int i = 0; i < PRODUCT_COUNT; i++){
-                var productId = UUID.randomUUID();
-                var skuId = UUID.randomUUID();
-                var priceId = UUID.randomUUID();
-                var stockId = UUID.randomUUID();
+                var name = faker.commerce().productName();
 
-                String name = faker.commerce().productName();
-                int units = ThreadLocalRandom.current().nextInt(1, 1000);
+                var SKU = new Product.ProductSKU();
+                SKU.setSKU("sku"+i);
+                SKU.setName(name);
+                SKU.setCurrentPrice(new Product.ProductSKU.Price(
+                        "common",
+                        new BigDecimal(faker.commerce().price(1, 1000))
+                ));
+                SKU.setCreatedBy(ADMIN_ID);
 
-                productArgs.add(new Object[]{productId, name});
-                skuArgs.add(new Object[]{skuId, productId, "SKU-"+i, name});
-                priceArgs.add(new Object[]{priceId, skuId, new BigDecimal(faker.commerce().price())});
-                stockArgs.add(new Object[]{stockId, skuId, units, ADMIN_ID});
+                var product = new Product();
+                product.setName(name);
+                product.setSKUs(List.of(SKU));
+                product.setCategory(new Product.CategorySummary(category.getId(), category.getName()));
+                product.setCreatedBy(ADMIN_ID);
 
-                long totalBatches = PRODUCT_COUNT / BATCH_SIZE;
+                productBatch.add(product);
 
                 if ((i + 1) % BATCH_SIZE == 0 || i == PRODUCT_COUNT - 1){
-                    jdbcTemplate.batchUpdate(productSQL, productArgs);
-                    jdbcTemplate.batchUpdate(skuSQL, skuArgs);
-                    jdbcTemplate.batchUpdate(priceSQL, priceArgs);
-                    jdbcTemplate.batchUpdate(stockSQL, stockArgs);
+                    mongoTemplate.insertAll(productBatch);
+                    productBatch.clear();
 
-                    productArgs.clear();
-                    skuArgs.clear();
-                    priceArgs.clear();
-                    stockArgs.clear();
-
-                    log.info("Inserted Batch {}/{}", (i / BATCH_SIZE) + 1, totalBatches);
+                    log.info("Inserted Batch {}/{}", (i / BATCH_SIZE) + 1, TOTAL_BATCHES);
                 }
             }
-
-            log.info("Created {} product mocks successfully", PRODUCT_COUNT);
         };
     }
 }

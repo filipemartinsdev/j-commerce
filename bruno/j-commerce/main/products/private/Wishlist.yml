@@ -1,0 +1,37 @@
+info:
+  name: Wishlist
+  type: graphql
+  seq: 6
+
+graphql:
+  method: POST
+  url: https://localhost/product/api/v2/graphql
+  body:
+    query: |-
+      query {
+      	wishlist(
+          first: 10
+          # after: "S19bImphdmEudXRpbC5Db2xsZWN0aW9ucyRVbm1vZGlmaWFibGVNYXAiLHsiaWQiOlsiamF2YS5sYW5nLkxvbmciLDJdfV0="
+        ) {
+          edges {
+            node {
+              productId
+              name
+            }
+          }
+          pageInfo {
+            startCursor
+            endCursor
+            hasPreviousPage
+            hasNextPage
+          }
+        }
+      }
+  auth: inherit
+
+settings:
+  encodeUrl: true
+  timeout: 0
+  followRedirects: true
+  maxRedirects: 5
+  forwardAuthorizationHeader: true

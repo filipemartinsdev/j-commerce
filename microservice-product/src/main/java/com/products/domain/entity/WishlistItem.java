@@ -1,30 +1,26 @@
 package com.products.domain.entity;
 
-import jakarta.persistence.*;
+import jakarta.validation.constraints.NotNull;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
-import org.hibernate.annotations.CreationTimestamp;
+import org.springframework.data.annotation.Id;
+import org.springframework.data.mongodb.core.index.Indexed;
+import org.springframework.data.mongodb.core.mapping.Document;
 
-import java.time.Instant;
 import java.util.UUID;
 
-@Entity @Table(name = "wishlist_item")
+@Document(collection = "wishlistItems")
 @Data @NoArgsConstructor @AllArgsConstructor
 public class WishlistItem {
-    @GeneratedValue(strategy = GenerationType.UUID)
-    @Id private UUID id;
+    @Id
+    private String id;
 
+    @Indexed @NotNull
     private UUID userId;
 
-    @JoinColumn(name = "product_sku_id")
-    @ManyToOne(fetch = FetchType.LAZY)
-    private ProductSKU productSKU;
+    @Indexed @NotNull
+    private String productId;
 
-    @CreationTimestamp
-    @Column(name = "created_at")
-    private Instant createdAt;
-
-    @Column(name = "is_active")
-    private Boolean isActive = true;
+    private String productName;
 }

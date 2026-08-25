@@ -13,6 +13,7 @@ import org.springframework.boot.webmvc.test.autoconfigure.WebMvcTest;
 import org.springframework.context.annotation.Import;
 import org.springframework.http.MediaType;
 import org.springframework.security.test.context.support.WithMockUser;
+import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.MockMvc;
 
@@ -35,7 +36,7 @@ public class AdminControllerTests {
     @MockitoBean private AuthService authService;
 
     @Test @DisplayName("Should update user role and return status code 200")
-    @WithMockUser(authorities = "SCOPE_ADMIN")
+    @WithMockUser(roles = "ADMIN")
     void updateUserRoleTestCase1() throws Exception {
         UUID userId = UUID.randomUUID();
 
@@ -57,7 +58,7 @@ public class AdminControllerTests {
     }
 
     @Test @DisplayName("Should return response code 404 if user not exists")
-    @WithMockUser(authorities = "SCOPE_ADMIN")
+    @WithMockUser(roles = "ADMIN")
     void updateUserRoleTestCase2() throws Exception {
         UUID userId = UUID.randomUUID();
 
@@ -99,8 +100,8 @@ public class AdminControllerTests {
         ).andExpect(status().isUnauthorized());
     }
 
-    @Test @DisplayName("Should return response code 403 if client hasn't ADMIN authorities")
-    @WithMockUser(authorities = "SCOPE_USER")
+    @Test @DisplayName("Should return response code 403 if client hasn't ADMIN role")
+    @WithMockUser(roles = "USER")
     void updateUserRoleTestCase4() throws Exception {
         UUID userId = UUID.randomUUID();
 
@@ -123,7 +124,7 @@ public class AdminControllerTests {
 
 
     @Test @DisplayName("Should retrieve all users and return status code 200")
-    @WithMockUser(authorities = "SCOPE_ADMIN")
+    @WithMockUser(roles = "ADMIN")
     void getAllUsersTestCase1() throws Exception {
         UUID userId = UUID.randomUUID();
         Instant userCreatedAt = Instant.now();
@@ -194,7 +195,7 @@ public class AdminControllerTests {
 
 
     @Test @DisplayName("Should retrieve user by ID and return response code 200")
-    @WithMockUser(authorities = "SCOPE_ADMIN")
+    @WithMockUser(roles = "ADMIN")
     void getUserByIdTestCase1() throws Exception {
         UUID userId = UUID.randomUUID();
         Instant userCreatedAt = Instant.now();
@@ -233,7 +234,7 @@ public class AdminControllerTests {
     }
 
     @Test @DisplayName("Should return response code 404 if user not exists")
-    @WithMockUser(authorities = "SCOPE_ADMIN")
+    @WithMockUser(roles = "ADMIN")
     void getUserByIdTestCase2() throws Exception {
         UUID userId = UUID.randomUUID();
 
@@ -252,7 +253,7 @@ public class AdminControllerTests {
     }
 
     @Test @DisplayName("Should return response code 403 if client hasn't ADMIN authorities")
-    @WithMockUser(authorities = "SCOPE_USER")
+    @WithMockUser(roles = "USER")
     void getUserByIdTestCase4() throws Exception {
         UUID userId = UUID.randomUUID();
 

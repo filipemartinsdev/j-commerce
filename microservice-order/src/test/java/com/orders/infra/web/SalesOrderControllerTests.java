@@ -78,7 +78,7 @@ public class SalesOrderControllerTests {
 
         mockMvc.perform(get("/api/v1/sales-orders")
                         .with(jwt().jwt(jwt -> jwt.subject(userId.toString()))
-                                .authorities(new SimpleGrantedAuthority("SCOPE_USER"))))
+                                .authorities(new SimpleGrantedAuthority("ROLE_USER"))))
                 .andExpect(status().isOk())
                 .andExpect(content().json(expectedJSON));
     }
@@ -91,11 +91,11 @@ public class SalesOrderControllerTests {
     }
 
     @Test
-    @DisplayName("Should return status code 403 if wrong scope")
+    @DisplayName("Should return status code 403 if wrong role")
     void getAllSalesOrdersTestCase3() throws Exception {
         mockMvc.perform(get("/api/v1/sales-orders")
                         .with(jwt().jwt(jwt -> jwt.subject(UUID.randomUUID().toString()))
-                                .authorities(new SimpleGrantedAuthority("SCOPE_STOCK_MANAGER"))))
+                                .authorities(new SimpleGrantedAuthority("ROLE_STOCK_MANAGER"))))
                 .andExpect(status().isForbidden());
     }
 
@@ -146,7 +146,7 @@ public class SalesOrderControllerTests {
 
         mockMvc.perform(get("/api/v1/sales-orders/{id}", orderId)
                         .with(jwt().jwt(jwt -> jwt.subject(userId.toString()))
-                                .authorities(new SimpleGrantedAuthority("SCOPE_USER"))))
+                                .authorities(new SimpleGrantedAuthority("ROLE_USER"))))
                 .andExpect(status().isOk())
                 .andExpect(content().json(expectedJSON));
     }
@@ -161,13 +161,13 @@ public class SalesOrderControllerTests {
     }
 
     @Test
-    @DisplayName("Should return status code 403 if wrong scope")
+    @DisplayName("Should return status code 403 if wrong role")
     void getSalesOrderByIdTestCase3() throws Exception {
         UUID orderId = UUID.randomUUID();
 
         mockMvc.perform(get("/api/v1/sales-orders/{id}", orderId)
                         .with(jwt().jwt(jwt -> jwt.subject(UUID.randomUUID().toString()))
-                                .authorities(new SimpleGrantedAuthority("SCOPE_STOCK_MANAGER"))))
+                                .authorities(new SimpleGrantedAuthority("ROLE_STOCK_MANAGER"))))
                 .andExpect(status().isForbidden());
     }
 
@@ -182,7 +182,7 @@ public class SalesOrderControllerTests {
 
         mockMvc.perform(get("/api/v1/sales-orders/{id}", orderId)
                         .with(jwt().jwt(jwt -> jwt.subject(userId.toString()))
-                                .authorities(new SimpleGrantedAuthority("SCOPE_USER"))))
+                                .authorities(new SimpleGrantedAuthority("ROLE_USER"))))
                 .andExpect(status().isNotFound());
     }
 
@@ -196,7 +196,7 @@ public class SalesOrderControllerTests {
 
         mockMvc.perform(delete("/api/v1/sales-orders/{id}", orderId)
                         .with(jwt().jwt(jwt -> jwt.subject(userId.toString()))
-                                .authorities(new SimpleGrantedAuthority("SCOPE_USER"))))
+                                .authorities(new SimpleGrantedAuthority("ROLE_USER"))))
                 .andExpect(status().isOk());
     }
 
@@ -210,13 +210,13 @@ public class SalesOrderControllerTests {
     }
 
     @Test
-    @DisplayName("Should return status code 403 if wrong scope")
+    @DisplayName("Should return status code 403 if wrong role")
     void requestToCancelSalesOrderTestCase3() throws Exception {
         UUID orderId = UUID.randomUUID();
 
         mockMvc.perform(delete("/api/v1/sales-orders/{id}", orderId)
                         .with(jwt().jwt(jwt -> jwt.subject(UUID.randomUUID().toString()))
-                                .authorities(new SimpleGrantedAuthority("SCOPE_STOCK_MANAGER"))))
+                                .authorities(new SimpleGrantedAuthority("ROLE_STOCK_MANAGER"))))
                 .andExpect(status().isForbidden());
     }
 
@@ -231,7 +231,7 @@ public class SalesOrderControllerTests {
 
         mockMvc.perform(delete("/api/v1/sales-orders/{id}", orderId)
                         .with(jwt().jwt(jwt -> jwt.subject(userId.toString()))
-                                .authorities(new SimpleGrantedAuthority("SCOPE_USER"))))
+                                .authorities(new SimpleGrantedAuthority("ROLE_USER"))))
                 .andExpect(status().isNotFound());
     }
 
@@ -246,7 +246,7 @@ public class SalesOrderControllerTests {
 
         mockMvc.perform(delete("/api/v1/sales-orders/{id}", orderId)
                         .with(jwt().jwt(jwt -> jwt.subject(userId.toString()))
-                                .authorities(new SimpleGrantedAuthority("SCOPE_USER"))))
+                                .authorities(new SimpleGrantedAuthority("ROLE_USER"))))
                 .andExpect(status().isBadRequest());
     }
 }

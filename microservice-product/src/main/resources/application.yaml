@@ -18,6 +18,16 @@ spring:
         jwt:
           jwk-set-uri: http://identity:8080/.well-known/jwks.json
 
+  mongodb:
+    representation:
+      uuid: standard
+
+  graphql:
+    graphiql:
+      enabled: true
+    http:
+      path: /api/v2/graphql
+
   data:
     web:
       pageable:
@@ -57,10 +67,16 @@ broker:
   queues:
     refundProduct:
       name: product.refund
+    decreaseStock:
+      name: product.decrease_stock
+    updatePrice:
+      name: product.update_price
 
   exchanges:
     orderTopic:
       name: order.topic
+    productTopic:
+      name: product.topic
 
 feign:
   clients:

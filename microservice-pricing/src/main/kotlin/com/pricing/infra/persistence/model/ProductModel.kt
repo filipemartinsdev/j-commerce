@@ -21,7 +21,7 @@ class ProductModel(
     lateinit var id: UUID
 
     @NotNull
-    @OneToMany(mappedBy = "product_id")
+    @OneToMany(mappedBy = "product")
     @SQLRestriction("deleted = FALSE AND active = TRUE")
     @SQLOrder("created_at ASC")
     var activePrices: MutableList<PriceModel> = mutableListOf();

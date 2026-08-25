@@ -11,6 +11,7 @@ import jakarta.enterprise.context.ApplicationScoped
 class ProductMapper {
     fun toDomain(model: ProductModel): Product {
         return Product(
+            id = model.id,
             sku = model.sku,
             activePrices = mapActivePrices(model)
         )

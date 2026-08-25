@@ -1,5 +1,6 @@
 package com.pricing.infra.persistence.model
 
+import io.quarkus.hibernate.orm.panache.PanacheEntityBase
 import jakarta.persistence.*
 import jakarta.validation.constraints.NotNull
 import java.math.BigDecimal
@@ -8,7 +9,9 @@ import java.util.UUID
 
 @Entity @Table(name = "price")
 class PriceModel (
-    @field:NotNull var typeId: Int,
+    @field:Column(name = "type_id")
+    @field:NotNull
+    var typeId: Int,
 
     @field:NotNull var value: BigDecimal,
 
@@ -24,7 +27,7 @@ class PriceModel (
 
     @field:Column(name = "created_by") @field:NotNull
     var createdBy: UUID
-){
+): PanacheEntityBase() {
     @Id @GeneratedValue(strategy = GenerationType.UUID)
     lateinit var id: UUID
 

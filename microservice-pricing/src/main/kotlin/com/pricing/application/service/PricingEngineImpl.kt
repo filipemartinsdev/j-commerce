@@ -1,16 +1,19 @@
 package com.pricing.application.service
 
+import com.pricing.application.UnitOfWork
 import com.pricing.application.dto.CreatePriceRequest
 import com.pricing.application.dto.PriceCheckedMessage
 import com.pricing.application.dto.PriceResponse
 import com.pricing.application.dto.PriceUpdatedMessage
 import com.pricing.application.exception.PriceNotFoundException
 import com.pricing.application.exception.ProductNotFoundBySkuException
+import com.pricing.application.exception.ProductWithoutBasePriceException
 import com.pricing.application.gateway.MessageProducerGateway
 import com.pricing.application.gateway.PriceRepositoryGateway
 import com.pricing.application.gateway.ProductRepositoryGateway
 import com.pricing.application.mapper.PriceMapper
 import com.pricing.domain.entity.Price
+import com.pricing.domain.entity.PriceType
 import java.util.*
 
 class PricingEngineImpl(
@@ -18,55 +21,67 @@ class PricingEngineImpl(
     private val messageProducerGateway: MessageProducerGateway,
     private val productRepositoryGateway: ProductRepositoryGateway,
     private val priceMapper: PriceMapper,
+    private val unitOfWork: UnitOfWork,
 ): PricingEngine {
 
     override fun createPrice(request: CreatePriceRequest): PriceResponse {
-        return priceRepositoryGateway
-            .save(request.let(priceMapper::toDomain))
-            .let(priceMapper::toResponse)
+        return unitOfWork.execute {
+            val product = productRepositoryGateway.findBySku(request.sku)
+                ?: throw ProductNotFoundBySkuException(request.sku)
+
+            if (request.typeId != PriceType.COMMON.id)
+                product.getBasePrice()
+                    ?: throw ProductWithoutBasePriceException("Product without base price: ${request.sku}")
+
+            priceRepositoryGateway
+                .save(request.let(priceMapper::toDomain))
+                .let(priceMapper::toResponse)
+        }
     }
 
     override fun deletePrice(id: UUID) {
-        if (!priceRepositoryGateway.deleteById(id))
-            throw PriceNotFoundException("Price not found by id: $id")
+        unitOfWork.execute {
+            if (!priceRepositoryGateway.deleteById(id))
+                throw PriceNotFoundException("Price not found by id: $id")
+        }
+    }
+
+    override fun getPricesBySku(sku: String): List<PriceResponse> {
+        return unitOfWork.execute {
+            priceRepositoryGateway.findAllBySku(sku)
+                .map(priceMapper::toResponse)
+        }
     }
 
     override fun refreshPrices() {
-        val pricesForTurnOff: List<Price> = priceRepositoryGateway.findAllForTurnOff()
-        val pricesForTurnOn: List<Price> = priceRepositoryGateway.findAllForTurnOn()
+        unitOfWork.execute unit@ {
+            val refreshedPrices:List<Price> = priceRepositoryGateway.refreshPricesActivityAndRetrieveIt()
 
-        if (pricesForTurnOn.isEmpty() && pricesForTurnOff.isEmpty()) return
+            if (refreshedPrices.isEmpty())
+                return@unit
 
-        for (price in pricesForTurnOff)
-            price.active = false
-
-        for (price in pricesForTurnOn)
-            price.active = true
-
-        val pricesForUpdate: MutableList<Price> = ArrayList<Price>()
-                .apply { addAll(pricesForTurnOff) }
-                .apply { addAll(pricesForTurnOn) }
-
-        priceRepositoryGateway.saveAll(pricesForUpdate)
-        producePriceChecked(pricesForUpdate)
+            refreshedPrices.forEach {
+                producePriceChecked(it)
+            }
+        }
     }
 
-    private fun producePriceChecked(prices: List<Price>){
-        prices.forEach {
-            messageProducerGateway.producePriceChecked(PriceCheckedMessage(it.sku))
-        }
+    private fun producePriceChecked(price: Price){
+        messageProducerGateway.producePriceChecked(PriceCheckedMessage(price.sku))
     }
 
 
     override fun updatePrice(message: PriceCheckedMessage) {
-        val product = productRepositoryGateway.findBySku(message.sku)
-            ?: throw ProductNotFoundBySkuException("Product not found by SKU: " + message.sku)
+        unitOfWork.execute {
+            val product = productRepositoryGateway.findBySku(message.sku)
+                ?: throw ProductNotFoundBySkuException("Product not found by SKU: " + message.sku)
 
-        producePriceUpdated(
-            sku = product.sku,
-            newBasePrice = product.getBasePrice(),
-            newCurrentPrice = product.getCurrentPrice()
-        )
+            producePriceUpdated(
+                sku = product.sku,
+                newBasePrice = product.getBasePrice(),
+                newCurrentPrice = product.getCurrentPrice()
+            )
+        }
     }
 
     private fun producePriceUpdated(

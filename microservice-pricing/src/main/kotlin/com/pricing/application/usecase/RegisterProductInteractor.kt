@@ -1,11 +1,16 @@
 package com.pricing.application.usecase
 
-import com.pricing.application.dto.RegisterProductRequest
+import com.pricing.application.UnitOfWork
 import com.pricing.application.gateway.ProductRepositoryGateway
 import com.pricing.domain.entity.Product
 
 class RegisterProductInteractor (
-    val productRepositoryGateway: ProductRepositoryGateway
+    val productRepositoryGateway: ProductRepositoryGateway,
+    val unitOfWork: UnitOfWork,
 ) {
-    fun registerProduct(request: RegisterProductRequest) = productRepositoryGateway.save(Product(sku = request.sku))
+    fun registerProduct(sku: String) {
+        return unitOfWork.execute {
+            productRepositoryGateway.save(Product(sku = sku))
+        }
+    }
 }

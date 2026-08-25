@@ -9,8 +9,8 @@ import org.eclipse.microprofile.reactive.messaging.Emitter
 
 @ApplicationScoped
 class MessageProducer(
-    @field:Channel("price-checked") var priceCheckedEmitter: Emitter<PriceCheckedMessage>,
-    @field:Channel("price-updated") var priceUpdatedEmitter: Emitter<PriceUpdatedMessage>
+    @param:Channel("price-checked") private val priceCheckedEmitter: Emitter<PriceCheckedMessage>,
+    @param:Channel("price-updated") private val priceUpdatedEmitter: Emitter<PriceUpdatedMessage>
 ): MessageProducerGateway {
 
     override fun producePriceChecked(message: PriceCheckedMessage) {

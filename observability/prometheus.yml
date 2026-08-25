@@ -13,6 +13,11 @@ scrape_configs:
       - targets: [ 'product:8080' ]
     metrics_path: '/actuator/prometheus'
 
+  - job_name: 'pricing-service'
+    static_configs:
+      - targets: [ 'pricing:8080' ]
+    metrics_path: '/q/metrics'
+
   - job_name: 'order-service'
     static_configs:
       - targets: [ 'order:8080' ]

@@ -347,6 +347,7 @@ services:
           cpus: 0.5
           memory: 600M
     environment:
+      AUTH_PUBLIC_KEY_URL: http://identity:8080/.well-known/jwks.json
       PG_URL: jdbc:postgresql://pricing_db:5432/${PG_PRICING_DATABASE:-pricing}
       PG_USER: ${PG_PRICING_USER:-pricing}
       PG_PASSWORD: ${PG_PRICING_PASSWORD:-pricing}

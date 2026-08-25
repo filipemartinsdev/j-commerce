@@ -1,19 +1,20 @@
 [« Home](../README.md)
 
-# Notification Microservice
+# Pricing Microservice
 
 ## Stack
 
-- Java 21
-- Quarkus 3.x
+- Kotlin 2.4
+- Quarkus 3.38
 - OpenAPI (Swagger)
 - PostgreSQL 17
 
 ## Database
 
+### Stack
+
 - PostgreSQL 17
 - Flyway for migrations
 
 ### Entity Relationship Diagram
-
-![Notification DB](../images/db/notification_db.png)
+![Pricing DB](../images/db/pricing_db.png)

@@ -45,7 +45,12 @@ This microservice server a `GraphQL` API, using `MongoDB` for centralized/schema
 
 The pricing is managed by an external Pricing Engine defined on [Pricing Microservice](../microservice-pricing). 
 
+## Datase
 
+### Stack
+
+- MongoDB
+- PostgreSQL + PgVector
 
 
 ---

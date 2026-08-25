@@ -84,13 +84,6 @@ On first run, default users are created via Flyway migration:
 | logistics@gmail.com | logistics123 | `USER`, `LOGISTICS`     |
 
 
-## Database
-
-- PostgreSQL 17
-- Flyway for migrations
-
-![identity_db.png](../images/identity_db.png)
-
 ## Authentication Architecture
 
 The identity is provided by a local auth-server and distributed consumers, using Spring Security. The authentication flow includes:
@@ -155,9 +148,20 @@ In practice, the flow is:
 4. Each microservice fetches the public key from the JWKS endpoint and validates the token locally.
 5. The service authorizes the request based on `sub` and `scope`, without calling the auth service for every request.
 
+
 ## Database
 
 The entire service is following the principle of **Soft Delete**. No data is deleted, only marked as _inactive_. This approach exists to:
 
 - Create an **auditable** application.
 - Reduce the processing of **batch and cascading deletes** in the database.
+
+### Stack
+
+- PostgreSQL 17
+- Flyway for migrations
+
+
+### Entity Relationship Diagram
+
+![Identity DB](../images/db/identity_db.png)

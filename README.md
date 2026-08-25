@@ -56,8 +56,10 @@ E-Commerce platform
 
 - Caddy Server
 - Java 21
-- Spring Boot
-- Quarkus
+- Kotlin 2.3+
+- Spring Boot 4
+- Quarkus 3.36
+- REST/GraphQL
 - Docker
 - PostgreSQL + PgVector
 - MongoDB
@@ -136,7 +138,7 @@ The interactive documentation for each microservice will be available at:
 |--------------|---------------------------------------------|
 | Identity     | http://localhost:8080/swagger-ui/index.html |
 | Product      | http://localhost:8081/graphiql              |
-| Pricing      | http://localhost:8082/swagger-ui/index.html |
+| Pricing      | http://localhost:8082/q/swagger-ui          |
 | Order        | http://localhost:8083/swagger-ui/index.html |
 | Notification | http://localhost:8084/q/swagger-ui          |
 
@@ -160,6 +162,7 @@ Services will be available at:
 |---------------|--------------------------|
 | Identity      | https://yourdomain.com/identity    |
 | Product       | https://yourdomain.com/product     |
+| Pricing       | https://yourdomain.com/pricing     |
 | Order         | https://yourdomain.com/order     |
 | Notification | https://yourdomain.com/notification     |
 | Grafana       | https://grafana.yourdomain.com   |
@@ -170,14 +173,7 @@ Services will be available at:
 
 ## Use Cases
 
-### Customer use cases
-
-<img src="images/uml/customer_use_cases.png" width="400pt">
-
-### Management use cases
-
-<img src="images/uml/management_use_cases.png" width="400pt">
-
+<img src="images/uml/global_usecases.png" width="500pt">
 
 ## Architecture
 
@@ -203,12 +199,15 @@ Authentication is implemented as a distributed model with one dedicated authoriz
 
 The entire order flow is based on asynchronous communication, using **Spring AMQP** and **Quarkus Messaging RabbitMQ** to integrate the **RabbitMQ** Message Broker.
 
-All queues have a respective Dead Letter Queue named as `<queue-name>.dlq` (they aren't documented here).
+> [!NOTE]
+> All queues have a respective Dead Letter Queue named as `<queue-name>.dlq` (they aren't documented here).
 
 ### Exchanges
 
 | Name            | Description                             | Routing Keys                                                                    |
 |-----------------|-----------------------------------------|---------------------------------------------------------------------------------|
+| `product.topic` | Topic exchange to handle product events | `product.sku.created`, `product.sku.deleted`                                    |
+| `pricing.topic` | Topic exchange to handle pricing events | `pricing.checked`, `pricing.updated`                                            |
 | `order.topic`   | Topic exchange to handle order events   | `order.checked`, `order.created`, `order.canceled`, `order.dispatched`          | 
 | `payment.topic` | Topic exchange to handle payment events | `payment.generated`, `payment.confirmed`, `payment.timeout`, `payment.refunded` |
 | `dlx.direct`    | Direct exchange for dead letters queues | ...                                                                             |
@@ -229,6 +228,10 @@ All queues have a respective Dead Letter Queue named as `<queue-name>.dlq` (they
 | `payment.decrease_stock`                  | Decrease stock for outbound products     |
 | `payment.refund`                          | Refund all payments from order           |
 | `product.refund`                          | Refund all products from order           |
+| `product.update_price`                    | Update price of a product                |
+| `pricing.register_product`                | Register product mirror                  |
+| `pricing.delete_product`                  | Delete product mirror                    |
+| `pricing.apply_price`                     | Update checked price                     |
 | `notification.notify_payment_generated`   | Notify that a payment has been generated |
 | `notification.notify_payment_confirmed`   | Notify that payment has been made        |
 | `notification.notify_payment_timeout`     | Notify that payment exceded the TTL      |
@@ -237,10 +240,13 @@ All queues have a respective Dead Letter Queue named as `<queue-name>.dlq` (they
 | `notification.notify_canceled_order`      | Notify that order has been canceled      |
 
 
-![order_exchange.png](images/messaging/order_topic.png)
+![product exchange](images/messaging/product_topic.png)
 
-![payment_exchange.png](images/messaging/payment_topic.png)
+![pricing exchange](images/messaging/pricing_topic.png)
 
+![order exchange](images/messaging/order_topic.png)
+
+![payment exchange](images/messaging/payment_topic.png)
 
 
 ### Purchase confirmation

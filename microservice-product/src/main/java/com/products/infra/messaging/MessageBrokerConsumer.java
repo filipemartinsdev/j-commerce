@@ -1,6 +1,7 @@
 package com.products.infra.messaging;
 
 import com.products.application.message.OrderCheckedMessage;
+import com.products.application.message.PriceUpdatedMessage;
 import com.products.application.message.RefundItemsMessage;
 import com.products.application.service.MessagingHandler;
 import org.springframework.amqp.rabbit.annotation.RabbitListener;
@@ -25,5 +26,10 @@ public class MessageBrokerConsumer {
     @RabbitListener(queues = "${broker.queues.decreaseStock.name}")
     public void listenDecreaseStock(@Payload OrderCheckedMessage message) {
         messagingHandler.decreaseStock(message);
+    }
+
+    @RabbitListener(queues = "${broker.queues.updatePrice.name}")
+    public void listenUpdatePrice(@Payload PriceUpdatedMessage message) {
+        messagingHandler.updatePrice(message);
     }
 }

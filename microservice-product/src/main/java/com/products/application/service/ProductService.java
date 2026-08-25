@@ -1,6 +1,7 @@
 package com.products.application.service;
 
 import com.products.application.dto.admin.*;
+import com.products.application.message.PriceUpdatedMessage;
 import com.products.domain.entity.Product;
 import com.products.domain.entity.ProductCategory;
 import com.products.application.dto.admin.UpdateProductSKURequest;
@@ -33,4 +34,6 @@ public interface ProductService {
     Product updateSKU(String SKU, UpdateProductSKURequest request, UUID userId);
 
     Product deleteSKU(String SKU, UUID userId);
+
+    void updatePrice(PriceUpdatedMessage message);
 }

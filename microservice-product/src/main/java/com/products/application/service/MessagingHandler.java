@@ -2,7 +2,9 @@ package com.products.application.service;
 
 import com.products.application.dto.admin.CreateStockMovementRequest;
 import com.products.application.message.OrderCheckedMessage;
+import com.products.application.message.PriceUpdatedMessage;
 import com.products.application.message.RefundItemsMessage;
+import com.products.domain.entity.Product;
 import com.products.domain.entity.StockMovement;
 import jakarta.transaction.Transactional;
 import org.springframework.stereotype.Service;
@@ -12,9 +14,11 @@ import java.util.Optional;
 @Service
 public class MessagingHandler {
     private final StockService stockService;
+    private final ProductService productService;
 
-    public MessagingHandler(StockService stockService) {
+    public MessagingHandler(StockService stockService, ProductService productService) {
         this.stockService = stockService;
+        this.productService = productService;
     }
 
     @Transactional
@@ -41,5 +45,10 @@ public class MessagingHandler {
                     item.units()
             ), null);
         }
+    }
+
+    @Transactional
+    public void updatePrice(PriceUpdatedMessage message) {
+        productService.updatePrice(message);
     }
 }

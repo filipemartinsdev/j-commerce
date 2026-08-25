@@ -4,6 +4,7 @@ import com.products.application.dto.admin.*;
 import com.products.application.exception.ProductNotFoundException;
 import com.products.application.exception.ProductSKUNotFoundException;
 import com.products.application.exception.SKUAlreadyExistsException;
+import com.products.application.message.PriceUpdatedMessage;
 import com.products.application.message.SKUCreatedMessage;
 import com.products.application.message.SKUDeletedMessage;
 import com.products.domain.entity.Product;
@@ -140,7 +141,7 @@ public class ProductServiceImpl implements ProductService {
                 .orElseThrow(() -> new ProductNotFoundException("Product not found by ID: "+productId));
 
         if (product.hasSKU(request.SKU()))
-            throw new SKUAlreadyExistsException("SKU already exists");
+            throw new SKUAlreadyExistsException("sku already exists");
 
         var SKU = assembleSKU(request, userId);
         product.getSKUs().add(SKU);
@@ -174,10 +175,10 @@ public class ProductServiceImpl implements ProductService {
     @Override
     public Product updateSKU(String SKU, UpdateProductSKURequest request, UUID userId) {
         var product = productRepository.findBySKU(SKU)
-                .orElseThrow(() -> new ProductNotFoundException("Product not found with SKU: "+SKU));
+                .orElseThrow(() -> new ProductNotFoundException("Product not found with sku: "+SKU));
 
         var productSKU = product.findSKU(SKU)
-                .orElseThrow(() -> new ProductSKUNotFoundException("SKU not found: "+SKU));
+                .orElseThrow(() -> new ProductSKUNotFoundException("sku not found: "+SKU));
 
         if(request.name().isPresent())
             productSKU.setName(request.name().get());
@@ -195,7 +196,7 @@ public class ProductServiceImpl implements ProductService {
     @Override
     public Product deleteSKU(String SKU, UUID userId) {
         var product = productRepository.findBySKU(SKU)
-                .orElseThrow(() -> new ProductNotFoundException("Product not found with SKU: "+SKU));
+                .orElseThrow(() -> new ProductNotFoundException("Product not found with sku: "+SKU));
 
         boolean removed = product.getSKUs()
                 .removeIf(element -> element.getSKU().equals(SKU));
@@ -206,10 +207,43 @@ public class ProductServiceImpl implements ProductService {
             return updatedProduct;
         }
         else
-            throw new ProductSKUNotFoundException("SKU not found: "+SKU);
+            throw new ProductSKUNotFoundException("sku not found: "+SKU);
     }
 
     private void produceSKUDeleted(String sku) {
         messageBrokerProducer.produceSKUDeleted(new SKUDeletedMessage(sku));
+    }
+
+
+    @Override
+    public void updatePrice(PriceUpdatedMessage message) {
+        var product = productRepository.findBySKU(message.sku())
+                .orElseThrow(() -> new ProductNotFoundException("Product not found by SKU: " + message.sku()));
+
+        var sku = product.findSKU(message.sku())
+                .orElseThrow(() -> new ProductSKUNotFoundException("SKU not found: " + message.sku()));
+
+        if(message.basePrice().isPresent())
+            sku.setBasePrice(new Product.ProductSKU.Price(
+                    message.basePrice().get().label(),
+                    message.basePrice().get().value()
+            ));
+        else
+            sku.setBasePrice(null);
+
+        if (message.currentPrice().isPresent())
+            sku.setCurrentPrice(new Product.ProductSKU.Price(
+                    message.currentPrice().get().label(),
+                    message.currentPrice().get().value()
+            ));
+        else
+            sku.setCurrentPrice(null);
+
+        sku.setUpdatedAt(Instant.now());
+        sku.setUpdatedBy(null);
+        product.setUpdatedAt(Instant.now());
+        product.setUpdatedBy(null);
+
+        productRepository.save(product);
     }
 }

@@ -30,8 +30,8 @@ public class ShoppingCartMapper {
                 .map(item -> new ShoppingCartResponse.Item(
                         item.getSKU(),
                         item.getName(),
-                        item.getUnits(),
                         item.getPrice(),
+                        item.getUnits(),
                         item.getPrice().multiply(new BigDecimal(item.getUnits()))
                 ))
                 .toList();

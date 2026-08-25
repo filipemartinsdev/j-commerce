@@ -22,9 +22,18 @@ public class ProductCatalogueMapper {
                                         skuEntity.getName(),
                                         skuEntity.getStock(),
                                         new ProductCatalogueResponse.ProductSKU.Price(
-                                                skuEntity.getCurrentPrice().getType(),
+                                                skuEntity.getCurrentPrice().getLabel(),
                                                 skuEntity.getCurrentPrice().getValue()
-                                        )
+                                        ),
+                                        new ProductCatalogueResponse.ProductSKU.Price(
+                                                skuEntity.getBasePrice().getLabel(),
+                                                skuEntity.getBasePrice().getValue()
+                                        ),
+                                        skuEntity.getAttributes().stream()
+                                                .map(att -> new ProductCatalogueResponse.ProductSKU.Attribute(
+                                                        att.getName(), att.getValue()
+                                                ))
+                                                .toList()
                                 )
                         )
                         .toList()

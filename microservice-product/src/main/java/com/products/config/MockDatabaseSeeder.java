@@ -45,7 +45,7 @@ public class MockDatabaseSeeder {
                 var name = faker.commerce().productName();
 
                 var SKU = new Product.ProductSKU();
-                SKU.setSKU("SKU"+i);
+                SKU.setSKU("sku"+i);
                 SKU.setName(name);
                 SKU.setCurrentPrice(new Product.ProductSKU.Price(
                         "common",

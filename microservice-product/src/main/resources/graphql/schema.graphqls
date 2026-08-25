@@ -1,8 +1,8 @@
 type Query {
 #    Catalogue
     categories: [ProductCategoryCatalogue!]!
-    catalogue(categoryId: ID!, first: Int, after: String): CatalogueConnection!
-    catalogueProduct(productId: String!): ProductCatalogue!
+    catalogue(categoryId: ID, first: Int, after: String): CatalogueConnection!
+    catalogueProduct(productId: ID!): ProductCatalogue!
     catalogueSearch(query: String!, categoryId: ID): CatalogueSearchResponse!
 
     wishlist(first: Int, after: String): WishlistConnection!
@@ -91,6 +91,7 @@ type ProductCatalogue {
 type ProductSKUCatalogue {
     SKU: ID!
     name: String!
+    basePrice: Price!
     currentPrice: Price!
     stock: Int!
     attributes: [Attribute!]
@@ -102,7 +103,7 @@ type Attribute {
 }
 
 type Price {
-    type: String!,
+    label: String!,
     value: Float!
 }
 
@@ -123,17 +124,18 @@ type WishlistEdge {
 
 type WishlistItem {
     productId: ID!
-    productName: String!
+    name: String!
 }
 
 type ShoppingCart {
-    items: [ShoppingCartItem!]!
     totalAmount: Float!
+    itemsCount: Int!
+    items: [ShoppingCartItem!]!
 }
 
 type ShoppingCartItem {
     SKU: ID!
-    productName: String!
+    name: String!
     price: Float!
     units: Int!
     amount: Float!
@@ -168,7 +170,8 @@ type ProductSKU {
     name: String!
     price: Price!
     stock: Int!
-    currentPrice: Price
+    basePrice: Price!
+    currentPrice: Price!
     attributes: [Attribute!]
     createdAt: Instant!
     createdBy: ID!

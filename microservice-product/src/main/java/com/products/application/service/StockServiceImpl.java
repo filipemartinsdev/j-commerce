@@ -44,10 +44,10 @@ public class StockServiceImpl implements StockService {
 
     private void increaseStock(String SKU, Integer units, UUID userId) {
         var product = productRepository.findBySKUWithLock(SKU)
-                .orElseThrow(() -> new ProductNotFoundException("Product not found with SKU: "+SKU));
+                .orElseThrow(() -> new ProductNotFoundException("Product not found with sku: "+SKU));
 
         var productSKU = product.findSKU(SKU)
-                .orElseThrow(() -> new ProductSKUNotFoundException("SKU not found: "+SKU));
+                .orElseThrow(() -> new ProductSKUNotFoundException("sku not found: "+SKU));
 
         productSKU.setStock(productSKU.getStock() + units);
         product.setUpdatedAt(Instant.now());
@@ -58,10 +58,10 @@ public class StockServiceImpl implements StockService {
 
     private void decreaseStock(String SKU, Integer units, UUID userId) {
         var product = productRepository.findBySKUWithLock(SKU)
-                .orElseThrow(() -> new ProductNotFoundException("Product not found with SKU: "+SKU));
+                .orElseThrow(() -> new ProductNotFoundException("Product not found with sku: "+SKU));
 
         var productSKU = product.findSKU(SKU)
-                .orElseThrow(() -> new ProductSKUNotFoundException("SKU not found: "+SKU));
+                .orElseThrow(() -> new ProductSKUNotFoundException("sku not found: "+SKU));
 
         productSKU.setStock(productSKU.getStock() - units);
         product.setUpdatedAt(Instant.now());

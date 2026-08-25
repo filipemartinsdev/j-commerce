@@ -20,13 +20,17 @@ public record ProductCatalogueResponse(
            String SKU,
            String name,
            Long stock,
-           Price currentPrice
+           Price currentPrice,
+           Price basePrice,
+           List<Attribute> attributes
     ){
 
         public static record Price (
-                String type,
+                String label,
                 BigDecimal value
         ){
         }
+
+        public static record Attribute(String name, String value){}
     }
 }

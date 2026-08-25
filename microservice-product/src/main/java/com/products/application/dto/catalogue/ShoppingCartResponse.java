@@ -11,8 +11,8 @@ public record ShoppingCartResponse(
     public static record Item (
             String SKU,
             String name,
-            Integer units,
             BigDecimal price,
+            Integer units,
             BigDecimal amount
     ){}
 }

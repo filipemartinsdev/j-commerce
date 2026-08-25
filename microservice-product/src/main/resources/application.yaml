@@ -69,6 +69,8 @@ broker:
       name: product.refund
     decreaseStock:
       name: product.decrease_stock
+    updatePrice:
+      name: product.update_price
 
   exchanges:
     orderTopic:

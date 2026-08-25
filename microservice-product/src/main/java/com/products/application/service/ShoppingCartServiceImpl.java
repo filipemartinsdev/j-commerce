@@ -45,7 +45,7 @@ public class ShoppingCartServiceImpl implements ShoppingCartService {
             throw new ShoppingCartItemAlreadyExistsException("This product is already on shopping cart");
 
         Product.ProductSKU sku = productRepository.findSKU(SKU)
-                .orElseThrow(() -> new ProductSKUNotFoundException("SKU not found: "+SKU))
+                .orElseThrow(() -> new ProductSKUNotFoundException("sku not found: "+SKU))
                 .getSKUs().getFirst();
 
         if (sku.getStock() < units)
@@ -81,7 +81,7 @@ public class ShoppingCartServiceImpl implements ShoppingCartService {
         if (removed)
             shoppingCartCacheStorage.update(userId, shoppingCart);
         else
-            throw new ShoppingCartItemNotFoundException("Shopping cart item not found by SKU: "+SKU);
+            throw new ShoppingCartItemNotFoundException("Shopping cart item not found by sku: "+SKU);
     }
 
     @Override

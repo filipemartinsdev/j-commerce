@@ -114,23 +114,23 @@ E-Commerce platform
 
 The HTTPS will be automatically configured with Caddy, and services will be available at:
 
-| Service               | URL                            | Connection   |
-|-----------------------|--------------------------------|--------------|
-| Identity              | https://localhost/identity     | RESTful      |
-| Product               | https://localhost/product      | GraphQL/HTTP |
-| Pricing               | https://localhost/pricing      | RESTful      |
-| Order                 | https://localhost/order        | RESTful      |
-| Notification          | https://localhost/notification | RESTful      |
-| Grafana               | http://localhost:3000          | Web          |
-| Prometheus Panel      | http://localhost:9090          | Web          |
-| RabbitMQ Panel        | http://localhost:15672         | Web          |
-| Identity Database     | localhost:5432                 | PostgreSQL   |
-| Vector Database       | localhost:5433                 | PostgreSQL   |
-| Pricing Database      | localhost:5434                 | PostgreSQL   |
-| Order Database        | localhost:5435                 | PostgreSQL   |
-| Notification Database | localhost:5436                 | PostgreSQL   |
-| Payment Database      | localhost:5436                 | PostgreSQL   |
-| Product Database      | localhost:27017                | MongoDB      |
+| Service               | URL                            | Connection       |
+|-----------------------|--------------------------------|------------------|
+| Identity              | https://localhost/identity     | RESTful API      |
+| Product               | https://localhost/product      | GraphQL/HTTP API |
+| Pricing               | https://localhost/pricing      | RESTful API      |
+| Order                 | https://localhost/order        | RESTful API      |
+| Notification          | https://localhost/notification | RESTful API      |
+| Grafana               | http://localhost:3000          | Web              |
+| Prometheus Panel      | http://localhost:9090          | Web              |
+| RabbitMQ Panel        | http://localhost:15672         | Web              |
+| Identity Database     | localhost:5432                 | PostgreSQL       |
+| Vector Database       | localhost:5433                 | PostgreSQL       |
+| Product Database      | localhost:27017                | MongoDB          |
+| Pricing Database      | localhost:5434                 | PostgreSQL       |
+| Order Database        | localhost:5435                 | PostgreSQL       |
+| Notification Database | localhost:5436                 | PostgreSQL       |
+| Payment Database      | localhost:5436                 | PostgreSQL       |
 
 The interactive documentation for each microservice will be available at:
 

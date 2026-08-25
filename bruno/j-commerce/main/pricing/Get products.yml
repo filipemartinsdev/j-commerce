@@ -1,0 +1,20 @@
+info:
+  name: Get products
+  type: http
+  seq: 4
+
+http:
+  method: GET
+  url: https://localhost/pricing/api/v1/admin/products
+  params:
+    - name: sku
+      value: teste
+      type: query
+      disabled: true
+  auth: inherit
+
+settings:
+  encodeUrl: true
+  timeout: 0
+  followRedirects: true
+  maxRedirects: 5

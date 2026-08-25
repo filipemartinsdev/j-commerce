@@ -10,7 +10,7 @@ graphql:
     query: |-
       mutation {
       	createSKU(
-          productId: "6a71f221856687ce856d4285"
+          productId: "6a8d8f8e96cb0f83eadd0045"
           request: {
             SKU: "DS4-B"
             name: "Dualshok 4 Black"
@@ -48,3 +48,4 @@ settings:
   timeout: 0
   followRedirects: true
   maxRedirects: 5
+  forwardAuthorizationHeader: true

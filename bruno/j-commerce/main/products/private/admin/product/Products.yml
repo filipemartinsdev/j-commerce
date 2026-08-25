@@ -26,14 +26,22 @@ graphql:
                 SKU
                 name
                 stock
+                basePrice {
+                  label
+                  value
+                }
                 currentPrice {
-                  type
+                  label
                   value
                 }
                 attributes {
                   name
                   value
                 }
+                createdAt
+                createdBy
+                updatedAt
+                updatedBy
               }
               createdAt
               createdBy

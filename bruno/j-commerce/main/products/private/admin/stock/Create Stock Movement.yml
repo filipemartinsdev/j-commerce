@@ -12,7 +12,7 @@ graphql:
       	createStockMovement(request: {
           SKU: "DS4-B"
           description: "test"
-          units: 10
+          units: 100
           typeId: 1
           reasonId: 1
         }) {
@@ -39,3 +39,4 @@ settings:
   timeout: 0
   followRedirects: true
   maxRedirects: 5
+  forwardAuthorizationHeader: true

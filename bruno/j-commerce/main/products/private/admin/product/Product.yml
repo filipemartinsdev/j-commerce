@@ -9,7 +9,7 @@ graphql:
   body:
     query: |-
       query {
-      	product(id: "6a71e9ab9db8ee7ff0c6bcb0") {
+      	product(id: "6a8cb5a43d6cbce046befb20") {
           id
           name
           description
@@ -17,7 +17,7 @@ graphql:
             name
             SKU
             currentPrice {
-              type
+              label
       				value
             }
             stock

@@ -1,0 +1,24 @@
+info:
+  name: Create price
+  type: http
+  seq: 2
+
+http:
+  method: POST
+  url: https://localhost/pricing/api/v1/admin/prices
+  body:
+    type: json
+    data: |-
+      {
+        "sku": "DS4-B",
+        "value": 214.99,
+        "typeId": 2
+      }
+  auth: inherit
+
+settings:
+  encodeUrl: true
+  timeout: 0
+  followRedirects: true
+  maxRedirects: 5
+  forwardAuthorizationHeader: true

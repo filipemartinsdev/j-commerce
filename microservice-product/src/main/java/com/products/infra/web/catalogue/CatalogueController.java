@@ -34,8 +34,8 @@ public class CatalogueController {
 
     @QueryMapping
     @PreAuthorize("hasRole('USER')")
-    public ProductCatalogueResponse catalogueProduct(@Argument String id){
-        return catalogueService.getProductById(id);
+    public ProductCatalogueResponse catalogueProduct(@Argument String productId){
+        return catalogueService.getProductById(productId);
     }
 
     @QueryMapping

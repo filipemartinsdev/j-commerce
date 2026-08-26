@@ -81,7 +81,8 @@ public class Product {
 
         private Price currentPrice;
 
-        private List<Attribute> attributes;
+        @NotNull
+        private List<Attribute> attributes = new ArrayList<>();
 
         @NotNull
         private Instant createdAt = Instant.now();

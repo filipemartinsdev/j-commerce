@@ -10,11 +10,11 @@ import java.util.List;
 import java.util.UUID;
 
 @Data @AllArgsConstructor @NoArgsConstructor
-public class ShoppingCart {
+public class ShoppingCart implements Serializable {
     private List<Item> items;
 
     @Data @AllArgsConstructor @NoArgsConstructor
-    public static class Item {
+    public static class Item implements Serializable {
         private String SKU;
         private String name;
         private Integer units;

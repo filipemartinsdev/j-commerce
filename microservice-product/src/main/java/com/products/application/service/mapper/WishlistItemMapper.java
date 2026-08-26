@@ -9,7 +9,7 @@ public class WishlistItemMapper {
     public WishlistItemResponse toResponse(WishlistItem entity) {
         return new WishlistItemResponse(
                 entity.getProductId(),
-                entity.getProductName()
+                entity.getName()
         );
     }
 }

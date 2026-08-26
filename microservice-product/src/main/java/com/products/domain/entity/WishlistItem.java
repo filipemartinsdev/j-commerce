@@ -1,5 +1,6 @@
 package com.products.domain.entity;
 
+import jakarta.validation.constraints.NotEmpty;
 import jakarta.validation.constraints.NotNull;
 import lombok.AllArgsConstructor;
 import lombok.Data;
@@ -22,5 +23,6 @@ public class WishlistItem {
     @Indexed @NotNull
     private String productId;
 
-    private String productName;
+    @NotEmpty
+    private String name;
 }

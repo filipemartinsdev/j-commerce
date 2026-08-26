@@ -44,6 +44,7 @@ public class WishlistServiceImpl implements WishlistService {
         var item = new WishlistItem();
         item.setUserId(userId);
         item.setProductId(productId);
+        item.setName(product.getName());
         wishlistRepository.save(item);
     }
 

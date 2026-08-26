@@ -44,13 +44,13 @@ public interface ProductRepository extends MongoRepository<Product, String> {
     List<Product> findAllWithPriceById(List<String> ids);
 
     @Query(
-            value = "{ 'SKUs.currentPrice': { $exists: true, $ne: null } }",
+            value = "{ 'SKUs.currentPrice': { $exists: true, $ne: null }, 'SKUs.basePrice': { $exists: true, $ne: null } }",
             sort = "{ id: 1 }"
     )
     Window<Product> findAllWithPrice(ScrollPosition scrollPosition, Limit limit);
 
     @Query(
-            value = "{ 'SKUs.currentPrice': { $exists: true, $ne: null }, category.id: ?0 }",
+            value = "{ 'SKUs.currentPrice': { $exists: true, $ne: null }, 'SKUs.basePrice': { $exists: true, $ne: null }, 'category.id': ?0 }",
             sort = "{ id: 1 }"
     )
     Window<Product> findAllWithPriceByCategory(Long categoryId, ScrollPosition scrollPosition, Limit limit);

@@ -47,9 +47,13 @@ public class MockDatabaseSeeder {
                 var SKU = new Product.ProductSKU();
                 SKU.setSKU("sku"+i);
                 SKU.setName(name);
-                SKU.setCurrentPrice(new Product.ProductSKU.Price(
-                        "common",
+                SKU.setBasePrice(new Product.ProductSKU.Price(
+                        "Common",
                         new BigDecimal(faker.commerce().price(1, 1000))
+                ));
+                SKU.setCurrentPrice(new Product.ProductSKU.Price(
+                        "Offer",
+                        new BigDecimal(faker.commerce().price(1, SKU.getBasePrice().getValue().floatValue() - 10F))
                 ));
                 SKU.setCreatedBy(ADMIN_ID);
 

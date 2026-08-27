@@ -168,11 +168,10 @@ type Product {
 type ProductSKU {
     SKU: ID!
     name: String!
-    price: Price!
     stock: Int!
-    basePrice: Price!
-    currentPrice: Price!
-    attributes: [Attribute!]
+    basePrice: Price
+    currentPrice: Price
+    attributes: [Attribute!]!
     createdAt: Instant!
     createdBy: ID!
     updatedAt: Instant

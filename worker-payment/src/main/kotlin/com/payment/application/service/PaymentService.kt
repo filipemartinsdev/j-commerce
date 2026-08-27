@@ -77,6 +77,7 @@ class PaymentService(
     }
 
 
+    @Transactional
     fun handlePaymentTimeout(message: PaymentGeneratedMessage) {
         val payment = paymentRepository.findById(message.paymentId)
             ?: throw NotFoundException("Payment not found by ID: ${message.paymentId}")

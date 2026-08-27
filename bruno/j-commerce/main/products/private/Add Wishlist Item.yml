@@ -9,7 +9,7 @@ graphql:
   body:
     query: |-
       mutation {
-      	addWishlistItem(productId: "6a8ee6f03a24b8efdd5b7f93") {
+      	addWishlistItem(productId: "6a8ee6f03a24b8efdd5b7f91") {
           success
           message
         }

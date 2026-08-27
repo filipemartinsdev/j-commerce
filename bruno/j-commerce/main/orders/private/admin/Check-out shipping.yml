@@ -8,7 +8,7 @@ http:
   url: https://localhost/order/admin/api/v1/shippings/:id/check-out
   params:
     - name: id
-      value: 0b7372ac-2ac4-4dd9-8389-09f97c163734
+      value: 7ac316b2-456e-4a31-9f05-5b4c7384a955
       type: path
   auth: inherit
 
@@ -17,3 +17,4 @@ settings:
   timeout: 0
   followRedirects: true
   maxRedirects: 5
+  forwardAuthorizationHeader: true

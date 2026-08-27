@@ -1,5 +1,5 @@
 info:
-  name: Clear Shopping Cart
+  name: Confirm Shopping Cart
   type: graphql
   seq: 13
 
@@ -9,7 +9,9 @@ graphql:
   body:
     query: |-
       mutation {
-      	clearShoppingCart {
+      	confirmShoppingCart(
+          deliveryAddressId: "e379d101-0c02-4e58-9e32-75b592fa2e26"
+        ) {
       		success
           message
         }

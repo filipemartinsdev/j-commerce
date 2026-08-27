@@ -10,7 +10,7 @@ graphql:
     query: |-
       mutation {
       	createStockMovement(request: {
-          SKU: "sku0"
+          SKU: "DS4-B"
           description: "test"
           units: 100
           typeId: 1

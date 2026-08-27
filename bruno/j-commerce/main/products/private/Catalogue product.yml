@@ -10,7 +10,7 @@ graphql:
     query: |-
       query {
       	catalogueProduct(
-      		productId: "6a8ee6f03a24b8efdd5b7f92"
+      		productId: "6a8ee6f03a24b8efdd5b7f91"
         ) {
           id
           name

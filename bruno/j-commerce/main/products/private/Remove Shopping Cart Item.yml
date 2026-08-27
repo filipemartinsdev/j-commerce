@@ -1,7 +1,7 @@
 info:
   name: Remove Shopping Cart Item
   type: graphql
-  seq: 11
+  seq: 12
 
 graphql:
   method: POST
@@ -10,7 +10,7 @@ graphql:
     query: |-
       mutation {
       	removeShoppingCartItem(
-          SKU: ""
+          SKU: "sku0"
         ) {
           success
           message

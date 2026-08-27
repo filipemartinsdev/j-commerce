@@ -8,7 +8,7 @@ http:
   url: https://localhost/order/api/v1/sales-orders/:id
   params:
     - name: id
-      value: 1888d42c-06d5-4b2b-9a72-49402a216571
+      value: 30232656-53f7-457c-ab86-dcb6697da203
       type: path
   body:
     type: json
@@ -20,3 +20,4 @@ settings:
   timeout: 0
   followRedirects: true
   maxRedirects: 5
+  forwardAuthorizationHeader: true

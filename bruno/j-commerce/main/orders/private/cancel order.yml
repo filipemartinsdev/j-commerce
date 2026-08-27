@@ -5,7 +5,11 @@ info:
 
 http:
   method: DELETE
-  url: https://localhost/order/api/v1/sales-orders/5e286899-5170-42bb-9ded-0845155f0ed4
+  url: https://localhost/order/api/v1/sales-orders/:id
+  params:
+    - name: id
+      value: 30232656-53f7-457c-ab86-dcb6697da203
+      type: path
   body:
     type: json
     data: "\n"
@@ -16,3 +20,4 @@ settings:
   timeout: 0
   followRedirects: true
   maxRedirects: 5
+  forwardAuthorizationHeader: true

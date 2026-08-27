@@ -10,7 +10,7 @@ graphql:
     query: |-
       query {
       	catalogue(
-          categoryId: "2"
+          # categoryId: "2"
           first: 20
           # after: "S19bImphdmEudXRpbC5Db2xsZWN0aW9ucyRVbm1vZGlmaWFibGVNYXAiLHsiaWQiOlsiamF2YS5sYW5nLkxvbmciLDJdfV0="
         )

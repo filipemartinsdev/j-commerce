@@ -12,7 +12,7 @@ http:
       {
         "sku": "DS4-B",
         "value": 214.99,
-        "typeId": 2
+        "typeId": 1
       }
   auth: inherit
 

@@ -199,4 +199,16 @@ public class GlobalExceptionHandler {
     public ResponseEntity<Void> handleAuthenticationException(AuthenticationException exception){
         return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
     }
+
+    @ExceptionHandler(CantTransitionShippingStatusException.class)
+    public ResponseEntity<StandardResponse<Void>> handleCantTransitionShippingStatusException(CantTransitionShippingStatusException exception){
+        return ResponseEntity
+                .status(HttpStatus.BAD_REQUEST)
+                .body(
+                        StandardResponse
+                                .fail()
+                                .message(exception.getMessage())
+                                .build()
+                );
+    }
 }

@@ -11,7 +11,6 @@ import com.products.infra.messaging.MessageBrokerProducer;
 import com.products.infra.persistence.ProductRepository;
 import org.springframework.stereotype.Service;
 
-import java.util.List;
 import java.util.UUID;
 
 @Service
@@ -44,13 +43,12 @@ public class ShoppingCartServiceImpl implements ShoppingCartService {
         if(isSkuOnShoppingCart(SKU, shoppingCart))
             throw new ShoppingCartItemAlreadyExistsException("This product is already on shopping cart");
 
-        Product.ProductSKU sku = productRepository.findSKU(SKU)
+        Product.ProductSKU sku = productRepository.findSKUWithPrice(SKU)
                 .orElseThrow(() -> new ProductSKUNotFoundException("sku not found: "+SKU))
                 .getSKUs().getFirst();
 
         if (sku.getStock() < units)
             throw new ProductOutOfStockException("This product haven't stock enough");
-
 
         shoppingCart.getItems().add(
                 new ShoppingCart.Item(

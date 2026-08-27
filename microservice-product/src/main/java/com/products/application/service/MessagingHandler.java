@@ -4,7 +4,6 @@ import com.products.application.dto.admin.CreateStockMovementRequest;
 import com.products.application.message.OrderCheckedMessage;
 import com.products.application.message.PriceUpdatedMessage;
 import com.products.application.message.RefundItemsMessage;
-import com.products.domain.entity.Product;
 import com.products.domain.entity.StockMovement;
 import jakarta.transaction.Transactional;
 import org.springframework.stereotype.Service;
@@ -38,7 +37,7 @@ public class MessagingHandler {
     public void decreaseStock(OrderCheckedMessage message){
         for (OrderCheckedMessage.OrderItem item : message.items()){
             stockService.createMovement(new CreateStockMovementRequest(
-                    item.SKU(),
+                    item.sku(),
                     Optional.of("Order checked"),
                     StockMovement.Type.OUTBOUND.id,
                     StockMovement.Reason.SALE.id,

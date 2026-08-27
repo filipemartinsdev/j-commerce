@@ -218,10 +218,10 @@ public class ProductServiceImpl implements ProductService {
     @Override
     public void updatePrice(PriceUpdatedMessage message) {
         var product = productRepository.findBySKU(message.sku())
-                .orElseThrow(() -> new ProductNotFoundException("Product not found by SKU: " + message.sku()));
+                .orElseThrow(() -> new ProductNotFoundException("Product not found by sku: " + message.sku()));
 
         var sku = product.findSKU(message.sku())
-                .orElseThrow(() -> new ProductSKUNotFoundException("SKU not found: " + message.sku()));
+                .orElseThrow(() -> new ProductSKUNotFoundException("sku not found: " + message.sku()));
 
         if(message.basePrice().isPresent())
             sku.setBasePrice(new Product.ProductSKU.Price(

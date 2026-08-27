@@ -70,10 +70,10 @@ public class SalesOrderService {
                 .map(item -> {
                     var salesOrderItem = new SalesOrderItem();
                     salesOrderItem.setSalesOrder(salesOrder);
-                    salesOrderItem.setProductSkuId(item.productSKUId());
+                    salesOrderItem.setSku(item.sku());
+                    salesOrderItem.setName(item.name());
                     salesOrderItem.setUnits(item.units());
                     salesOrderItem.setUnitPrice(item.unitPrice());
-                    salesOrderItem.setProductSkuName(item.name());
                     return salesOrderItem;
                 })
                 .toList();
@@ -126,7 +126,7 @@ public class SalesOrderService {
                 order.getUserId(),
                 order.getItems().stream()
                         .map(salesOrderItem ->
-                                new SalesOrderCanceledMessage.OrderItem(salesOrderItem.getProductSkuId(), salesOrderItem.getUnits())
+                                new SalesOrderCanceledMessage.OrderItem(salesOrderItem.getSku(), salesOrderItem.getUnits())
                         )
                         .toList(),
                 getTotalAmount(order)

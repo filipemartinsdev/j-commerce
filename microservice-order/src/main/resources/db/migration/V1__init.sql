@@ -43,14 +43,14 @@ CREATE TABLE sales_order (
 
 CREATE TABLE sales_order_item (
     sales_order_id      UUID REFERENCES sales_order(id) NOT NULL,
-    product_sku_id      UUID NOT NULL,
-    product_sku_name    VARCHAR(50) NOT NULL,
+    sku                 VARCHAR(255) NOT NULL,
+    name                VARCHAR(255) NOT NULL,
     unit_price          DECIMAL(19, 2) NOT NULL,
     units               INT NOT NULL,
     created_at          TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT CURRENT_TIMESTAMP,
     is_active           BOOLEAN NOT NULL DEFAULT TRUE,
 
-    PRIMARY KEY (sales_order_id, product_sku_id)
+    PRIMARY KEY (sales_order_id, sku)
 );
 
 CREATE TABLE shipping_status (

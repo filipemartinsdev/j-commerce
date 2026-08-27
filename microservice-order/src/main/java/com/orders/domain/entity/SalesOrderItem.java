@@ -11,7 +11,6 @@ import org.hibernate.validator.constraints.Length;
 
 import java.math.BigDecimal;
 import java.time.Instant;
-import java.util.UUID;
 
 @Entity @Table(name = "sales_order_item")
 @Data @NoArgsConstructor @AllArgsConstructor
@@ -23,13 +22,14 @@ public class SalesOrderItem {
     private SalesOrder salesOrder;
 
     @Id
-    @Column(name = "product_sku_id")
-    private UUID productSkuId;
+    @Length(max = 50)
+    @Column(name = "sku")
+    private String sku;
 
     @NotBlank
-    @Length(max = 50)
-    @Column(name = "product_sku_name")
-    private String productSkuName;
+    @Length(max = 255)
+    @Column(name = "name")
+    private String name;
 
     @NotNull
     @Column(name = "unit_price")

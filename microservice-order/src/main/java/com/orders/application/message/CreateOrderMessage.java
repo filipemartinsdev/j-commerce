@@ -12,7 +12,7 @@ public record CreateOrderMessage(
         UUID deliveryAddressId
 ) implements Serializable {
     public static record OrderItem(
-            UUID productSKUId,
+            String sku,
             String name,
             Integer units,
             BigDecimal unitPrice

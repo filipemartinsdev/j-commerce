@@ -13,7 +13,7 @@ public record SalesOrderCanceledMessage(
 
 ) implements Serializable {
     public static record OrderItem(
-            UUID productSkuId,
+            String sku,
             Integer units
     ) implements Serializable {
     }

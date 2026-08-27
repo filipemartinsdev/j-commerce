@@ -106,7 +106,7 @@ public class SalesOrderControllerTests {
         UUID orderId = UUID.randomUUID();
 
         var itemResponse = new SalesOrderItemResponse(
-                UUID.randomUUID(),
+                "SKU",
                 "Product Name",
                 new BigDecimal("50.00"),
                 2

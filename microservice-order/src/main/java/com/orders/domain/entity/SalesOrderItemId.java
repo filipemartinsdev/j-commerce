@@ -10,5 +10,5 @@ import java.util.UUID;
 @Data @NoArgsConstructor @AllArgsConstructor
 public class SalesOrderItemId implements Serializable {
     private SalesOrder salesOrder;
-    private UUID productSkuId;
+    private String sku;
 }

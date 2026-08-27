@@ -8,8 +8,8 @@ import org.springframework.stereotype.Component;
 public class SalesOrderItemMapper {
     public SalesOrderItemResponse toResponse(SalesOrderItem entity) {
         return new SalesOrderItemResponse(
-                entity.getProductSkuId(),
-                entity.getProductSkuName(),
+                entity.getSku(),
+                entity.getName(),
                 entity.getUnitPrice(),
                 entity.getUnits()
         );

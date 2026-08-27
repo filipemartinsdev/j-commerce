@@ -69,14 +69,15 @@ public class SalesOrderServiceTests {
         order.setStatus(pendingStatus);
 
         SalesOrderItem item = new SalesOrderItem();
-        item.setProductSkuId(UUID.randomUUID());
+        item.setSku("SKU");
+        item.setName("Product");
         item.setUnits(2);
         item.setUnitPrice(new BigDecimal("50.00"));
         item.setSalesOrder(order);
         order.setItems(List.of(item));
 
         CreateOrderMessage.OrderItem orderItem = new CreateOrderMessage.OrderItem(
-                UUID.randomUUID(),
+                "SKU",
                 "Product",
                 2,
                 new BigDecimal("50.00")

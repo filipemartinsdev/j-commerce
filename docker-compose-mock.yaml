@@ -286,7 +286,7 @@ services:
       RABBITMQ_USER: ${RABBITMQ_USER:-admin}
       RABBITMQ_PASSWORD: ${RABBITMQ_PASSWORD:-admin}
       REDIS_URL: redis://cache:6379
-      ACTIVE_PROFILE: mock
+      ACTIVE_PROFILE: prod
 
   product:
     container_name: product_service
@@ -386,7 +386,7 @@ services:
       RABBITMQ_USER: ${RABBITMQ_USER:-admin}
       RABBITMQ_PASSWORD: ${RABBITMQ_PASSWORD:-admin}
       GRAPH_HOPPER_API_KEY:
-      ACTIVE_PROFILE: mock
+      ACTIVE_PROFILE: prod
 
   notification:
     container_name: notification_service

@@ -29,9 +29,9 @@ public interface ProductRepository extends MongoRepository<Product, String> {
     Optional<Product> findBySKUWithLock(String SKU);
 
     @Query(
-            value = "{ 'SKUs.SKU': ?0 }", fields = "{ SKUs: true, id: false }"
+            value = "{ 'SKUs.SKU': ?0 , 'SKUs.currentPrice': { $ne: null } }", fields = "{ SKUs: true, id: false }"
     )
-    Optional<SKUProjection> findSKU(String SKU);
+    Optional<SKUProjection> findSKUWithPrice(String SKU);
 
     @Query(
             value = "{ 'SKUs.SKU': ?0 }"

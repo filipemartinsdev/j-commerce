@@ -35,7 +35,7 @@ E-Commerce platform
 2. [Product](/microservice-product/README.md) - Product catalogue, stock level and wishlist.
 3. [Pricing](/microservice-pricing/README.md) - Pricing engine.
 4. [Order](/microservice-order/README.md) - Orders life cycle and shopping cart.
-5. [Notification v2](/microservice-notification-v2/README.md) - User notifications management.
+5. [Notification](/microservice-notification-v2/README.md) - User notifications management.
 6. [Payment Worker](/worker-payment/README.md) - Payment status management (mock).
 
 ---

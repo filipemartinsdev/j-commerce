@@ -2,6 +2,8 @@
 
 # Pricing Microservice
 
+Engine for scheduled prices, built with Clean Architecture. 
+
 ## Stack
 
 - Kotlin 2.4

@@ -60,6 +60,7 @@ E-Commerce platform
 - Spring Boot 4
 - Quarkus 3.36
 - REST/GraphQL
+- Gatling
 - Docker
 - PostgreSQL + PgVector
 - MongoDB

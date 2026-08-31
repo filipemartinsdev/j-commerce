@@ -1,0 +1,3 @@
+{
+  "query": "query {\tcatalogue( first: 20 after: %s ) { edges { node { id name description category { id name } SKUs { SKU name stock basePrice { label value } currentPrice { label value } attributes { name value } } } } pageInfo { startCursor endCursor hasPreviousPage hasNextPage } }}"
+}

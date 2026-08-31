@@ -6,6 +6,8 @@ import graphql.schema.DataFetchingEnvironment;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.graphql.data.method.annotation.GraphQlExceptionHandler;
 import org.springframework.graphql.execution.ErrorType;
+import org.springframework.security.authorization.AuthorizationDeniedException;
+import org.springframework.security.core.AuthenticationException;
 import org.springframework.web.bind.annotation.ControllerAdvice;
 
 @Slf4j
@@ -31,6 +33,16 @@ public class GlobalExceptionHandler {
                 .path(env.getExecutionStepInfo().getPath())
                 .location(env.getField().getSourceLocation())
                 .build();
+    }
+
+    @GraphQlExceptionHandler(AuthorizationDeniedException.class)
+    private GraphQLError handleAuthorizationDenied(AuthorizationDeniedException e, DataFetchingEnvironment env){
+        return buildError(ErrorType.UNAUTHORIZED, e, env);
+    }
+
+    @GraphQlExceptionHandler(AuthenticationException.class)
+    private GraphQLError handleAuthentication(AuthenticationException e, DataFetchingEnvironment env){
+        return buildError(ErrorType.UNAUTHORIZED, e, env);
     }
 
     @GraphQlExceptionHandler(BadGatewayException.class)

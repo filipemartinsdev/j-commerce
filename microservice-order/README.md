@@ -59,7 +59,13 @@ Microservice to handle order flow and shipping logistics operations.
 
 ## Order Status
 
+Either order and shipping status can be modeled with the State-Machine Pattern, as seen below.
+
+![sales_order_status_graph.png](../images/uml/sales_order_status_graph.png)
+
 ![Sales Order Status](../images/uml/sales_order_status.png)
+
+![shipping_status_graph.png](../images/uml/shipping_status_graph.png)
 
 ![Shipping Status](../images/uml/shipping_status.png)
 

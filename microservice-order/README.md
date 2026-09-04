@@ -63,9 +63,11 @@ Either order and shipping status can be modeled with the State-Machine Pattern, 
 
 ![sales_order_status_graph.png](../images/uml/sales_order_status_graph.png)
 
+<img src="../images/uml/sales_order_status_graph.png" width="400pt">
+
 ![Sales Order Status](../images/uml/sales_order_status.png)
 
-![shipping_status_graph.png](../images/uml/shipping_status_graph.png)
+<img src="../images/uml/shipping_status_graph.png" width="400pt">
 
 ![Shipping Status](../images/uml/shipping_status.png)
 

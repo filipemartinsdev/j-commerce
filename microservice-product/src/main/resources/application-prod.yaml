@@ -27,3 +27,14 @@ spring:
     port: ${RABBITMQ_PORT}
     username: ${RABBITMQ_USER}
     password: ${RABBITMQ_PASSWORD}
+
+  cloud:
+    aws:
+      endpoint: ${AWS_ENDPOINT}
+      region:
+        static: ${AWS_REGION}
+      credentials:
+        secret-key: ${AWS_SECRET_KEY}
+        access-key: ${AWS_ACCESS_KEY}
+      s3:
+        path-style-access-enabled: true

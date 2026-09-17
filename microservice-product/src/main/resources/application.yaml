@@ -82,3 +82,9 @@ feign:
   clients:
     sales_order:
       url: http://order:8080
+
+app:
+  aws:
+    s3:
+      bucket:
+        name: ${AWS_BUCKET:product-service}

@@ -9,3 +9,7 @@ spring:
   jpa:
     hibernate:
       ddl-auto: none
+
+  autoconfigure:
+    exclude:
+      - io.awspring.cloud.autoconfigure.s3.S3AutoConfiguration

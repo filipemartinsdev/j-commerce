@@ -35,6 +35,13 @@
 
 	<dependencies>
 		<dependency>
+			<groupId>io.awspring.cloud</groupId>
+			<artifactId>spring-cloud-aws-starter-s3</artifactId>
+			<version>4.1.1</version>
+		</dependency>
+
+
+		<dependency>
 			<groupId>com.graphql-java</groupId>
 			<artifactId>graphql-java-extended-scalars</artifactId>
 			<version>24.0</version>

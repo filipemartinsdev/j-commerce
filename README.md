@@ -68,6 +68,7 @@ E-Commerce platform
 - RabbitMQ
 - Prometheus
 - Grafana
+- Floci (AWS emulator)
 
 ---
 

@@ -18,6 +18,20 @@ services:
       - caddy_config:/config
     restart: unless-stopped
 
+  floci:
+    container_name: floci
+    image: floci/floci:latest
+    ports:
+      - "4566:4566"
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock
+      - ./data:/app/data
+    environment:
+      FLOCI_STORAGE_MODE: hybrid
+      FLOCI_HOSTNAME: floci
+    security_opt:
+      - label=disable
+
   # ----- DATA ------
 
   identity_db:
@@ -302,6 +316,8 @@ services:
         condition: service_started
       cache:
         condition: service_started
+      floci:
+        condition: service_started
     restart: unless-stopped
     ports:
       - "8081:8080"
@@ -327,6 +343,12 @@ services:
       RABBITMQ_PASSWORD: ${RABBITMQ_PASSWORD:-admin}
       OPENAI_API_KEY:
       ACTIVE_PROFILE: prod
+      AWS_ENDPOINT: http://floci:4566
+      AWS_SECRET_KEY: ${AWS_SECRET_KEY:-test}
+      AWS_ACCESS_KEY: ${AWS_ACCESS_KEY:-test}
+      AWS_BUCKET: ${AWS_BUCKET:-product-service}
+      AWS_REGION: ${AWS_REGION:-us-east-2}
+
 
   pricing:
     container_name: pricing_service

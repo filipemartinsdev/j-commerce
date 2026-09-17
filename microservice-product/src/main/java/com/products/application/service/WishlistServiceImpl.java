@@ -5,7 +5,7 @@ import com.products.application.exception.ProductNotFoundException;
 import com.products.application.exception.WishlistItemAlreadyExistsException;
 import com.products.application.exception.WishlistItemNotFoundException;
 import com.products.application.service.mapper.WishlistItemMapper;
-import com.products.domain.entity.WishlistItem;
+import com.products.model.entity.WishlistItem;
 import com.products.infra.persistence.ProductRepository;
 import com.products.infra.persistence.WishlistItemRepository;
 import org.springframework.data.domain.Limit;

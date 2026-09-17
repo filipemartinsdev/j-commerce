@@ -3,7 +3,7 @@ package com.products.infra.web.admin;
 import com.products.application.dto.admin.CreateStockMovementRequest;
 import com.products.application.service.ScrollSubrangeExtractor;
 import com.products.application.service.StockService;
-import com.products.domain.entity.StockMovement;
+import com.products.model.entity.StockMovement;
 import org.springframework.data.domain.Limit;
 import org.springframework.data.domain.ScrollPosition;
 import org.springframework.data.domain.Window;

@@ -1,6 +1,6 @@
 package com.products.infra.persistence;
 
-import com.products.domain.entity.StockMovement;
+import com.products.model.entity.StockMovement;
 import org.springframework.data.domain.*;
 import org.springframework.data.mongodb.repository.MongoRepository;
 

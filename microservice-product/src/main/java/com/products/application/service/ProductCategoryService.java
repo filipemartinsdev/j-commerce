@@ -2,7 +2,7 @@ package com.products.application.service;
 
 import com.products.application.dto.admin.CreateProductCategoryRequest;
 import com.products.application.dto.admin.UpdateProductCategoryRequest;
-import com.products.domain.entity.ProductCategory;
+import com.products.model.entity.ProductCategory;
 
 import java.util.List;
 import java.util.UUID;

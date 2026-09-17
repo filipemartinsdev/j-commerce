@@ -1,16 +1,7 @@
 package com.products.infra.persistence;
 
-import com.products.domain.entity.Product;
-import com.products.domain.entity.ProductCategory;
-import jakarta.validation.constraints.NotNull;
-import org.springframework.data.domain.Pageable;
-import org.springframework.data.domain.Slice;
-import org.springframework.data.jpa.repository.JpaRepository;
-import org.springframework.data.jpa.repository.Query;
+import com.products.model.entity.ProductCategory;
 import org.springframework.data.mongodb.repository.MongoRepository;
-import org.springframework.data.repository.query.Param;
-
-import java.util.UUID;
 
 public interface ProductCategoryRepository extends MongoRepository<ProductCategory, Long> {
 

@@ -1,9 +1,9 @@
 package com.products.application.service;
 
 import com.products.application.exception.ProductEmbeddingNotFoundException;
-import com.products.domain.entity.Product;
-import com.products.domain.entity.ProductEmbedding;
-import com.products.domain.projection.ProductEmbeddingProjection;
+import com.products.model.entity.Product;
+import com.products.model.entity.ProductEmbedding;
+import com.products.model.projection.ProductEmbeddingProjection;
 import com.products.infra.persistence.ProductEmbeddingRepository;
 import org.springframework.ai.embedding.EmbeddingModel;
 import org.springframework.stereotype.Service;

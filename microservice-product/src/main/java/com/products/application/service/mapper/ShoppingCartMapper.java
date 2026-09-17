@@ -1,6 +1,6 @@
 package com.products.application.service.mapper;
 
-import com.products.domain.entity.ShoppingCart;
+import com.products.model.entity.ShoppingCart;
 import com.products.application.dto.catalogue.ShoppingCartResponse;
 import org.springframework.stereotype.Component;
 

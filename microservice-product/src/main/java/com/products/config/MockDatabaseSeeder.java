@@ -1,7 +1,7 @@
 package com.products.config;
 
-import com.products.domain.entity.Product;
-import com.products.domain.entity.ProductCategory;
+import com.products.model.entity.Product;
+import com.products.model.entity.ProductCategory;
 import com.products.infra.persistence.ProductCategoryRepository;
 import com.products.infra.persistence.ProductRepository;
 import lombok.extern.slf4j.Slf4j;

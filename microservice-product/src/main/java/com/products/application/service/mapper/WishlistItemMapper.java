@@ -1,7 +1,7 @@
 package com.products.application.service.mapper;
 
 import com.products.application.dto.catalogue.WishlistItemResponse;
-import com.products.domain.entity.WishlistItem;
+import com.products.model.entity.WishlistItem;
 import org.springframework.stereotype.Component;
 
 @Component

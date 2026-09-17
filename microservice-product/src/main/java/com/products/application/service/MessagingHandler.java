@@ -4,7 +4,7 @@ import com.products.application.dto.admin.CreateStockMovementRequest;
 import com.products.application.message.OrderCheckedMessage;
 import com.products.application.message.PriceUpdatedMessage;
 import com.products.application.message.RefundItemsMessage;
-import com.products.domain.entity.StockMovement;
+import com.products.model.entity.StockMovement;
 import jakarta.transaction.Transactional;
 import org.springframework.stereotype.Service;
 

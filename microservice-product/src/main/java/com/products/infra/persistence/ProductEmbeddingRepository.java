@@ -1,7 +1,7 @@
 package com.products.infra.persistence;
 
-import com.products.domain.entity.ProductEmbedding;
-import com.products.domain.projection.ProductEmbeddingProjection;
+import com.products.model.entity.ProductEmbedding;
+import com.products.model.projection.ProductEmbeddingProjection;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Slice;
 import org.springframework.data.jpa.repository.JpaRepository;

@@ -1,6 +1,6 @@
 package com.products.application.service;
 
-import com.products.domain.entity.ShoppingCart;
+import com.products.model.entity.ShoppingCart;
 import org.springframework.cache.annotation.CacheEvict;
 import org.springframework.cache.annotation.CachePut;
 import org.springframework.cache.annotation.Cacheable;

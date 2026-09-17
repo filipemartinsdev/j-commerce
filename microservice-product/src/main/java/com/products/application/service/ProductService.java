@@ -2,8 +2,8 @@ package com.products.application.service;
 
 import com.products.application.dto.admin.*;
 import com.products.application.message.PriceUpdatedMessage;
-import com.products.domain.entity.Product;
-import com.products.domain.entity.ProductCategory;
+import com.products.model.entity.Product;
+import com.products.model.entity.ProductCategory;
 import com.products.application.dto.admin.UpdateProductSKURequest;
 import org.springframework.data.domain.Limit;
 import org.springframework.data.domain.ScrollPosition;

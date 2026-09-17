@@ -1,4 +1,4 @@
-package com.products.domain.entity;
+package com.products.model.entity;
 
 import jakarta.validation.constraints.*;
 import lombok.AllArgsConstructor;
@@ -32,6 +32,9 @@ public class Product {
 
     @NotNull
     private List<ProductSKU> SKUs = new ArrayList<>();
+
+    @NotNull
+    private List<String> imageUrls = new ArrayList<>();
 
     @NotNull
     private Instant createdAt = Instant.now();

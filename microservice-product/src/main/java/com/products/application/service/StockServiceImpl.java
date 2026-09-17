@@ -5,7 +5,7 @@ import com.products.application.exception.InvalidStockMovementReasonException;
 import com.products.application.exception.InvalidStockMovementTypeException;
 import com.products.application.exception.ProductNotFoundException;
 import com.products.application.exception.ProductSKUNotFoundException;
-import com.products.domain.entity.StockMovement;
+import com.products.model.entity.StockMovement;
 import com.products.infra.persistence.ProductRepository;
 import com.products.infra.persistence.StockMovementRepository;
 import jakarta.transaction.Transactional;

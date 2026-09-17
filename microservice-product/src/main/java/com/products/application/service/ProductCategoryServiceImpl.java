@@ -3,7 +3,7 @@ package com.products.application.service;
 import com.products.application.dto.admin.CreateProductCategoryRequest;
 import com.products.application.dto.admin.UpdateProductCategoryRequest;
 import com.products.application.exception.ProductCategoryNotFoundException;
-import com.products.domain.entity.ProductCategory;
+import com.products.model.entity.ProductCategory;
 import com.products.infra.persistence.ProductCategoryRepository;
 import org.springframework.cache.annotation.CacheEvict;
 import org.springframework.cache.annotation.Cacheable;

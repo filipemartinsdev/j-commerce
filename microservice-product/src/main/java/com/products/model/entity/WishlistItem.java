@@ -1,4 +1,4 @@
-package com.products.domain.entity;
+package com.products.model.entity;
 
 import jakarta.validation.constraints.NotEmpty;
 import jakarta.validation.constraints.NotNull;

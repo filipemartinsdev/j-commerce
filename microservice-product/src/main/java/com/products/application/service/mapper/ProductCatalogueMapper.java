@@ -1,7 +1,7 @@
 package com.products.application.service.mapper;
 
 import com.products.application.dto.catalogue.ProductCatalogueResponse;
-import com.products.domain.entity.Product;
+import com.products.model.entity.Product;
 import org.springframework.stereotype.Component;
 
 @Component

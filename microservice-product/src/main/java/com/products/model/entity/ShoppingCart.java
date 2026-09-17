@@ -1,4 +1,4 @@
-package com.products.domain.entity;
+package com.products.model.entity;
 
 import lombok.AllArgsConstructor;
 import lombok.Data;
@@ -7,7 +7,6 @@ import lombok.NoArgsConstructor;
 import java.io.Serializable;
 import java.math.BigDecimal;
 import java.util.List;
-import java.util.UUID;
 
 @Data @AllArgsConstructor @NoArgsConstructor
 public class ShoppingCart implements Serializable {

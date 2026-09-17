@@ -1,6 +1,6 @@
 package com.products.infra.persistence;
 
-import com.products.domain.entity.WishlistItem;
+import com.products.model.entity.WishlistItem;
 import org.springframework.data.domain.Limit;
 import org.springframework.data.domain.ScrollPosition;
 import org.springframework.data.domain.Window;

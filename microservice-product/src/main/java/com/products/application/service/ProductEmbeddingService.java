@@ -1,6 +1,6 @@
 package com.products.application.service;
 
-import com.products.domain.entity.Product;
+import com.products.model.entity.Product;
 
 import java.util.List;
 

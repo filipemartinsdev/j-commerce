@@ -1,7 +1,7 @@
 package com.products.infra.persistence;
 
-import com.products.domain.entity.Product;
-import com.products.domain.projection.SKUProjection;
+import com.products.model.entity.Product;
+import com.products.model.projection.SKUProjection;
 import jakarta.persistence.LockModeType;
 import org.springframework.data.domain.*;
 import org.springframework.data.jpa.repository.Lock;

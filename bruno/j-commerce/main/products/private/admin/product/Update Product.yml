@@ -1,7 +1,7 @@
 info:
   name: Update Product
   type: graphql
-  seq: 6
+  seq: 9
 
 graphql:
   method: POST
@@ -45,3 +45,4 @@ settings:
   timeout: 0
   followRedirects: true
   maxRedirects: 5
+  forwardAuthorizationHeader: true

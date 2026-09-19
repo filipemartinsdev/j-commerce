@@ -1,7 +1,7 @@
 info:
-  name: Delete Product
+  name: Upload product image
   type: graphql
-  seq: 10
+  seq: 5
 
 graphql:
   method: POST
@@ -9,11 +9,12 @@ graphql:
   body:
     query: |-
       mutation {
-      	deleteProduct(
-          id: "6a71f1ca856687ce856d4284"
-        ){
-          success
-          message
+      	uploadProductImage(
+          productId: "6aaeec3353d464ad7aa07e9a"
+          contentType: "image/jpeg"
+        ) {
+          imageId
+          uploadURL
         }
       }
   auth: inherit

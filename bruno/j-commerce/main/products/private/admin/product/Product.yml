@@ -1,7 +1,7 @@
 info:
   name: Product
   type: graphql
-  seq: 5
+  seq: 8
 
 graphql:
   method: POST
@@ -9,10 +9,14 @@ graphql:
   body:
     query: |-
       query {
-      	product(id: "6a8cb5a43d6cbce046befb20") {
+      	product(id: "6aaeec3353d464ad7aa07e9a") {
           id
           name
           description
+          images {
+            id
+            url
+          }
           SKUs {
             name
             SKU
@@ -35,3 +39,4 @@ settings:
   timeout: 0
   followRedirects: true
   maxRedirects: 5
+  forwardAuthorizationHeader: true

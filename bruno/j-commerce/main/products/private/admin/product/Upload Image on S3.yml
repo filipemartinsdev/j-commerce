@@ -1,0 +1,41 @@
+info:
+  name: Upload Image on S3
+  type: http
+  seq: 6
+
+http:
+  method: PUT
+  url: http://localhost:4566/product-service/products/6aaeec3353d464ad7aa07e9a/4fc56eba-e97e-450b-b835-98a6b3e06b61.jpg?X-Amz-Algorithm=AWS4-HMAC-SHA256&X-Amz-Date=20260919T201443Z&X-Amz-SignedHeaders=host&X-Amz-Credential=test%2F20260919%2Fus-east-2%2Fs3%2Faws4_request&X-Amz-Expires=900&X-Amz-Signature=c78b109586194b9a4f704994630bf1fd6d986c6497c0ca25c207a83a92520a97
+  params:
+    - name: X-Amz-Algorithm
+      value: AWS4-HMAC-SHA256
+      type: query
+    - name: X-Amz-Date
+      value: 20260919T201443Z
+      type: query
+    - name: X-Amz-SignedHeaders
+      value: host
+      type: query
+    - name: X-Amz-Credential
+      value: test%2F20260919%2Fus-east-2%2Fs3%2Faws4_request
+      type: query
+    - name: X-Amz-Expires
+      value: "900"
+      type: query
+    - name: X-Amz-Signature
+      value: c78b109586194b9a4f704994630bf1fd6d986c6497c0ca25c207a83a92520a97
+      type: query
+  body:
+    type: file
+    data:
+      - filePath: /home/filipe/Downloads/analogy.jpg
+        contentType: image/jpeg
+        selected: true
+  auth: inherit
+
+settings:
+  encodeUrl: true
+  timeout: 0
+  followRedirects: true
+  maxRedirects: 5
+  forwardAuthorizationHeader: false

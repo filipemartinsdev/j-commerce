@@ -22,6 +22,10 @@ graphql:
                 id
                 name
               }
+              images {
+                  id
+                  url
+              }
               SKUs {
                 SKU
                 name

@@ -37,12 +37,16 @@ type Mutation {
     updateSKU(SKU: ID!, request: UpdateSKURequest!): Product!
     deleteSKU(SKU: ID!): Product!
 
+    uploadProductImage(productId: ID!, contentType: String!): UploadImageResponse!
+    deleteProductImage(productId: ID!, imageId: ID!): Response!
+
     createStockMovement(request: CreateStockMovementRequest!): StockMovement!
 }
 
 # Catalogue / General
 
 scalar Instant
+scalar URL
 
 type Response {
     success: Boolean!
@@ -86,6 +90,7 @@ type ProductCatalogue {
     description: String
     category: ProductCategoryCatalogue!
     SKUs: [ProductSKUCatalogue!]!
+    images: [ImageResponse!]!
 }
 
 type ProductSKUCatalogue {
@@ -159,10 +164,16 @@ type Product {
     description: String
     category: ProductCategory!
     SKUs: [ProductSKU!]!
+    images: [ImageResponse!]!
     createdAt: Instant!
     createdBy: ID!
     updatedAt: Instant
     updatedBy: ID
+}
+
+type ImageResponse {
+    id: ID!
+    url: URL!
 }
 
 type ProductSKU {
@@ -209,6 +220,10 @@ type StockMovementReason {
     name: String!
 }
 
+type UploadImageResponse {
+    imageId: ID!
+    uploadURL: URL!
+}
 
 
 input CreateProductRequest {

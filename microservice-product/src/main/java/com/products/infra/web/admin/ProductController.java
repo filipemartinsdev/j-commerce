@@ -33,7 +33,7 @@ public class ProductController {
 
     @QueryMapping
     @PreAuthorize("hasAnyRole('STOCK_MANAGER', 'LOGISTICS', 'ADMIN')")
-    public Window<Product> products(
+    public Window<AdminProductResponse> products(
             @Argument Long categoryId,
             ScrollSubrange scrollSubrange
     ){
@@ -48,7 +48,7 @@ public class ProductController {
 
     @QueryMapping
     @PreAuthorize("hasAnyRole('STOCK_MANAGER', 'LOGISTICS', 'ADMIN')")
-    public Product product(
+    public AdminProductResponse product(
             @Argument String id
     ){
         return productService.getProductById(id);
@@ -56,7 +56,7 @@ public class ProductController {
 
     @MutationMapping
     @PreAuthorize("hasAnyRole('ADMIN')")
-    public Product createProduct(
+    public AdminProductResponse createProduct(
             @Argument CreateProductRequest request,
             @AuthenticationPrincipal Jwt jwt
     ) {
@@ -66,7 +66,7 @@ public class ProductController {
 
     @MutationMapping
     @PreAuthorize("hasAnyRole('STOCK_MANAGER', 'ADMIN')")
-    public Product updateProduct(
+    public AdminProductResponse updateProduct(
             @Argument String id,
             @Argument UpdateProductRequest request,
             @AuthenticationPrincipal Jwt jwt
@@ -105,7 +105,7 @@ public class ProductController {
 
     @MutationMapping
     @PreAuthorize("hasAnyRole('STOCK_MANAGER', 'ADMIN')")
-    public Product createSKU(
+    public AdminProductResponse createSKU(
             @Argument String productId,
             @Argument CreateProductSKURequest request,
             @AuthenticationPrincipal Jwt jwt
@@ -116,7 +116,7 @@ public class ProductController {
 
     @MutationMapping
     @PreAuthorize("hasAnyRole('STOCK_MANAGER', 'ADMIN')")
-    public Product updateSKU(
+    public AdminProductResponse updateSKU(
             @Argument String SKU,
             @Argument UpdateProductSKURequest request,
             @AuthenticationPrincipal Jwt jwt
@@ -127,11 +127,34 @@ public class ProductController {
 
     @MutationMapping
     @PreAuthorize("hasAnyRole('STOCK_MANAGER', 'ADMIN')")
-    public Product deleteSKU(
+    public AdminProductResponse deleteSKU(
             @Argument String SKU,
             @AuthenticationPrincipal Jwt jwt
     ){
         var userId = UUID.fromString(jwt.getSubject());
         return productService.deleteSKU(SKU, userId);
+    }
+
+    @MutationMapping
+    @PreAuthorize("hasAnyRole('STOCK_MANAGER', 'ADMIN')")
+    public UploadImageResponse uploadProductImage(
+            @Argument String productId,
+            @Argument String contentType,
+            @AuthenticationPrincipal Jwt jwt
+    ){
+        var userId = UUID.fromString(jwt.getSubject());
+        return productService.uploadImage(productId, contentType, userId);
+    }
+
+    @MutationMapping
+    @PreAuthorize("hasAnyRole('STOCK_MANAGER', 'ADMIN')")
+    public Response deleteProductImage(
+            @Argument String productId,
+            @Argument UUID imageId,
+            @AuthenticationPrincipal Jwt jwt
+    ){
+        var userId = UUID.fromString(jwt.getSubject());
+        productService.deleteImage(productId, imageId, userId);
+        return new Response(true, "Image deleted successfully");
     }
 }

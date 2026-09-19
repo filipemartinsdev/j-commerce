@@ -13,15 +13,15 @@ import java.util.List;
 import java.util.UUID;
 
 public interface ProductService {
-    Window<Product> getAllProducts(ScrollPosition position, Limit limit);
+    Window<AdminProductResponse> getAllProducts(ScrollPosition position, Limit limit);
 
-    Window<Product> getAllProductsByCategory(Long categoryId, ScrollPosition position, Limit limit);
+    Window<AdminProductResponse> getAllProductsByCategory(Long categoryId, ScrollPosition position, Limit limit);
 
-    Product getProductById(String id);
+    AdminProductResponse getProductById(String id);
 
-    Product createProduct(CreateProductRequest request, UUID userId);
+    AdminProductResponse createProduct(CreateProductRequest request, UUID userId);
 
-    Product updateProduct(String id, UpdateProductRequest request, UUID userId);
+    AdminProductResponse updateProduct(String id, UpdateProductRequest request, UUID userId);
 
     void deleteProduct(String id, UUID userId);
 
@@ -29,11 +29,15 @@ public interface ProductService {
 
     ProductCategory createProductCategory(CreateProductCategoryRequest request, UUID userId);
 
-    Product createSKU(String productId, CreateProductSKURequest request, UUID userId);
+    AdminProductResponse createSKU(String productId, CreateProductSKURequest request, UUID userId);
 
-    Product updateSKU(String SKU, UpdateProductSKURequest request, UUID userId);
+    AdminProductResponse updateSKU(String SKU, UpdateProductSKURequest request, UUID userId);
 
-    Product deleteSKU(String SKU, UUID userId);
+    AdminProductResponse deleteSKU(String SKU, UUID userId);
 
     void updatePrice(PriceUpdatedMessage message);
+
+    UploadImageResponse uploadImage(String productId, String contentType, UUID userId);
+
+    void deleteImage(String productId, UUID imageId, UUID userId);
 }

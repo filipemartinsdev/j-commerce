@@ -7,17 +7,18 @@ import com.products.application.exception.SKUAlreadyExistsException;
 import com.products.application.message.PriceUpdatedMessage;
 import com.products.application.message.SKUCreatedMessage;
 import com.products.application.message.SKUDeletedMessage;
-import com.products.model.entity.Product;
-import com.products.model.entity.ProductCategory;
+import com.products.application.service.mapper.ProductAdminMapper;
 import com.products.infra.messaging.MessageBrokerProducer;
 import com.products.infra.persistence.ProductRepository;
-import com.products.application.dto.admin.UpdateProductSKURequest;
+import com.products.model.entity.Product;
+import com.products.model.entity.ProductCategory;
 import jakarta.transaction.Transactional;
 import org.springframework.data.domain.Limit;
 import org.springframework.data.domain.ScrollPosition;
 import org.springframework.data.domain.Window;
 import org.springframework.stereotype.Service;
 
+import java.net.URL;
 import java.time.Instant;
 import java.util.List;
 import java.util.UUID;
@@ -29,32 +30,76 @@ public class ProductServiceImpl implements ProductService {
     private final ProductEmbeddingService productEmbeddingService;
     private final MessageBrokerProducer messageBrokerProducer;
 
-    public ProductServiceImpl(ProductRepository productRepository, ProductCategoryService productCategoryService, ProductEmbeddingService productEmbeddingService, MessageBrokerProducer messageBrokerProducer) {
+    private final BucketService bucketService;
+    private final ProductAdminMapper productAdminMapper;
+
+    public ProductServiceImpl(ProductRepository productRepository, ProductCategoryService productCategoryService, ProductEmbeddingService productEmbeddingService, MessageBrokerProducer messageBrokerProducer, BucketService bucketService, ProductAdminMapper productAdminMapper) {
         this.productRepository = productRepository;
         this.productCategoryService = productCategoryService;
         this.productEmbeddingService = productEmbeddingService;
         this.messageBrokerProducer = messageBrokerProducer;
+        this.bucketService = bucketService;
+        this.productAdminMapper = productAdminMapper;
+    }
+
+
+    private List<AdminProductResponse.ImageResponse> getImagesURLs(String productId, List<Product.ProductImage> images){
+        return images.stream()
+                .map(image -> {
+                        var key = String.format(
+                                "products/%s/%s.%s",
+                                productId,
+                                image.getId(),
+                                image.getExtension()
+                        );
+
+                        var url = bucketService.getReadPreSignedURL(key);
+
+                        return new AdminProductResponse.ImageResponse(image.getId(), url);
+                })
+                .toList();
     }
 
     @Override
-    public Window<Product> getAllProducts(ScrollPosition position, Limit limit) {
-        return productRepository.findAllByOrderById(position, limit);
+    public Window<AdminProductResponse> getAllProducts(ScrollPosition position, Limit limit) {
+        return productRepository.findAllByOrderById(position, limit)
+                .map(product -> {
+                    var dto = productAdminMapper.toResponse(product);
+                    dto.setImages(
+                            getImagesURLs(product.getId(), product.getImages())
+                    );
+                    return dto;
+                });
     }
 
     @Override
-    public Window<Product> getAllProductsByCategory(Long categoryId, ScrollPosition position, Limit limit) {
-        return productRepository.findAllByCategoryIdOrderById(categoryId, position, limit);
+    public Window<AdminProductResponse> getAllProductsByCategory(Long categoryId, ScrollPosition position, Limit limit) {
+        return productRepository.findAllByCategoryIdOrderById(categoryId, position, limit)
+                .map(product -> {
+                    var dto = productAdminMapper.toResponse(product);
+                    dto.setImages(
+                            getImagesURLs(product.getId(), product.getImages())
+                    );
+                    return dto;
+                });
     }
 
     @Override
-    public Product getProductById(String id) {
+    public AdminProductResponse getProductById(String id) {
         return productRepository.findById(id)
+                .map(product -> {
+                    var dto = productAdminMapper.toResponse(product);
+                    dto.setImages(
+                            getImagesURLs(product.getId(), product.getImages())
+                    );
+                    return dto;
+                })
                 .orElseThrow(() -> new ProductNotFoundException("Product not found by ID: "+id));
     }
 
     @Override
     @Transactional
-    public Product createProduct(CreateProductRequest request, UUID userId) {
+    public AdminProductResponse createProduct(CreateProductRequest request, UUID userId) {
         var product = new Product();
         product.setName(request.name());
         product.setCreatedBy(userId);
@@ -73,12 +118,12 @@ public class ProductServiceImpl implements ProductService {
 
         productEmbeddingService.createFromProduct(product);
 
-        return createdProduct;
+        return productAdminMapper.toResponse(createdProduct);
     }
 
     @Override
     @Transactional
-    public Product updateProduct(String id, UpdateProductRequest request, UUID userId) {
+    public AdminProductResponse updateProduct(String id, UpdateProductRequest request, UUID userId) {
         var product = productRepository.findById(id)
                 .orElseThrow(() -> new ProductNotFoundException("Product not found by ID: "+id));
 
@@ -104,7 +149,12 @@ public class ProductServiceImpl implements ProductService {
 
         productEmbeddingService.updateFromProduct(updatedProduct);
 
-        return updatedProduct;
+
+        var dto = productAdminMapper.toResponse(updatedProduct);
+        dto.setImages(
+                getImagesURLs(updatedProduct.getId(), updatedProduct.getImages())
+        );
+        return dto;
     }
 
     @Override
@@ -136,7 +186,7 @@ public class ProductServiceImpl implements ProductService {
     }
 
     @Override
-    public Product createSKU(String productId, CreateProductSKURequest request, UUID userId) {
+    public AdminProductResponse createSKU(String productId, CreateProductSKURequest request, UUID userId) {
         var product = productRepository.findById(productId)
                 .orElseThrow(() -> new ProductNotFoundException("Product not found by ID: "+productId));
 
@@ -150,7 +200,11 @@ public class ProductServiceImpl implements ProductService {
 
         produceSKUCreated(request.SKU());
 
-        return updatedProduct;
+        var dto = productAdminMapper.toResponse(updatedProduct);
+        dto.setImages(
+                getImagesURLs(product.getId(), product.getImages())
+        );
+        return dto;
     }
 
     private Product.ProductSKU assembleSKU(CreateProductSKURequest request, UUID userId) {
@@ -173,7 +227,7 @@ public class ProductServiceImpl implements ProductService {
 
 
     @Override
-    public Product updateSKU(String SKU, UpdateProductSKURequest request, UUID userId) {
+    public AdminProductResponse updateSKU(String SKU, UpdateProductSKURequest request, UUID userId) {
         var product = productRepository.findBySKU(SKU)
                 .orElseThrow(() -> new ProductNotFoundException("Product not found with sku: "+SKU));
 
@@ -190,11 +244,15 @@ public class ProductServiceImpl implements ProductService {
                     .toList()
             );
 
-        return productRepository.save(product);
+        var dto = productAdminMapper.toResponse(productRepository.save(product));
+        dto.setImages(
+                getImagesURLs(product.getId(), product.getImages())
+        );
+        return dto;
     }
 
     @Override
-    public Product deleteSKU(String SKU, UUID userId) {
+    public AdminProductResponse deleteSKU(String SKU, UUID userId) {
         var product = productRepository.findBySKU(SKU)
                 .orElseThrow(() -> new ProductNotFoundException("Product not found with sku: "+SKU));
 
@@ -204,7 +262,12 @@ public class ProductServiceImpl implements ProductService {
         if (removed) {
             var updatedProduct = productRepository.save(product);
             produceSKUDeleted(SKU);
-            return updatedProduct;
+
+            var dto = productAdminMapper.toResponse(updatedProduct);
+            dto.setImages(
+                    getImagesURLs(updatedProduct.getId(), updatedProduct.getImages())
+            );
+            return dto;
         }
         else
             throw new ProductSKUNotFoundException("sku not found: "+SKU);
@@ -243,6 +306,55 @@ public class ProductServiceImpl implements ProductService {
         sku.setUpdatedBy(null);
         product.setUpdatedAt(Instant.now());
         product.setUpdatedBy(null);
+
+        productRepository.save(product);
+    }
+
+    @Override
+    @Transactional
+    public UploadImageResponse uploadImage(String productId, String contentType, UUID userId) {
+        var imageId = UUID.randomUUID();
+
+        var product = productRepository.findById(productId)
+                .orElseThrow(() -> new ProductNotFoundException("Product not found by ID: "+productId));
+
+        product.getImages().add(new Product.ProductImage(imageId, getFileExtension(contentType)));
+        product.setUpdatedAt(Instant.now());
+        product.setUpdatedBy(userId);
+
+        var key = String.format(
+                "products/%s/%s.%s",
+                productId,
+                imageId,
+                getFileExtension(contentType)
+        );
+
+        URL presignedURL = bucketService.getUploadPreSignedURL(key);
+        productRepository.save(product);
+
+        return new UploadImageResponse(imageId, presignedURL);
+    }
+
+    private String getFileExtension(String contentType){
+        return switch (contentType) {
+            case "image/jpeg" -> "jpg";
+            case "image/png" -> "png";
+            case "image/webp" -> "webp";
+            default -> throw new IllegalArgumentException("Unsupported content type: " + contentType);
+        };
+    }
+
+    @Override
+    @Transactional
+    public void deleteImage(String productId, UUID imageId, UUID userId) {
+        bucketService.deleteAllObjectsByPrefix("products/" + productId + "/" + imageId);
+
+        var product = productRepository.findById(productId)
+                .orElseThrow(() -> new ProductNotFoundException("Product not found by ID: " + productId));
+
+        product.getImages().removeIf(image -> image.getId().equals(imageId));
+        product.setUpdatedAt(Instant.now());
+        product.setUpdatedBy(userId);
 
         productRepository.save(product);
     }

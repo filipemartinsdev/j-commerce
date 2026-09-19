@@ -36,7 +36,8 @@ public class ProductCatalogueMapper {
                                                 .toList()
                                 )
                         )
-                        .toList()
+                        .toList(),
+                null
         );
     }
 }

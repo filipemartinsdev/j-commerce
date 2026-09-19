@@ -1,19 +1,31 @@
 
 package com.products.application.dto.catalogue;
 
-import java.math.BigDecimal;
-import java.util.List;
+import lombok.AllArgsConstructor;
+import lombok.Data;
+import lombok.NoArgsConstructor;
 
-public record ProductCatalogueResponse(
-        String id,
-        String name,
-        String description,
-        Category category,
-        List<ProductSKU> SKUs
-){
+import java.math.BigDecimal;
+import java.net.URL;
+import java.util.List;
+import java.util.UUID;
+
+@Data @AllArgsConstructor @NoArgsConstructor
+public class ProductCatalogueResponse {
+    private String id;
+    private String name;
+    private String description;
+    private Category category;
+    private List<ProductSKU> SKUs;
+    private List<ImageResponse> images;
 
     public static record Category(
             Long id, String name
+    ){}
+
+    public static record ImageResponse (
+            UUID id,
+            URL url
     ){}
 
     public static record ProductSKU (

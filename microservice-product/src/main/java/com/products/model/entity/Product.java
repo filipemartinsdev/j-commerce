@@ -34,7 +34,7 @@ public class Product {
     private List<ProductSKU> SKUs = new ArrayList<>();
 
     @NotNull
-    private List<String> imageUrls = new ArrayList<>();
+    private List<ProductImage> images = new ArrayList<>();
 
     @NotNull
     private Instant createdAt = Instant.now();
@@ -57,6 +57,15 @@ public class Product {
         return this.SKUs
                 .stream()
                 .anyMatch(entity -> entity.getSKU().equals(SKU));
+    }
+
+    @Data @AllArgsConstructor @NoArgsConstructor
+    public static class ProductImage {
+        @Indexed
+        private UUID id;
+
+        @NotEmpty
+        private String extension;
     }
 
     @Data @AllArgsConstructor @NoArgsConstructor

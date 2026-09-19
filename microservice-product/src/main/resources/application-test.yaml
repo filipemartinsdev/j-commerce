@@ -10,6 +10,13 @@ spring:
     hibernate:
       ddl-auto: none
 
-  autoconfigure:
-    exclude:
-      - io.awspring.cloud.autoconfigure.s3.S3AutoConfiguration
+  cloud:
+    aws:
+      endpoint: http://localhost:4566
+      region:
+        static: us-east-1
+      credentials:
+        secret-key: test
+        access-key: test
+      s3:
+        path-style-access-enabled: true

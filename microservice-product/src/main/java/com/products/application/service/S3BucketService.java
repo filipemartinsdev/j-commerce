@@ -1,5 +1,7 @@
 package com.products.application.service;
 
+import com.products.application.exception.BadGatewayException;
+import com.products.application.exception.ProductImageNotFoundException;
 import io.awspring.cloud.s3.S3Template;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
@@ -57,6 +59,9 @@ public class S3BucketService implements BucketService{
                         .build()
         );
 
+        if (listObjectsResponse.contents().isEmpty())
+            throw new ProductImageNotFoundException("Image not found");
+
         List<ObjectIdentifier> identifiers = listObjectsResponse.contents().stream()
                 .map(object -> ObjectIdentifier.builder()
                         .key(object.key())
@@ -73,6 +78,10 @@ public class S3BucketService implements BucketService{
                 )
                 .build();
 
-        s3Client.deleteObjects(deleteObjectsRequest);
+        try {
+            s3Client.deleteObjects(deleteObjectsRequest);
+        } catch (Exception e){
+            throw new BadGatewayException("Failed to delete objects from S3 bucket");
+        }
     }
 }

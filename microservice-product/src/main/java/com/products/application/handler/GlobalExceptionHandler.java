@@ -124,4 +124,9 @@ public class GlobalExceptionHandler {
     private GraphQLError handleWishlistItemNotFound(WishlistItemNotFoundException e, DataFetchingEnvironment env){
         return buildError(ErrorType.NOT_FOUND, e, env);
     }
+
+    @GraphQlExceptionHandler(ProductImageNotFoundException.class)
+    private GraphQLError handleProductImageNotFound(ProductImageNotFoundException e, DataFetchingEnvironment env){
+        return buildError(ErrorType.NOT_FOUND, e, env);
+    }
 }

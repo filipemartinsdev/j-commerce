@@ -6,6 +6,7 @@ import com.products.model.entity.Product;
 import org.springframework.stereotype.Component;
 
 import java.net.URL;
+import java.util.ArrayList;
 import java.util.List;
 
 @Component
@@ -22,7 +23,7 @@ public class ProductAdminMapper {
                 entity.getSKUs().stream()
                         .map(this::toSKUResponse)
                         .toList(),
-                null,
+                new ArrayList<>(),
                 entity.getCreatedAt(),
                 entity.getCreatedBy(),
                 entity.getUpdatedAt(),
@@ -35,14 +36,18 @@ public class ProductAdminMapper {
                 productSKU.getSKU(),
                 productSKU.getName(),
                 productSKU.getStock(),
-                new AdminProductResponse.Price(
-                        productSKU.getBasePrice().getLabel(),
-                        productSKU.getBasePrice().getValue()
-                ),
-                new AdminProductResponse.Price(
-                        productSKU.getCurrentPrice().getLabel(),
-                        productSKU.getCurrentPrice().getValue()
-                ),
+                productSKU.getBasePrice() != null
+                    ? new AdminProductResponse.Price(
+                            productSKU.getBasePrice().getLabel(),
+                            productSKU.getBasePrice().getValue()
+                    )
+                    : null,
+                productSKU.getCurrentPrice() != null
+                    ? new AdminProductResponse.Price(
+                            productSKU.getCurrentPrice().getLabel(),
+                            productSKU.getCurrentPrice().getValue()
+                    )
+                    : null,
                 productSKU.getAttributes().stream()
                         .map(attribute -> new AdminProductResponse.Attribute(
                                 attribute.getName(),

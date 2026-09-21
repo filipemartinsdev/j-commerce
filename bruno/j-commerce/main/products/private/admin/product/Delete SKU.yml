@@ -1,7 +1,7 @@
 info:
-  name: Create Stock Movement
+  name: Delete SKU
   type: graphql
-  seq: 2
+  seq: 13
 
 graphql:
   method: POST
@@ -9,27 +9,29 @@ graphql:
   body:
     query: |-
       mutation {
-      	createStockMovement(request: {
-          SKU: "DS4-B"
-          description: "test"
-          units: 100
-          typeId: 2
-          reasonId: 1
-        }) {
+      	deleteSKU(
+          SKU: "DS4-W"
+        ) {
           id
-          SKU
-          units
+          name
           description
-          type {
+          category {
             id
             name
           }
-          reason {
-            id
+          SKUs {
             name
+      			SKU
+            attributes {
+              name
+              value
+            }
+            stock
           }
           createdAt
           createdBy
+          updatedAt
+          updatedBy
         }
       }
   auth: inherit

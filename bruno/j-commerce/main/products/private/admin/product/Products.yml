@@ -11,7 +11,7 @@ graphql:
       query {
       	products(
           first: 20
-          # after: "S19bImphdmEudXRpbC5Db2xsZWN0aW9ucyRVbm1vZGlmaWFibGVNYXAiLHsiaWQiOiI2YTcyMDdlYzcwMzY5OTZmOTc2Yjk4NDUifV0="
+          # after: "S19bImphdmEudXRpbC5Db2xsZWN0aW9ucyRVbm1vZGlmaWFibGVNYXAiLHsiaWQiOiI2YWIxOTcxZWZhNGRkMzhlZDNiZTdjODQifV0="
         ) {
           edges {
             node {

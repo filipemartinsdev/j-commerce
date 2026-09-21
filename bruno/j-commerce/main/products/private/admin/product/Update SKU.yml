@@ -1,7 +1,7 @@
 info:
-  name: Create Product
+  name: Update SKU
   type: graphql
-  seq: 4
+  seq: 12
 
 graphql:
   method: POST
@@ -9,10 +9,15 @@ graphql:
   body:
     query: |-
       mutation {
-      	createProduct(request: {
-          name: "Play Station 5 Controller"
-          categoryId: 1
-        }) {
+      	updateSKU(
+          SKU: "DS4-W"
+          request: {
+            name: "Dualshok 4 white"
+            attributes: [
+              {name: "color", value: "white"}
+            ]
+          }
+        ) {
           id
           name
           description
@@ -20,22 +25,14 @@ graphql:
             id
             name
           }
-          images {
-            id
-            url
-          }
           SKUs {
-            SKU
             name
-            stock
-            currentPrice {
-              label
-              value
-            }
+      			SKU
             attributes {
               name
               value
             }
+            stock
           }
           createdAt
           createdBy

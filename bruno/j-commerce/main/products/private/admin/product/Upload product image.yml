@@ -10,7 +10,7 @@ graphql:
     query: |-
       mutation {
       	uploadProductImage(
-          productId: "6aaeec3353d464ad7aa07e9a"
+          productId: "6ab1971efa4dd38ed3be7c84"
           contentType: "image/jpeg"
         ) {
           imageId

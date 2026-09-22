@@ -5,6 +5,8 @@ import org.springframework.data.domain.ScrollPosition;
 import org.springframework.graphql.data.query.ScrollSubrange;
 import org.springframework.stereotype.Component;
 
+import java.util.OptionalInt;
+
 @Component
 public class ScrollSubrangeExtractor {
     public ScrollPosition getPosition(ScrollSubrange subrange){
@@ -12,6 +14,12 @@ public class ScrollSubrangeExtractor {
     }
 
     public Limit getLimit(ScrollSubrange subrange){
-        return Limit.of(subrange.count().orElse(20));
+        OptionalInt count = subrange.count();
+
+        return Limit.of(
+                count.isPresent() && count.getAsInt() <= 20
+                        ? count.getAsInt()
+                        : 20
+        );
     }
 }

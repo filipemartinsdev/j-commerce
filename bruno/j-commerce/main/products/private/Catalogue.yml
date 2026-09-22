@@ -41,6 +41,10 @@ graphql:
                   value
                 }
               }
+              images {
+                id
+                url
+              }
             }
           }
           pageInfo {

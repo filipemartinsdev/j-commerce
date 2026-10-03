@@ -9,7 +9,7 @@ graphql:
   body:
     query: |-
       query {
-      	product(id: "6aaeec3353d464ad7aa07e9a") {
+      	product(id: "123") {
           id
           name
           description

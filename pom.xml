@@ -21,5 +21,6 @@
 		<module>microservice-order</module>
 		<module>microservice-notification-v2</module>
 		<module>worker-payment</module>
+		<module>web</module>
 	</modules>
 </project>

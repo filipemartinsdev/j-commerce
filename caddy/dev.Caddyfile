@@ -1,6 +1,18 @@
 localhost {
     tls internal
 
+    handle_path /home/* {
+        reverse_proxy web:8080
+
+        rate_limit {
+            zone dynamic_zone {
+                key     {http.request.remote.host}
+                events  60
+                window  1m
+            }
+        }
+    }
+
     handle_path /identity/* {
         reverse_proxy identity:8080
 

@@ -37,6 +37,26 @@ services:
           cpus: 0.5
           memory: 500M
 
+  web:
+    container_name: web
+    build:
+      context: web/
+      dockerfile: Dockerfile
+    ports:
+      - "40:8080"
+    deploy:
+      resources:
+        limits:
+          cpus: 0.5
+          memory: 600M
+    environment:
+      ACTIVE_PROFILE: prod
+      SERVICE_IDENTITY_URL: http://identity:8080
+      SERVICE_PRODUCT_URL: http://product:8080
+      SERVICE_PRICING_URL: http://pricing:8080
+      SERVICE_ORDER_URL: http://order:8080
+      SERVICE_NOTIFICATION_URL: http://notification:8080
+
   # ----- DATA ------
 
   identity_db:

@@ -1,0 +1,28 @@
+server:
+  port: 8080
+
+spring:
+  application:
+    name: web
+
+  profiles:
+    active: ${ACTIVE_PROFILE:test}
+
+  feign:
+    clients:
+      identityClient:
+        url: ${SERVICE_IDENTITY_URL:http://localhost:8080}
+
+app:
+  services:
+    identity:
+      url: ${SERVICE_IDENTITY_URL:http://localhost:8080}
+    product:
+      url: ${SERVICE_PRODUCT_URL:http://localhost:8080}
+    pricing:
+      url: ${SERVICE_PRICING_URL:http://localhost:8080}
+    order:
+      url: ${SERVICE_ORDER_URL:http://localhost:8080}
+    notification:
+      url: ${SERVICE_NOTIFICATION_URL:http://localhost:8080}
+
